@@ -6,11 +6,12 @@ import { FavoriteButton, QimoSeal, Pill } from "@/components/ui";
 import { Icon } from "@/components/Icon";
 import { ActionBar } from "@/components/ActionBar";
 import { experienceActions } from "@/lib/reserve";
-import { experiences } from "@/content";
+import { getExperiences } from "@/lib/content-db";
 
 export const metadata: Metadata = { title: "Experiências" };
 
-export default function ExperienciasPage() {
+export default async function ExperienciasPage() {
+  const experiences = await getExperiences();
   return (
     <>
       <PageHero section="experiencias" />

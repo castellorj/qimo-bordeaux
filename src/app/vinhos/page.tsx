@@ -3,7 +3,7 @@ import Link from "next/link";
 import { PageHero } from "@/components/PageHero";
 import { FavoriteButton, Pill } from "@/components/ui";
 import { Icon } from "@/components/Icon";
-import { appellations } from "@/content";
+import { getWines } from "@/lib/content-db";
 
 export const metadata: Metadata = { title: "Vinhos" };
 
@@ -14,7 +14,8 @@ const BANKS: { key: string; label: string; desc: string }[] = [
   { key: "Sauternais", label: "Sauternais", desc: "O ouro líquido dos vinhos doces" },
 ];
 
-export default function VinhosPage() {
+export default async function VinhosPage() {
+  const appellations = await getWines();
   return (
     <>
       <PageHero section="vinhos" />

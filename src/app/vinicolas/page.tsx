@@ -4,11 +4,12 @@ import { PageHero } from "@/components/PageHero";
 import { SmartImage } from "@/components/SmartImage";
 import { FavoriteButton, QimoSeal, Pill } from "@/components/ui";
 import { Icon } from "@/components/Icon";
-import { wineries } from "@/content";
+import { getWineries } from "@/lib/content-db";
 
 export const metadata: Metadata = { title: "Vinícolas" };
 
-export default function VinicolasPage() {
+export default async function VinicolasPage() {
+  const wineries = await getWineries();
   return (
     <>
       <PageHero section="vinicolas" />

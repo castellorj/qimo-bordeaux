@@ -9,9 +9,10 @@ import {
   type BxActivityFull, type BxParticipant, type BxReservation,
 } from "@/lib/supabase/bordeaux";
 import { Icon } from "@/components/Icon";
+import { ContentCMS } from "./ContentCMS";
 import clsx from "clsx";
 
-type Tab = "painel" | "passeios" | "participantes" | "reservas";
+type Tab = "painel" | "passeios" | "participantes" | "reservas" | "conteudo";
 
 function occupancy(a: BxActivityFull) {
   if (a.capacity_total == null) return { label: "Livre", tone: "muted" };
@@ -107,6 +108,7 @@ function Shell({ email }: { email?: string }) {
     { key: "passeios", label: "Passeios", icon: "Ticket" },
     { key: "participantes", label: "Participantes", icon: "Users" },
     { key: "reservas", label: "Reservas", icon: "Check" },
+    { key: "conteudo", label: "Conteúdo", icon: "FileText" },
   ];
 
   return (
@@ -142,6 +144,8 @@ function Shell({ email }: { email?: string }) {
           <Passeios acts={acts} onChange={reload} />
         ) : tab === "participantes" ? (
           <Participantes parts={parts} onChange={reload} />
+        ) : tab === "conteudo" ? (
+          <ContentCMS />
         ) : (
           <Reservas acts={acts} parts={parts} res={res} onChange={reload} />
         )}

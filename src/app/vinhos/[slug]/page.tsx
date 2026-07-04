@@ -3,15 +3,16 @@ import { notFound } from "next/navigation";
 import { PageHero } from "@/components/PageHero";
 import { Icon } from "@/components/Icon";
 import { FavoriteButton, QimoSeal, Crumb, Pill } from "@/components/ui";
-import { appellations, getAppellation } from "@/content";
+import { getWines, getWine } from "@/lib/content-db";
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const appellations = await getWines();
   return appellations.map((a) => ({ slug: a.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const a = getAppellation(slug);
+  const a = await getWine(slug);
   return { title: a?.name ?? "Vinho", description: a?.tagline };
 }
 
@@ -30,7 +31,7 @@ function Spec({ icon, label, value }: { icon: string; label: string; value?: str
 
 export default async function WineDetail({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const a = getAppellation(slug);
+  const a = await getWine(slug);
   if (!a) notFound();
 
   return (

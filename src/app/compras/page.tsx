@@ -3,11 +3,13 @@ import { PageHero } from "@/components/PageHero";
 import { SmartImage } from "@/components/SmartImage";
 import { FavoriteButton, QimoSeal, Pill } from "@/components/ui";
 import { Icon } from "@/components/Icon";
-import { shopping, taxFreeGuide } from "@/content";
+import { taxFreeGuide } from "@/content";
+import { getShopping } from "@/lib/content-db";
 
 export const metadata: Metadata = { title: "Compras" };
 
-export default function ComprasPage() {
+export default async function ComprasPage() {
+  const shopping = await getShopping();
   return (
     <>
       <PageHero section="compras" />

@@ -5,15 +5,16 @@ import { SmartImage } from "@/components/SmartImage";
 import { Icon } from "@/components/Icon";
 import { FavoriteButton, Crumb, Pill } from "@/components/ui";
 import { ReadMore } from "@/components/ReadMore";
-import { cities, getCity } from "@/content";
+import { getCities, getCity } from "@/lib/content-db";
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const cities = await getCities();
   return cities.map((c) => ({ slug: c.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const c = getCity(slug);
+  const c = await getCity(slug);
   return { title: c?.name ?? "Cidade", description: c?.tagline };
 }
 
@@ -38,7 +39,7 @@ function List({ title, icon, items }: { title: string; icon: string; items?: str
 
 export default async function CityDetail({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const c = getCity(slug);
+  const c = await getCity(slug);
   if (!c) notFound();
 
   const mapUrl = c.coords

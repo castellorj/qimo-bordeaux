@@ -5,11 +5,12 @@ import { ActionBar } from "@/components/ActionBar";
 import { FavoriteButton, QimoSeal, Pill } from "@/components/ui";
 import { Icon } from "@/components/Icon";
 import { restaurantActions } from "@/lib/reserve";
-import { restaurants } from "@/content";
+import { getRestaurants } from "@/lib/content-db";
 
 export const metadata: Metadata = { title: "Restaurantes" };
 
-export default function RestaurantesPage() {
+export default async function RestaurantesPage() {
+  const restaurants = await getRestaurants();
   return (
     <>
       <PageHero section="restaurantes" small />

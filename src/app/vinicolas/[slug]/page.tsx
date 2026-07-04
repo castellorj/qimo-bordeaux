@@ -7,15 +7,16 @@ import { FavoriteButton, QimoSeal, Crumb, Pill } from "@/components/ui";
 import { ReadMore } from "@/components/ReadMore";
 import { ActionBar } from "@/components/ActionBar";
 import { wineryActions } from "@/lib/reserve";
-import { wineries, getWinery } from "@/content";
+import { getWineries, getWinery } from "@/lib/content-db";
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const wineries = await getWineries();
   return wineries.map((w) => ({ slug: w.slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const w = getWinery(slug);
+  const w = await getWinery(slug);
   return { title: w?.name ?? "Vinícola", description: w?.history?.slice(0, 150) };
 }
 
@@ -46,7 +47,7 @@ function BulletList({ items }: { items?: string[] }) {
 
 export default async function WineryDetail({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const w = getWinery(slug);
+  const w = await getWinery(slug);
   if (!w) notFound();
 
   return (

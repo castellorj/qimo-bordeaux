@@ -4,11 +4,12 @@ import { PageHero } from "@/components/PageHero";
 import { SmartImage } from "@/components/SmartImage";
 import { FavoriteButton, Pill } from "@/components/ui";
 import { Icon } from "@/components/Icon";
-import { cities } from "@/content";
+import { getCities } from "@/lib/content-db";
 
 export const metadata: Metadata = { title: "Cidades" };
 
-export default function CidadesPage() {
+export default async function CidadesPage() {
+  const cities = await getCities();
   return (
     <>
       <PageHero section="cidades" />

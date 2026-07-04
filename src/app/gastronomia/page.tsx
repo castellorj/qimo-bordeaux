@@ -3,11 +3,12 @@ import { PageHero } from "@/components/PageHero";
 import { SmartImage } from "@/components/SmartImage";
 import { FavoriteButton, QimoSeal, Pill } from "@/components/ui";
 import { Icon } from "@/components/Icon";
-import { gastronomy } from "@/content";
+import { getGastronomy } from "@/lib/content-db";
 
 export const metadata: Metadata = { title: "Gastronomia" };
 
-export default function GastronomiaPage() {
+export default async function GastronomiaPage() {
+  const gastronomy = await getGastronomy();
   return (
     <>
       <PageHero section="gastronomia" />
