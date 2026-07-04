@@ -5,6 +5,7 @@ import { Providers } from "@/components/providers";
 import { SiteChrome } from "@/components/SiteChrome";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { GoogleTranslate } from "@/components/GoogleTranslate";
+import { GuideContentProvider } from "@/components/GuideContent";
 import { SiteFooter } from "@/components/SiteFooter";
 import { buildSearchIndex } from "@/content";
 
@@ -65,7 +66,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <ServiceWorkerRegister />
           <GoogleTranslate />
           <SiteChrome searchIndex={searchIndex} />
-          <main className="min-h-screen pb-24 md:pb-0">{children}</main>
+          <GuideContentProvider>
+            <main className="min-h-screen pb-24 md:pb-0">{children}</main>
+          </GuideContentProvider>
           <SiteFooter />
         </Providers>
       </body>

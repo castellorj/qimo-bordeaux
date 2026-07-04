@@ -1,15 +1,15 @@
-import type { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
 import { PageHero } from "@/components/PageHero";
 import { SmartImage } from "@/components/SmartImage";
 import { FavoriteButton, Pill } from "@/components/ui";
 import { Icon } from "@/components/Icon";
-import { getCities } from "@/lib/content-db";
+import { useGuideKind } from "@/components/GuideContent";
+import type { City } from "@/lib/types";
 
-export const metadata: Metadata = { title: "Cidades" };
-
-export default async function CidadesPage() {
-  const cities = await getCities();
+export default function CidadesPage() {
+  const cities = useGuideKind<City>("city");
   return (
     <>
       <PageHero section="cidades" />

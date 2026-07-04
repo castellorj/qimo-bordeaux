@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
 import { PageHero } from "@/components/PageHero";
 import { FavoriteButton, Pill } from "@/components/ui";
 import { Icon } from "@/components/Icon";
-import { getWines } from "@/lib/content-db";
-
-export const metadata: Metadata = { title: "Vinhos" };
+import { useGuideKind } from "@/components/GuideContent";
+import type { Appellation } from "@/lib/types";
 
 const BANKS: { key: string; label: string; desc: string }[] = [
   { key: "Left", label: "Margem esquerda", desc: "O reino do Cabernet Sauvignon — Médoc, Graves" },
@@ -14,8 +14,8 @@ const BANKS: { key: string; label: string; desc: string }[] = [
   { key: "Sauternais", label: "Sauternais", desc: "O ouro líquido dos vinhos doces" },
 ];
 
-export default async function VinhosPage() {
-  const appellations = await getWines();
+export default function VinhosPage() {
+  const appellations = useGuideKind<Appellation>("wine");
   return (
     <>
       <PageHero section="vinhos" />

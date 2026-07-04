@@ -1,15 +1,15 @@
-import type { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
 import { PageHero } from "@/components/PageHero";
 import { SmartImage } from "@/components/SmartImage";
 import { FavoriteButton, QimoSeal, Pill } from "@/components/ui";
 import { Icon } from "@/components/Icon";
-import { getWineries } from "@/lib/content-db";
+import { useGuideKind } from "@/components/GuideContent";
+import type { Winery } from "@/lib/types";
 
-export const metadata: Metadata = { title: "Vinícolas" };
-
-export default async function VinicolasPage() {
-  const wineries = await getWineries();
+export default function VinicolasPage() {
+  const wineries = useGuideKind<Winery>("winery");
   return (
     <>
       <PageHero section="vinicolas" />

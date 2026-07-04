@@ -1,15 +1,15 @@
-import type { Metadata } from "next";
+"use client";
+
 import { PageHero } from "@/components/PageHero";
 import { SmartImage } from "@/components/SmartImage";
 import { FavoriteButton, QimoSeal, Pill } from "@/components/ui";
 import { Icon } from "@/components/Icon";
 import { taxFreeGuide } from "@/content";
-import { getShopping } from "@/lib/content-db";
+import { useGuideKind } from "@/components/GuideContent";
+import type { ShoppingItem } from "@/lib/types";
 
-export const metadata: Metadata = { title: "Compras" };
-
-export default async function ComprasPage() {
-  const shopping = await getShopping();
+export default function ComprasPage() {
+  const shopping = useGuideKind<ShoppingItem>("shopping");
   return (
     <>
       <PageHero section="compras" />

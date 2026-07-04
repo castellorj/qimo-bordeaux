@@ -1,14 +1,14 @@
-import type { Metadata } from "next";
+"use client";
+
 import { PageHero } from "@/components/PageHero";
 import { SmartImage } from "@/components/SmartImage";
 import { FavoriteButton, QimoSeal, Pill } from "@/components/ui";
 import { Icon } from "@/components/Icon";
-import { getGastronomy } from "@/lib/content-db";
+import { useGuideKind } from "@/components/GuideContent";
+import type { GastronomyItem } from "@/lib/types";
 
-export const metadata: Metadata = { title: "Gastronomia" };
-
-export default async function GastronomiaPage() {
-  const gastronomy = await getGastronomy();
+export default function GastronomiaPage() {
+  const gastronomy = useGuideKind<GastronomyItem>("gastronomy");
   return (
     <>
       <PageHero section="gastronomia" />

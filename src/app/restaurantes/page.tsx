@@ -1,16 +1,16 @@
-import type { Metadata } from "next";
+"use client";
+
 import { PageHero } from "@/components/PageHero";
 import { SmartImage } from "@/components/SmartImage";
 import { ActionBar } from "@/components/ActionBar";
 import { FavoriteButton, QimoSeal, Pill } from "@/components/ui";
 import { Icon } from "@/components/Icon";
 import { restaurantActions } from "@/lib/reserve";
-import { getRestaurants } from "@/lib/content-db";
+import { useGuideKind } from "@/components/GuideContent";
+import type { Restaurant } from "@/lib/types";
 
-export const metadata: Metadata = { title: "Restaurantes" };
-
-export default async function RestaurantesPage() {
-  const restaurants = await getRestaurants();
+export default function RestaurantesPage() {
+  const restaurants = useGuideKind<Restaurant>("restaurant");
   return (
     <>
       <PageHero section="restaurantes" small />

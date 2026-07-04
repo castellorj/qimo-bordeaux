@@ -1,4 +1,5 @@
-import type { Metadata } from "next";
+"use client";
+
 import Link from "next/link";
 import { PageHero } from "@/components/PageHero";
 import { SmartImage } from "@/components/SmartImage";
@@ -6,12 +7,11 @@ import { FavoriteButton, QimoSeal, Pill } from "@/components/ui";
 import { Icon } from "@/components/Icon";
 import { ActionBar } from "@/components/ActionBar";
 import { experienceActions } from "@/lib/reserve";
-import { getExperiences } from "@/lib/content-db";
+import { useGuideKind } from "@/components/GuideContent";
+import type { Experience } from "@/lib/types";
 
-export const metadata: Metadata = { title: "Experiências" };
-
-export default async function ExperienciasPage() {
-  const experiences = await getExperiences();
+export default function ExperienciasPage() {
+  const experiences = useGuideKind<Experience>("experience");
   return (
     <>
       <PageHero section="experiencias" />
