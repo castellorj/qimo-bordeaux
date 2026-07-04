@@ -111,6 +111,9 @@ export function SiteChrome({ searchIndex }: { searchIndex: SearchDoc[] }) {
   const pathname = usePathname();
   const section = activeSection(pathname);
 
+  // O painel administrativo tem seu próprio layout (sem o chrome do guia)
+  if (pathname.startsWith("/admin")) return null;
+
   return (
     <>
       {/* -------- Top bar -------- */}

@@ -1,10 +1,13 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { Icon } from "./Icon";
 import { useLocale } from "./providers";
 
 export function SiteFooter() {
   const { t } = useLocale();
+  const pathname = usePathname();
+  if (pathname.startsWith("/admin")) return null;
   return (
     <footer className="mt-24 border-t pb-28 pt-16 md:pb-16" style={{ borderColor: "var(--line)" }}>
       <div className="container-editorial">
