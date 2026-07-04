@@ -1,8 +1,16 @@
 -- =====================================================================
 -- QIMO Travel Platform — CMS + ERP (multi-viagem, reservas, capacidade)
--- Substitui o rascunho 0001 (PT). Nomes canônicos em inglês.
--- Reutilizável para qualquer viagem QIMO (Bordeaux, Croácia, Grécia...).
--- Rode no SQL Editor do Supabase.
+--
+-- ⚠️  ATENÇÃO — NÃO EXECUTAR no projeto de PRODUÇÃO da QIMO
+--     (vvvzitszfcajfrvzpace). Aquele banco já possui um ERP em produção
+--     com tabelas de nomes conflitantes (profiles, trips, families,
+--     notifications) e dados reais (pax, payments, guests). Rodar este
+--     schema lá pode QUEBRAR o sistema ao vivo.
+--     Use apenas em um projeto/schema NOVO e isolado, OU adapte para
+--     integrar com as tabelas existentes (qimo_wineries, qimo_restaurants,
+--     qimo_experiences, pax, families...). Ver decisão com o cliente.
+--
+-- Nomes canônicos em inglês. Reutilizável para viagens QIMO isoladas.
 -- =====================================================================
 
 create extension if not exists pgcrypto;
