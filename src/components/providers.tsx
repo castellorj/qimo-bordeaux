@@ -1,7 +1,12 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, useCallback } from "react";
-import { type Locale, DEFAULT_LOCALE, makeT } from "@/lib/i18n";
+import { type Locale, DEFAULT_LOCALE, makeT, type UiOverrides } from "@/lib/i18n";
+
+const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://vvvzitszfcajfrvzpace.supabase.co";
+const SB_ANON =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2dnppdHN6ZmNhamZydnpwYWNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzODMyMzIsImV4cCI6MjA5Mzk1OTIzMn0.4tBzaBgyvzwuTEvlX9wSc85c6EKtTVfEidYeeh6aGRw";
 
 /* ---------------- Idioma (PT / EN / ES) ---------------- */
 const LocaleCtx = createContext<{
@@ -24,6 +29,7 @@ const LOCALE_KEY = "qimo:locale";
 export function Providers({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
   const [favs, setFavs] = useState<string[]>([]);
+  const [overrides, setOverrides] = useState<UiOverrides>({});
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -33,6 +39,17 @@ export function Providers({ children }: { children: React.ReactNode }) {
       if (Array.isArray(f)) setFavs(f);
     } catch {}
     setReady(true);
+    // Rótulos de botões/menus editados no painel (aplicados sem rebuild)
+    fetch(`${SB_URL}/rest/v1/bordeaux_settings?select=key,pt,en,es`, {
+      headers: { apikey: SB_ANON, Authorization: `Bearer ${SB_ANON}` },
+    })
+      .then((r) => (r.ok ? r.json() : []))
+      .then((rows: any[]) => {
+        const m: UiOverrides = {};
+        rows.forEach((r) => (m[r.key] = { pt: r.pt, en: r.en, es: r.es }));
+        setOverrides(m);
+      })
+      .catch(() => {});
   }, []);
 
   const setLocale = useCallback((l: Locale) => {
@@ -54,7 +71,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   }, []);
 
   const has = useCallback((id: string) => favs.includes(id), [favs]);
-  const t = makeT(locale);
+  const t = makeT(locale, overrides);
 
   return (
     <LocaleCtx.Provider value={{ locale, setLocale, t }}>

@@ -10,9 +10,10 @@ import {
 } from "@/lib/supabase/bordeaux";
 import { Icon } from "@/components/Icon";
 import { ContentCMS } from "./ContentCMS";
+import { TextosEditor } from "./TextosEditor";
 import clsx from "clsx";
 
-type Tab = "painel" | "passeios" | "participantes" | "reservas" | "conteudo";
+type Tab = "painel" | "passeios" | "participantes" | "reservas" | "conteudo" | "textos";
 
 function occupancy(a: BxActivityFull) {
   if (a.capacity_total == null) return { label: "Livre", tone: "muted" };
@@ -109,6 +110,7 @@ function Shell({ email }: { email?: string }) {
     { key: "participantes", label: "Participantes", icon: "Users" },
     { key: "reservas", label: "Reservas", icon: "Check" },
     { key: "conteudo", label: "Conteúdo", icon: "FileText" },
+    { key: "textos", label: "Textos", icon: "Languages" },
   ];
 
   return (
@@ -146,6 +148,8 @@ function Shell({ email }: { email?: string }) {
           <Participantes parts={parts} onChange={reload} />
         ) : tab === "conteudo" ? (
           <ContentCMS />
+        ) : tab === "textos" ? (
+          <TextosEditor />
         ) : (
           <Reservas acts={acts} parts={parts} res={res} onChange={reload} />
         )}

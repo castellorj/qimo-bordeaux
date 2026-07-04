@@ -298,9 +298,30 @@ export const ui: Dict = {
   },
 };
 
-export function makeT(locale: Locale) {
+export type UiOverrides = Record<string, Partial<Record<Locale, string>>>;
+
+export function makeT(locale: Locale, overrides?: UiOverrides) {
   return (key: string) => {
+    const ov = overrides?.[key]?.[locale];
+    if (ov) return ov;
     const entry = ui[key];
     return entry ? entry[locale] ?? entry[DEFAULT_LOCALE] : key;
   };
 }
+
+// Chaves editáveis pela equipe (rótulos de botões e seções principais)
+export const EDITABLE_LABELS: { key: string; grp: string }[] = [
+  { key: "nav.hoje", grp: "Menu" }, { key: "nav.viagem", grp: "Menu" }, { key: "nav.descobrir", grp: "Menu" },
+  { key: "nav.favoritos", grp: "Menu" }, { key: "nav.mais", grp: "Menu" },
+  { key: "nav.programacao", grp: "Menu" }, { key: "nav.barco", grp: "Menu" }, { key: "nav.mapa", grp: "Menu" },
+  { key: "nav.cidades", grp: "Menu" }, { key: "nav.vinicolas", grp: "Menu" }, { key: "nav.restaurantes", grp: "Menu" },
+  { key: "nav.vinhos", grp: "Menu" }, { key: "nav.gastronomia", grp: "Menu" }, { key: "nav.experiencias", grp: "Menu" },
+  { key: "nav.compras", grp: "Menu" }, { key: "nav.concierge", grp: "Menu" }, { key: "nav.informacoes", grp: "Menu" },
+  { key: "whatNow", grp: "Botões" }, { key: "howToGet", grp: "Botões" }, { key: "startNav", grp: "Botões" },
+  { key: "seeDetails", grp: "Botões" }, { key: "startExperience", grp: "Botões" }, { key: "openConcierge", grp: "Botões" },
+  { key: "knowShip", grp: "Botões" }, { key: "exploreBordeaux", grp: "Botões" }, { key: "fullItinerary", grp: "Botões" },
+  { key: "act.reserveTable", grp: "Reservas" }, { key: "act.reserveVisit", grp: "Reservas" },
+  { key: "act.reserveQimo", grp: "Reservas" }, { key: "act.site", grp: "Reservas" }, { key: "act.maps", grp: "Reservas" },
+  { key: "act.call", grp: "Reservas" }, { key: "act.menu", grp: "Reservas" },
+  { key: "seloQimo", grp: "Marca" }, { key: "brandSub", grp: "Marca" },
+];
