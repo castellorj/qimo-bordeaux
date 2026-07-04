@@ -1,0 +1,177 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #fbf8f3; /* fundo principal claro */
+  --bg-elev: #fffdf9; /* cards */
+  --text: #2d2a28; /* texto */
+  --text-muted: #6c645d; /* texto secundário */
+  --line: #e8dfd6; /* bordas */
+  --petrol: #8b3a4a; /* vinho principal (token de acento) */
+  --gold: #c6a86a; /* dourado discreto */
+  --olive: #7a8b66; /* verde oliva suave */
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-feature-settings: "kern", "liga";
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+@layer components {
+  .container-editorial {
+    @apply mx-auto w-full max-w-editorial px-5 sm:px-8;
+  }
+
+  /* Kicker — pequeno rótulo em maiúsculas com tracking largo */
+  .kicker {
+    @apply font-sans text-[11px] font-medium uppercase tracking-luxe text-gold;
+  }
+
+  .kicker-muted {
+    @apply font-sans text-[11px] font-medium uppercase tracking-luxe;
+    color: var(--text-muted);
+  }
+
+  .display {
+    @apply font-serif font-light leading-[1.04] tracking-[-0.01em];
+  }
+
+  .prose-luxe {
+    @apply font-sans text-[15px] leading-[1.85];
+    color: var(--text-muted);
+  }
+
+  .hairline {
+    height: 1px;
+    background-color: var(--line);
+  }
+
+  .card {
+    background-color: var(--bg-elev);
+    border: 1px solid var(--line);
+    @apply rounded-[16px] transition-all duration-300 ease-luxe;
+  }
+
+  .card-hover:hover {
+    @apply shadow-card;
+    transform: translateY(-3px);
+  }
+
+  .gold-rule {
+    width: 44px;
+    height: 1px;
+    background: linear-gradient(90deg, var(--gold), transparent);
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-petrol-600 px-7 py-3.5 font-sans text-[12px] font-medium uppercase tracking-wide2 text-cream transition-all duration-300 ease-luxe hover:bg-petrol-500;
+  }
+
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border px-6 py-3 font-sans text-[12px] font-medium uppercase tracking-wide2 transition-all duration-300;
+    border-color: var(--line);
+    color: var(--text);
+  }
+  .btn-ghost:hover {
+    border-color: var(--gold);
+    color: var(--gold);
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1.5 rounded-full border px-3 py-1 font-sans text-[11px] tracking-wide;
+    border-color: var(--line);
+    color: var(--text-muted);
+  }
+
+  .seal-qimo {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[10px] font-semibold uppercase tracking-luxe;
+    color: var(--gold);
+    border: 1px solid var(--gold);
+    background: color-mix(in srgb, var(--gold) 8%, transparent);
+  }
+}
+
+/* Scrollbar discreta */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--petrol) 30%, transparent);
+  border-radius: 10px;
+  border: 3px solid var(--bg);
+}
+::selection {
+  background: color-mix(in srgb, var(--gold) 30%, transparent);
+}
+
+/* Placeholder editorial para fotografias ainda não inseridas */
+.photo-placeholder {
+  background:
+    radial-gradient(120% 120% at 22% 12%, rgba(255, 210, 200, 0.14), transparent 58%),
+    linear-gradient(150deg, #a14b5d 0%, #8b3a4a 45%, #57242e 100%);
+  position: relative;
+}
+.photo-placeholder::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 22px 22px;
+  opacity: 0.4;
+}
+
+/* ---- Google Website Translator: ocultar UI nativa ---- */
+#google_translate_element {
+  display: none !important;
+}
+.goog-te-banner-frame,
+.goog-te-banner-frame.skiptranslate,
+.skiptranslate iframe,
+iframe.skiptranslate,
+#goog-gt-tt,
+.goog-te-balloon-frame,
+.goog-tooltip,
+.goog-te-spinner-pos {
+  display: none !important;
+  visibility: hidden !important;
+}
+body {
+  top: 0 !important;
+  position: static !important;
+}
+.goog-text-highlight {
+  background: none !important;
+  box-shadow: none !important;
+}
+/* Não sublinhar/estilizar o texto traduzido */
+font[style] {
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Safe-area para PWA no iOS */
+.pb-safe {
+  padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
+}
