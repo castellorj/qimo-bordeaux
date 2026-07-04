@@ -118,14 +118,17 @@ export function SiteChrome({ searchIndex }: { searchIndex: SearchDoc[] }) {
         className="sticky top-0 z-50 border-b backdrop-blur-md"
         style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--bg) 85%, transparent)" }}
       >
-        <div className="container-editorial flex h-16 items-center justify-between gap-4">
-          <Link href="/" className="flex shrink-0 items-center">
+        <div className="container-editorial relative flex h-16 items-center gap-4">
+          <Link
+            href="/"
+            className="absolute left-1/2 flex shrink-0 -translate-x-1/2 items-center md:static md:translate-x-0"
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/qimo-logo-dark.png" alt="QIMO" className="h-7 w-auto object-contain sm:h-8" />
+            <img src="/qimo-logo-dark.png" alt="QIMO" className="h-11 w-auto object-contain md:h-9" />
           </Link>
 
           {/* Navegação central (desktop) */}
-          <nav className="hidden items-center gap-1 md:flex">
+          <nav className="hidden items-center gap-1 md:absolute md:left-1/2 md:flex md:-translate-x-1/2">
             {primaryNav.map((item) => {
               const active = section === item.href;
               return (
@@ -143,7 +146,7 @@ export function SiteChrome({ searchIndex }: { searchIndex: SearchDoc[] }) {
             })}
           </nav>
 
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="ml-auto flex shrink-0 items-center gap-2">
             <button
               onClick={() => setSearch(true)}
               aria-label={t("search")}
