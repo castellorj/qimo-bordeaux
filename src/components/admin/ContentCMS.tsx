@@ -4,8 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { Icon } from "@/components/Icon";
 import {
   CONTENT_KINDS, listContent, upsertContent, setPublished, deleteContent, importAllContent,
-  uploadImage, updateSort,
-  type ContentRow,
+  uploadImage, updateSort, listVersions, restoreVersion,
+  type ContentRow, type VersionRow,
 } from "@/lib/supabase/content-admin";
 import clsx from "clsx";
 
@@ -141,6 +141,8 @@ export function ContentCMS() {
   const [msg, setMsg] = useState("");
   const [dragIdx, setDragIdx] = useState<number | null>(null);
   const [overIdx, setOverIdx] = useState<number | null>(null);
+  const [versions, setVersions] = useState<VersionRow[]>([]);
+  const [showHist, setShowHist] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true); setRows(await listContent(kind)); setLoading(false);
@@ -160,6 +162,18 @@ export function ContentCMS() {
     await upsertContent(editing.kind, editing.slug, draft, editing.sort, editing.published);
     setBusy(false); setEditing(null); await load();
   };
+
+  const doRestore = async (v: VersionRow) => {
+    if (!confirm("Restaurar esta versão? A versão atual será guardada no histórico.")) return;
+    setBusy(true);
+    await restoreVersion(v);
+    setDraft(structuredClone(v.data));
+    setVersions(await listVersions(v.kind, v.slug));
+    setBusy(false);
+    await load();
+  };
+
+  const fmtWhen = (iso: string) => new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" });
 
   // Reordena localmente (otimista) e persiste sort = índice*10 para todos.
   const reorder = async (from: number, to: number) => {
@@ -202,10 +216,36 @@ export function ContentCMS() {
           <div className="mt-5">
             <FieldEditor data={draft} onChange={setDraft} />
           </div>
-          <div className="mt-6 flex gap-3">
+          <div className="mt-6 flex flex-wrap items-center gap-3">
             <button onClick={save} disabled={busy} className="btn-primary">{busy ? "Salvando…" : "Salvar"}</button>
             <button onClick={() => setEditing(null)} className="btn-ghost">Cancelar</button>
+            <button onClick={() => setShowHist((v) => !v)} className="ml-auto flex items-center gap-1.5 font-sans text-[12px] text-muted hover:text-gold-deep">
+              <Icon name="Clock" size={14} /> Histórico ({versions.length})
+            </button>
           </div>
+
+          {showHist && (
+            <div className="mt-4 rounded-[10px] border p-4" style={{ borderColor: "var(--line)" }}>
+              <p className="kicker mb-2">Histórico de versões</p>
+              {versions.length === 0 ? (
+                <p className="font-sans text-[12px] text-muted">Nenhuma versão anterior ainda. O histórico é criado a cada alteração salva.</p>
+              ) : (
+                <div className="space-y-1.5">
+                  {versions.map((v) => (
+                    <div key={v.id} className="flex items-center gap-3 py-1">
+                      <Icon name="Clock" size={13} className="text-muted" />
+                      <span className="min-w-0 flex-1 truncate font-sans text-[13px]" style={{ color: "var(--text)" }}>
+                        {v.data?.name || v.slug}
+                        {v.saved_by && <span className="text-muted"> · {v.saved_by}</span>}
+                      </span>
+                      <span className="shrink-0 font-sans text-[11px] text-muted">{fmtWhen(v.created_at)}</span>
+                      <button onClick={() => doRestore(v)} className="btn-ghost !px-3 !py-1"><Icon name="ArrowLeft" size={12} /> Restaurar</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       ) : (
         <div className="mt-6 space-y-2">
@@ -239,7 +279,7 @@ export function ContentCMS() {
                     className={clsx("flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px]", r.published ? "bg-olive/15 text-olive-deep" : "bg-black/5 text-muted")}>
                     <Icon name={r.published ? "Eye" : "EyeOff"} size={12} /> {r.published ? "Publicado" : "Oculto"}
                   </button>
-                  <button onClick={() => { setEditing(r); setDraft(structuredClone(r.data)); }} className="btn-ghost !px-3 !py-1.5"><Icon name="Pencil" size={14} /> Editar</button>
+                  <button onClick={() => { setEditing(r); setDraft(structuredClone(r.data)); setShowHist(false); listVersions(r.kind, r.slug).then(setVersions); }} className="btn-ghost !px-3 !py-1.5"><Icon name="Pencil" size={14} /> Editar</button>
                   <button onClick={() => { if (confirm(`Excluir "${label(r)}"?`)) deleteContent(r.id).then(load); }} aria-label="Excluir" className="text-muted hover:text-[#8f2f2f]"><Icon name="X" size={16} /></button>
                 </div>
               ))}

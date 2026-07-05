@@ -34,6 +34,7 @@ export function PreviewPane() {
   const [target, setTarget] = useState<EditTarget | null>(null);
   const [draft, setDraft] = useState("");
   const [saving, setSaving] = useState(false);
+  const [undo, setUndo] = useState<{ kind: string; slug: string; field: string; prev: string | string[]; label: string } | null>(null);
   const ref = useRef<HTMLIFrameElement>(null);
   const dev = DEVICES.find((d) => d.key === device)!;
 
@@ -53,15 +54,24 @@ export function PreviewPane() {
     return () => window.removeEventListener("message", onMsg);
   }, []);
 
+  const refreshGuide = () => ref.current?.contentWindow?.postMessage({ source: "qimo-admin", type: "qimo-refresh" }, "*");
+
   const save = async () => {
     if (!target) return;
     setSaving(true);
     const val = target.isArray ? draft.split("\n").map((s) => s.trim()).filter(Boolean) : draft;
     await updateContentField(target.kind, target.slug, target.field, val);
-    // Pede ao guia (iframe) que recarregue o conteúdo ao vivo.
-    ref.current?.contentWindow?.postMessage({ source: "qimo-admin", type: "qimo-refresh" }, "*");
+    refreshGuide();
     setSaving(false);
+    setUndo({ kind: target.kind, slug: target.slug, field: target.field, prev: target.value, label: target.label });
     setTarget(null);
+  };
+
+  const doUndo = async () => {
+    if (!undo) return;
+    await updateContentField(undo.kind, undo.slug, undo.field, undo.prev);
+    refreshGuide();
+    setUndo(null);
   };
 
   return (
@@ -133,6 +143,18 @@ export function PreviewPane() {
       <p className="mt-3 text-center font-sans text-[11px] text-muted">
         As edições aparecem no guia em tempo real — o painel recarrega o conteúdo automaticamente ao salvar.
       </p>
+
+      {undo && (
+        <div className="fixed bottom-6 left-1/2 z-[70] flex -translate-x-1/2 items-center gap-3 rounded-full border px-4 py-2.5 shadow-float"
+          style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
+          <Icon name="CircleCheck" size={16} className="text-olive-deep" />
+          <span className="font-sans text-[13px]">“{undo.label}” salvo</span>
+          <button onClick={doUndo} className="flex items-center gap-1.5 font-sans text-[13px] font-medium text-petrol-600 hover:text-petrol-500">
+            <Icon name="ArrowLeft" size={14} /> Desfazer
+          </button>
+          <button onClick={() => setUndo(null)} className="text-muted hover:text-gold-deep"><Icon name="X" size={15} /></button>
+        </div>
+      )}
     </div>
   );
 }

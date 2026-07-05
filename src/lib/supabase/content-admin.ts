@@ -31,7 +31,39 @@ export async function listContent(kind: string): Promise<ContentRow[]> {
 }
 
 export async function upsertContent(kind: string, slug: string, data: any, sort: number, published = true) {
+  await snapshotVersion(kind, slug);
   return supabase().from("bordeaux_content").upsert({ kind, slug, data, sort, published }, { onConflict: "kind,slug" }).select().single();
+}
+
+// ---- Histórico de versões (Undo) ----
+export interface VersionRow { id: string; kind: string; slug: string; data: any; saved_by: string | null; created_at: string }
+
+// Salva o estado ATUAL de um item antes de sobrescrevê-lo (para permitir desfazer).
+export async function snapshotVersion(kind: string, slug: string) {
+  const sb = supabase();
+  const { data: row } = await sb.from("bordeaux_content").select("data").eq("kind", kind).eq("slug", slug).maybeSingle();
+  if (!row?.data) return;
+  const { data: auth } = await sb.auth.getUser();
+  await sb.from("bordeaux_content_versions").insert({ kind, slug, data: row.data, saved_by: auth?.user?.email ?? null });
+}
+
+export async function listVersions(kind: string, slug: string, limit = 15): Promise<VersionRow[]> {
+  const { data } = await supabase()
+    .from("bordeaux_content_versions")
+    .select("*").eq("kind", kind).eq("slug", slug)
+    .order("created_at", { ascending: false }).limit(limit);
+  return (data as VersionRow[]) || [];
+}
+
+// Restaura uma versão (fazendo antes um snapshot do estado atual — o restore também é reversível).
+export async function restoreVersion(v: VersionRow) {
+  const sb = supabase();
+  await snapshotVersion(v.kind, v.slug);
+  const { data: row } = await sb.from("bordeaux_content").select("sort,published").eq("kind", v.kind).eq("slug", v.slug).maybeSingle();
+  return sb.from("bordeaux_content").upsert(
+    { kind: v.kind, slug: v.slug, data: v.data, sort: (row as any)?.sort ?? 999, published: (row as any)?.published ?? true },
+    { onConflict: "kind,slug" }
+  );
 }
 
 export async function setPublished(id: string, published: boolean) {
@@ -63,6 +95,10 @@ export async function updateSort(id: string, sort: number) {
 export async function updateContentField(kind: string, slug: string, field: string, value: any) {
   const sb = supabase();
   const { data: row } = await sb.from("bordeaux_content").select("data,sort,published").eq("kind", kind).eq("slug", slug).maybeSingle();
+  if ((row as any)?.data) {
+    const { data: auth } = await sb.auth.getUser();
+    await sb.from("bordeaux_content_versions").insert({ kind, slug, data: (row as any).data, saved_by: auth?.user?.email ?? null });
+  }
   const base = (row as any)?.data || { slug };
   const merged = { ...base, [field]: value };
   return sb.from("bordeaux_content").upsert(
