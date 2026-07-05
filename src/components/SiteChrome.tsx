@@ -7,6 +7,7 @@ import clsx from "clsx";
 import { Icon } from "./Icon";
 import { useLocale, useFavorites } from "./providers";
 import { SearchOverlay } from "./Search";
+import { WelcomeSheet } from "./WelcomeSheet";
 import { primaryNav, orderByKeys } from "@/lib/nav";
 import { getCurrentLang, setLang, type Lang } from "./GoogleTranslate";
 import type { SearchDoc } from "@/content";
@@ -43,7 +44,7 @@ export function LangDropdown() {
         className="flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 transition-colors hover:border-gold"
         style={{ borderColor: "var(--line)" }}
       >
-        <Icon name="Languages" size={17} className="text-gold-deep" />
+        <span className="text-[15px] leading-none">{current.flag}</span>
         <span className="font-sans text-[12px] font-semibold tracking-wide">{current.label}</span>
         <Icon name="ChevronDown" size={13} className={clsx("transition-transform", open && "rotate-180")} />
       </button>
@@ -121,6 +122,7 @@ export function SiteChrome({ searchIndex }: { searchIndex: SearchDoc[] }) {
 
   return (
     <>
+      <WelcomeSheet />
       {/* -------- Top bar -------- */}
       <header
         className="sticky top-0 z-50 border-b backdrop-blur-md"
