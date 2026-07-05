@@ -73,7 +73,7 @@ export function OperationsCenter({
     { icon: "Image", label: "Trocar fotos", go: "conteudo" },
     { icon: "LayoutGrid", label: "Editar conteúdo", go: "conteudo" },
     { icon: "Languages", label: "Editar textos & botões", go: "textos" },
-    { icon: "Eye", label: "Pré-visualizar guia", go: "preview" },
+    { icon: "Pencil", label: "Editar no site (visual)", go: "preview" },
   ];
 
   return (

@@ -102,7 +102,7 @@ function Shell({ email }: { email?: string }) {
     { key: "conteudo", label: "Conteúdo", icon: "LayoutGrid" },
     { key: "paginas", label: "Páginas", icon: "BookOpen" },
     { key: "textos", label: "Textos & botões", icon: "Languages" },
-    { key: "preview", label: "Pré-visualizar", icon: "Eye" },
+    { key: "preview", label: "Editar no site", icon: "Pencil" },
   ];
 
   return (
@@ -129,6 +129,24 @@ function Shell({ email }: { email?: string }) {
           </button>
         ))}
       </div>
+
+      {(() => {
+        const hints: Record<Tab, string> = {
+          inicio: "Visão geral da viagem. Toque nas ações rápidas para ir direto ao ponto.",
+          passeios: "Defina a capacidade (vagas) de cada passeio e mostre ou oculte no guia.",
+          participantes: "Cadastre e gerencie quem está na viagem.",
+          reservas: "Faça e cancele reservas dos passeios com vagas limitadas.",
+          conteudo: "Edite as fichas, troque fotos e arraste os cards (⠿) para mudar a ordem no guia.",
+          paginas: "Crie páginas novas montando blocos. Publique e elas aparecem no guia na hora.",
+          textos: "Renomeie botões, troque ícones, mostre/oculte e reordene (↑/↓) os itens de menu.",
+          preview: "Clique nos textos para editar e use ↑/↓ para reordenar seções — tudo salva na hora.",
+        };
+        return (
+          <p className="mt-3 flex items-center gap-2 font-sans text-[12px] text-muted">
+            <Icon name="Info" size={13} className="shrink-0 text-gold-deep" /> {hints[tab]}
+          </p>
+        );
+      })()}
 
       <div className="py-8">
         {loading && tab !== "preview" && tab !== "conteudo" && tab !== "textos" ? (

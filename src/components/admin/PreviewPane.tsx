@@ -29,8 +29,8 @@ interface EditTarget {
 
 export function PreviewPane() {
   const [device, setDevice] = useState<(typeof DEVICES)[number]["key"]>("mobile");
-  const [route, setRoute] = useState("/");
-  const [editMode, setEditMode] = useState(false);
+  const [route, setRoute] = useState("/cidades/bordeaux");
+  const [editMode, setEditMode] = useState(true);
   const [target, setTarget] = useState<EditTarget | null>(null);
   const [draft, setDraft] = useState("");
   const [saving, setSaving] = useState(false);
@@ -107,9 +107,17 @@ export function PreviewPane() {
         </div>
       </div>
 
-      {editMode && (
-        <p className="mt-3 flex items-center gap-2 rounded-[10px] bg-petrol-600/10 px-3 py-2 font-sans text-[12px] text-petrol-600">
-          <Icon name="Pencil" size={13} /> Clique em qualquer texto tracejado na pré-visualização para editá-lo. As alterações salvam direto no guia.
+      {editMode ? (
+        <div className="mt-3 rounded-[10px] bg-petrol-600/10 px-4 py-3">
+          <p className="flex items-center gap-2 font-sans text-[13px] font-medium text-petrol-600"><Icon name="Pencil" size={14} /> Você está editando o guia de verdade — tudo salva na hora.</p>
+          <ul className="mt-1.5 space-y-0.5 font-sans text-[12px] text-petrol-600/90">
+            <li>• <strong>Clique em qualquer texto tracejado</strong> para editá-lo.</li>
+            <li>• Use as setas <strong>↑ / ↓</strong> no canto das seções para <strong>reordená-las</strong>.</li>
+          </ul>
+        </div>
+      ) : (
+        <p className="mt-3 flex items-center gap-2 rounded-[10px] bg-black/[0.04] px-4 py-2.5 font-sans text-[12px] text-muted">
+          <Icon name="Eye" size={13} /> Apenas visualizando. Ligue o <strong>Modo edição</strong> acima para clicar e editar.
         </p>
       )}
 
