@@ -9,7 +9,10 @@ import { ActionBar } from "@/components/ActionBar";
 import { wineryActions } from "@/lib/reserve";
 import { useGuideItem } from "@/components/GuideContent";
 import { Editable } from "@/components/Editable";
+import { Section } from "@/components/Section";
 import type { Winery } from "@/lib/types";
+
+const WINERY_SECTION_ORDER = ["terroir", "grapes", "production", "family", "icons", "whatToTaste", "whatToBuy", "curiosities"];
 
 function Block({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
   return (
@@ -64,23 +67,37 @@ export function WineryView({ slug }: { slug: string }) {
               <ReadMore text={w.history} className="font-serif text-xl font-light leading-relaxed sm:text-2xl" />
             </Editable>
             <div className="hairline" />
-            <div className="grid gap-10 sm:grid-cols-2">
-              {w.terroir && (
-                <div>
-                  <h3 className="kicker flex items-center gap-2 text-olive"><Icon name="Compass" size={14} /> Terroir</h3>
-                  <Editable as="div" kind="winery" slug={w.slug} field="terroir" value={w.terroir} label="Terroir" multiline className="mt-3"><p className="font-sans text-[14px] leading-relaxed" style={{ color: "var(--text-muted)" }}>{w.terroir}</p></Editable>
+            {(() => {
+              const nodes: Record<string, { has: boolean; node: React.ReactNode }> = {
+                terroir: { has: !!w.terroir, node: (
+                  <div>
+                    <h3 className="kicker flex items-center gap-2 text-olive"><Icon name="Compass" size={14} /> Terroir</h3>
+                    <Editable as="div" kind="winery" slug={w.slug} field="terroir" value={w.terroir || ""} label="Terroir" multiline className="mt-3"><p className="font-sans text-[14px] leading-relaxed" style={{ color: "var(--text-muted)" }}>{w.terroir}</p></Editable>
+                  </div>
+                ) },
+                grapes: { has: !!w.grapes?.length, node: (
+                  <Block title="Castas" icon="Grape">
+                    <Editable as="div" kind="winery" slug={w.slug} field="grapes" value={w.grapes || []} label="Castas" multiline className="flex flex-wrap gap-2">{(w.grapes || []).map((g) => <Pill key={g}>{g}</Pill>)}</Editable>
+                  </Block>
+                ) },
+                production: { has: !!w.production, node: <Block title="Produção" icon="Wine"><Editable as="p" kind="winery" slug={w.slug} field="production" value={w.production || ""} label="Produção" multiline className="font-sans text-[14px] leading-relaxed" style={{ color: "var(--text-muted)" }}>{w.production}</Editable></Block> },
+                family: { has: !!w.family, node: <Block title="Proprietários" icon="Users"><Editable as="p" kind="winery" slug={w.slug} field="family" value={w.family || ""} label="Proprietários" multiline className="font-sans text-[14px] leading-relaxed" style={{ color: "var(--text-muted)" }}>{w.family}</Editable></Block> },
+                icons: { has: !!w.icons?.length, node: <Block title="Vinhos icônicos" icon="Star"><BulletList items={w.icons} slug={w.slug} field="icons" label="Vinhos icônicos" /></Block> },
+                whatToTaste: { has: !!w.whatToTaste, node: <Block title="O que provar" icon="Martini"><BulletList items={w.whatToTaste} slug={w.slug} field="whatToTaste" label="O que provar" /></Block> },
+                whatToBuy: { has: !!w.whatToBuy, node: <Block title="O que comprar" icon="ShoppingBag"><BulletList items={w.whatToBuy} slug={w.slug} field="whatToBuy" label="O que comprar" /></Block> },
+                curiosities: { has: !!w.curiosities, node: <Block title="Curiosidades" icon="Sparkles"><BulletList items={w.curiosities} slug={w.slug} field="curiosities" label="Curiosidades" /></Block> },
+              };
+              const saved = Array.isArray((w as any).sectionOrder) ? (w as any).sectionOrder.filter((k: string) => WINERY_SECTION_ORDER.includes(k)) : [];
+              const full = [...saved, ...WINERY_SECTION_ORDER.filter((k) => !saved.includes(k))];
+              const present = full.filter((k) => nodes[k]?.has);
+              return (
+                <div className="grid gap-10 sm:grid-cols-2">
+                  {present.map((key) => (
+                    <Section key={key} kind="winery" slug={w.slug} sectionKey={key} order={present}>{nodes[key].node}</Section>
+                  ))}
                 </div>
-              )}
-              <Block title="Castas" icon="Grape">
-                <Editable as="div" kind="winery" slug={w.slug} field="grapes" value={w.grapes || []} label="Castas" multiline className="flex flex-wrap gap-2">{(w.grapes || []).map((g) => <Pill key={g}>{g}</Pill>)}</Editable>
-              </Block>
-              {w.production && <Block title="Produção" icon="Wine"><Editable as="p" kind="winery" slug={w.slug} field="production" value={w.production} label="Produção" multiline className="font-sans text-[14px] leading-relaxed" style={{ color: "var(--text-muted)" }}>{w.production}</Editable></Block>}
-              {w.family && <Block title="Proprietários" icon="Users"><Editable as="p" kind="winery" slug={w.slug} field="family" value={w.family} label="Proprietários" multiline className="font-sans text-[14px] leading-relaxed" style={{ color: "var(--text-muted)" }}>{w.family}</Editable></Block>}
-              <Block title="Vinhos icônicos" icon="Star"><BulletList items={w.icons} slug={w.slug} field="icons" label="Vinhos icônicos" /></Block>
-              {w.whatToTaste && <Block title="O que provar" icon="Martini"><BulletList items={w.whatToTaste} slug={w.slug} field="whatToTaste" label="O que provar" /></Block>}
-              {w.whatToBuy && <Block title="O que comprar" icon="ShoppingBag"><BulletList items={w.whatToBuy} slug={w.slug} field="whatToBuy" label="O que comprar" /></Block>}
-              {w.curiosities && <Block title="Curiosidades" icon="Sparkles"><BulletList items={w.curiosities} slug={w.slug} field="curiosities" label="Curiosidades" /></Block>}
-            </div>
+              );
+            })()}
 
             {w.scores?.length ? (
               <>

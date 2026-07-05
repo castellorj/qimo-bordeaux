@@ -7,7 +7,18 @@ import { FavoriteButton, Crumb, Pill } from "@/components/ui";
 import { ReadMore } from "@/components/ReadMore";
 import { useGuideItem } from "@/components/GuideContent";
 import { Editable } from "@/components/Editable";
+import { Section } from "@/components/Section";
 import type { City } from "@/lib/types";
+
+const CITY_LIST_DEFS: Record<string, { title: string; icon: string; field: keyof City }> = {
+  toDo: { title: "O que fazer", icon: "Compass", field: "toDo" },
+  photoSpots: { title: "Onde fotografar", icon: "Camera", field: "photoSpots" },
+  curiosities: { title: "Curiosidades", icon: "Sparkles", field: "curiosities" },
+  restaurants: { title: "Restaurantes", icon: "UtensilsCrossed", field: "restaurants" },
+  cafes: { title: "Cafés", icon: "Coffee", field: "cafes" },
+  shops: { title: "Compras", icon: "ShoppingBag", field: "shops" },
+};
+const CITY_LIST_ORDER = ["toDo", "photoSpots", "curiosities", "restaurants", "cafes", "shops"];
 
 function List({ title, icon, items, slug, field }: { title: string; icon: string; items?: string[]; slug?: string; field?: string }) {
   if (!items || items.length === 0) return null;
@@ -64,14 +75,23 @@ export function CityView({ slug }: { slug: string }) {
               </Editable>
             </div>
             <div className="hairline" />
-            <div className="grid gap-10 sm:grid-cols-2">
-              <List title="O que fazer" icon="Compass" items={c.toDo} slug={c.slug} field="toDo" />
-              <List title="Onde fotografar" icon="Camera" items={c.photoSpots} slug={c.slug} field="photoSpots" />
-              <List title="Curiosidades" icon="Sparkles" items={c.curiosities} slug={c.slug} field="curiosities" />
-              <List title="Restaurantes" icon="UtensilsCrossed" items={c.restaurants} slug={c.slug} field="restaurants" />
-              <List title="Cafés" icon="Coffee" items={c.cafes} slug={c.slug} field="cafes" />
-              <List title="Compras" icon="ShoppingBag" items={c.shops} slug={c.slug} field="shops" />
-            </div>
+            {(() => {
+              const saved = Array.isArray((c as any).sectionOrder) ? (c as any).sectionOrder.filter((k: string) => CITY_LIST_ORDER.includes(k)) : [];
+              const full = [...saved, ...CITY_LIST_ORDER.filter((k) => !saved.includes(k))];
+              const present = full.filter((k) => ((c as any)[CITY_LIST_DEFS[k].field] as string[] | undefined)?.length);
+              return (
+                <div className="grid gap-10 sm:grid-cols-2">
+                  {present.map((key) => {
+                    const def = CITY_LIST_DEFS[key];
+                    return (
+                      <Section key={key} kind="city" slug={c.slug} sectionKey={key} order={present}>
+                        <List title={def.title} icon={def.icon} items={(c as any)[def.field]} slug={c.slug} field={def.field as string} />
+                      </Section>
+                    );
+                  })}
+                </div>
+              );
+            })()}
           </div>
 
           <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">

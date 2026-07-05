@@ -44,10 +44,15 @@ export function PreviewPane() {
   // Recebe cliques em campos editáveis vindos do guia (dentro do iframe).
   useEffect(() => {
     const onMsg = (e: MessageEvent) => {
-      if (e.data?.source === "qimo-guide" && e.data?.type === "edit-field") {
-        const d = e.data as any;
+      if (e.data?.source !== "qimo-guide") return;
+      const d = e.data as any;
+      if (d.type === "edit-field") {
         setTarget({ kind: d.kind, slug: d.slug, field: d.field, label: d.label, value: d.value, isArray: !!d.isArray, multiline: !!d.multiline });
         setDraft(Array.isArray(d.value) ? d.value.join("\n") : String(d.value ?? ""));
+      } else if (d.type === "reorder-section") {
+        updateContentField(d.kind, d.slug, "sectionOrder", d.order).then(() => {
+          ref.current?.contentWindow?.postMessage({ source: "qimo-admin", type: "qimo-refresh" }, "*");
+        });
       }
     };
     window.addEventListener("message", onMsg);
