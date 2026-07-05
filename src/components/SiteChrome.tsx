@@ -106,13 +106,18 @@ export function LangRow() {
 
 export function SiteChrome({ searchIndex }: { searchIndex: SearchDoc[] }) {
   const [search, setSearch] = useState(false);
-  const { t } = useLocale();
+  const { t, cfg } = useLocale();
   const { count } = useFavorites();
   const pathname = usePathname();
   const section = activeSection(pathname);
 
   // O painel administrativo tem seu próprio layout (sem o chrome do guia)
   if (pathname.startsWith("/admin")) return null;
+
+  // Botões configuráveis no painel: ícone (navicon.<key>) e visibilidade (navhide.<key>)
+  const navVisible = primaryNav.filter((item) => cfg(`navhide.${item.key}`) !== "1");
+  const iconFor = (item: { key: string; icon: string }) => cfg(`navicon.${item.key}`) || item.icon;
+  const gridColsClass = navVisible.length === 5 ? "grid-cols-5" : navVisible.length === 4 ? "grid-cols-4" : navVisible.length === 3 ? "grid-cols-3" : "grid-cols-2";
 
   return (
     <>
@@ -132,7 +137,7 @@ export function SiteChrome({ searchIndex }: { searchIndex: SearchDoc[] }) {
 
           {/* Navegação central (desktop) */}
           <nav className="hidden items-center gap-1 md:absolute md:left-1/2 md:flex md:-translate-x-1/2">
-            {primaryNav.map((item) => {
+            {navVisible.map((item) => {
               const active = section === item.href;
               return (
                 <Link
@@ -170,8 +175,8 @@ export function SiteChrome({ searchIndex }: { searchIndex: SearchDoc[] }) {
         className="fixed inset-x-0 bottom-0 z-40 border-t backdrop-blur-md pb-safe md:hidden"
         style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--bg-elev) 92%, transparent)" }}
       >
-        <div className="grid grid-cols-5">
-          {primaryNav.map((item) => {
+        <div className={clsx("grid", gridColsClass)}>
+          {navVisible.map((item) => {
             const active = section === item.href;
             return (
               <Link
@@ -183,7 +188,7 @@ export function SiteChrome({ searchIndex }: { searchIndex: SearchDoc[] }) {
                 )}
               >
                 <div className="relative">
-                  <Icon name={item.icon} size={22} strokeWidth={active ? 2 : 1.6} />
+                  <Icon name={iconFor(item)} size={22} strokeWidth={active ? 2 : 1.6} />
                   {item.href === "/favoritos" && count > 0 && (
                     <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-petrol-600 px-0.5 text-[9px] font-semibold text-cream">
                       {count}

@@ -45,18 +45,18 @@ export function WineView({ slug }: { slug: string }) {
 
             <div>
               <h3 className="kicker flex items-center gap-2"><Icon name="UtensilsCrossed" size={14} /> Harmonizações</h3>
-              <div className="mt-4 flex flex-wrap gap-2">{(a.pairings || []).map((p) => <Pill key={p} icon="Utensils">{p}</Pill>)}</div>
+              <Editable as="div" kind="wine" slug={a.slug} field="pairings" value={a.pairings || []} label="Harmonizações" multiline className="mt-4 flex flex-wrap gap-2">{(a.pairings || []).map((p) => <Pill key={p} icon="Utensils">{p}</Pill>)}</Editable>
             </div>
 
             <div>
               <h3 className="kicker flex items-center gap-2"><Icon name="Star" size={14} /> Principais produtores</h3>
-              <div className="mt-4 flex flex-wrap gap-2">{(a.topProducers || []).map((p) => <Pill key={p} icon="Grape">{p}</Pill>)}</div>
+              <Editable as="div" kind="wine" slug={a.slug} field="topProducers" value={a.topProducers || []} label="Principais produtores" multiline className="mt-4 flex flex-wrap gap-2">{(a.topProducers || []).map((p) => <Pill key={p} icon="Grape">{p}</Pill>)}</Editable>
             </div>
 
             {a.qimoNote && (
               <div className="rounded-[3px] border p-5" style={{ borderColor: "var(--gold)", background: "color-mix(in srgb, var(--gold) 6%, transparent)" }}>
                 <QimoSeal />
-                <p className="mt-3 font-serif text-lg font-light italic" style={{ color: "var(--text)" }}>{a.qimoNote}</p>
+                <Editable as="p" kind="wine" slug={a.slug} field="qimoNote" value={a.qimoNote} label="Nota QIMO" multiline className="mt-3 font-serif text-lg font-light italic" style={{ color: "var(--text)" }}>{a.qimoNote}</Editable>
               </div>
             )}
           </div>
@@ -69,7 +69,7 @@ export function WineView({ slug }: { slug: string }) {
                   <Icon name="Grape" size={16} className="mt-0.5 shrink-0 text-gold" />
                   <div>
                     <p className="font-sans text-[11px] uppercase tracking-wide2 text-muted">Castas</p>
-                    <p className="mt-0.5 font-sans text-[14px]" style={{ color: "var(--text)" }}>{(a.grapes || []).join(", ")}</p>
+                    <Editable as="p" kind="wine" slug={a.slug} field="grapes" value={a.grapes || []} label="Castas" multiline className="mt-0.5 font-sans text-[14px]" style={{ color: "var(--text)" }}>{(a.grapes || []).join(", ")}</Editable>
                   </div>
                 </div>
                 <Spec icon="Thermometer" label="Temperatura de serviço" value={a.serveTemp} />

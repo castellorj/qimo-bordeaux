@@ -13,7 +13,8 @@ const LocaleCtx = createContext<{
   locale: Locale;
   setLocale: (l: Locale) => void;
   t: (key: string) => string;
-}>({ locale: DEFAULT_LOCALE, setLocale: () => {}, t: (k) => k });
+  cfg: (key: string) => string | undefined;
+}>({ locale: DEFAULT_LOCALE, setLocale: () => {}, t: (k) => k, cfg: () => undefined });
 
 /* ---------------- Favoritos (offline, localStorage) ---------------- */
 const FavCtx = createContext<{
@@ -72,9 +73,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   const has = useCallback((id: string) => favs.includes(id), [favs]);
   const t = makeT(locale, overrides);
+  const cfg = useCallback((key: string) => overrides[key]?.pt, [overrides]);
 
   return (
-    <LocaleCtx.Provider value={{ locale, setLocale, t }}>
+    <LocaleCtx.Provider value={{ locale, setLocale, t, cfg }}>
       <FavCtx.Provider value={{ favs, has, toggle: toggleFav, count: favs.length }}>
         <div style={{ visibility: ready ? "visible" : "hidden" }}>{children}</div>
       </FavCtx.Provider>

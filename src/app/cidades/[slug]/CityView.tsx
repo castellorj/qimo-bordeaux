@@ -9,21 +9,21 @@ import { useGuideItem } from "@/components/GuideContent";
 import { Editable } from "@/components/Editable";
 import type { City } from "@/lib/types";
 
-function List({ title, icon, items }: { title: string; icon: string; items?: string[] }) {
+function List({ title, icon, items, slug, field }: { title: string; icon: string; items?: string[]; slug?: string; field?: string }) {
   if (!items || items.length === 0) return null;
   return (
     <div>
       <h3 className="kicker flex items-center gap-2">
         <Icon name={icon} size={14} /> {title}
       </h3>
-      <ul className="mt-4 space-y-2.5">
+      <Editable as="ul" kind="city" slug={slug || ""} field={field || ""} value={items} label={title} multiline className="mt-4 space-y-2.5">
         {items.map((it, i) => (
           <li key={i} className="flex items-start gap-3 font-sans text-[14px] leading-relaxed" style={{ color: "var(--text-muted)" }}>
             <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-gold" />
             {it}
           </li>
         ))}
-      </ul>
+      </Editable>
     </div>
   );
 }
@@ -65,12 +65,12 @@ export function CityView({ slug }: { slug: string }) {
             </div>
             <div className="hairline" />
             <div className="grid gap-10 sm:grid-cols-2">
-              <List title="O que fazer" icon="Compass" items={c.toDo} />
-              <List title="Onde fotografar" icon="Camera" items={c.photoSpots} />
-              <List title="Curiosidades" icon="Sparkles" items={c.curiosities} />
-              <List title="Restaurantes" icon="UtensilsCrossed" items={c.restaurants} />
-              <List title="Cafés" icon="Coffee" items={c.cafes} />
-              <List title="Compras" icon="ShoppingBag" items={c.shops} />
+              <List title="O que fazer" icon="Compass" items={c.toDo} slug={c.slug} field="toDo" />
+              <List title="Onde fotografar" icon="Camera" items={c.photoSpots} slug={c.slug} field="photoSpots" />
+              <List title="Curiosidades" icon="Sparkles" items={c.curiosities} slug={c.slug} field="curiosities" />
+              <List title="Restaurantes" icon="UtensilsCrossed" items={c.restaurants} slug={c.slug} field="restaurants" />
+              <List title="Cafés" icon="Coffee" items={c.cafes} slug={c.slug} field="cafes" />
+              <List title="Compras" icon="ShoppingBag" items={c.shops} slug={c.slug} field="shops" />
             </div>
           </div>
 
@@ -87,15 +87,15 @@ export function CityView({ slug }: { slug: string }) {
               {c.bestTimes && (
                 <>
                   <h3 className="kicker mt-6">Melhores horários</h3>
-                  <p className="mt-2 font-sans text-[13px] leading-relaxed" style={{ color: "var(--text-muted)" }}>{c.bestTimes}</p>
+                  <Editable as="p" kind="city" slug={c.slug} field="bestTimes" value={c.bestTimes} label="Melhores horários" multiline className="mt-2 font-sans text-[13px] leading-relaxed" style={{ color: "var(--text-muted)" }}>{c.bestTimes}</Editable>
                 </>
               )}
               {c.localWines && (
                 <>
                   <h3 className="kicker mt-6">Vinhos locais</h3>
-                  <div className="mt-3 flex flex-wrap gap-2">
+                  <Editable as="div" kind="city" slug={c.slug} field="localWines" value={c.localWines} label="Vinhos locais" multiline className="mt-3 flex flex-wrap gap-2">
                     {c.localWines.map((w) => (<Pill key={w} icon="Wine">{w}</Pill>))}
-                  </div>
+                  </Editable>
                 </>
               )}
               <a href={mapUrl} target="_blank" rel="noopener noreferrer" className="btn-ghost mt-6 w-full">

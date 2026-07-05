@@ -19,16 +19,16 @@ function Block({ title, icon, children }: { title: string; icon: string; childre
     </div>
   );
 }
-function BulletList({ items }: { items?: string[] }) {
+function BulletList({ items, slug, field, label }: { items?: string[]; slug?: string; field?: string; label?: string }) {
   if (!items?.length) return null;
   return (
-    <ul className="space-y-2">
+    <Editable as="ul" kind="winery" slug={slug || ""} field={field || ""} value={items} label={label} multiline className="space-y-2">
       {items.map((it, i) => (
         <li key={i} className="flex items-start gap-3 font-sans text-[14px] leading-relaxed" style={{ color: "var(--text-muted)" }}>
           <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-gold" />{it}
         </li>
       ))}
-    </ul>
+    </Editable>
   );
 }
 
@@ -68,18 +68,18 @@ export function WineryView({ slug }: { slug: string }) {
               {w.terroir && (
                 <div>
                   <h3 className="kicker flex items-center gap-2 text-olive"><Icon name="Compass" size={14} /> Terroir</h3>
-                  <div className="mt-3"><p className="font-sans text-[14px] leading-relaxed" style={{ color: "var(--text-muted)" }}>{w.terroir}</p></div>
+                  <Editable as="div" kind="winery" slug={w.slug} field="terroir" value={w.terroir} label="Terroir" multiline className="mt-3"><p className="font-sans text-[14px] leading-relaxed" style={{ color: "var(--text-muted)" }}>{w.terroir}</p></Editable>
                 </div>
               )}
               <Block title="Castas" icon="Grape">
-                <div className="flex flex-wrap gap-2">{(w.grapes || []).map((g) => <Pill key={g}>{g}</Pill>)}</div>
+                <Editable as="div" kind="winery" slug={w.slug} field="grapes" value={w.grapes || []} label="Castas" multiline className="flex flex-wrap gap-2">{(w.grapes || []).map((g) => <Pill key={g}>{g}</Pill>)}</Editable>
               </Block>
-              {w.production && <Block title="Produção" icon="Wine"><p className="font-sans text-[14px] leading-relaxed" style={{ color: "var(--text-muted)" }}>{w.production}</p></Block>}
-              {w.family && <Block title="Proprietários" icon="Users"><p className="font-sans text-[14px] leading-relaxed" style={{ color: "var(--text-muted)" }}>{w.family}</p></Block>}
-              <Block title="Vinhos icônicos" icon="Star"><BulletList items={w.icons} /></Block>
-              {w.whatToTaste && <Block title="O que provar" icon="Martini"><BulletList items={w.whatToTaste} /></Block>}
-              {w.whatToBuy && <Block title="O que comprar" icon="ShoppingBag"><BulletList items={w.whatToBuy} /></Block>}
-              {w.curiosities && <Block title="Curiosidades" icon="Sparkles"><BulletList items={w.curiosities} /></Block>}
+              {w.production && <Block title="Produção" icon="Wine"><Editable as="p" kind="winery" slug={w.slug} field="production" value={w.production} label="Produção" multiline className="font-sans text-[14px] leading-relaxed" style={{ color: "var(--text-muted)" }}>{w.production}</Editable></Block>}
+              {w.family && <Block title="Proprietários" icon="Users"><Editable as="p" kind="winery" slug={w.slug} field="family" value={w.family} label="Proprietários" multiline className="font-sans text-[14px] leading-relaxed" style={{ color: "var(--text-muted)" }}>{w.family}</Editable></Block>}
+              <Block title="Vinhos icônicos" icon="Star"><BulletList items={w.icons} slug={w.slug} field="icons" label="Vinhos icônicos" /></Block>
+              {w.whatToTaste && <Block title="O que provar" icon="Martini"><BulletList items={w.whatToTaste} slug={w.slug} field="whatToTaste" label="O que provar" /></Block>}
+              {w.whatToBuy && <Block title="O que comprar" icon="ShoppingBag"><BulletList items={w.whatToBuy} slug={w.slug} field="whatToBuy" label="O que comprar" /></Block>}
+              {w.curiosities && <Block title="Curiosidades" icon="Sparkles"><BulletList items={w.curiosities} slug={w.slug} field="curiosities" label="Curiosidades" /></Block>}
             </div>
 
             {w.scores?.length ? (

@@ -11,6 +11,7 @@ import {
 import { Icon } from "@/components/Icon";
 import { ContentCMS } from "./ContentCMS";
 import { TextosEditor } from "./TextosEditor";
+import { BotoesEditor } from "./BotoesEditor";
 import { OperationsCenter } from "./OperationsCenter";
 import { PreviewPane } from "./PreviewPane";
 import { PublishModal } from "./PublishModal";
@@ -141,7 +142,11 @@ function Shell({ email }: { email?: string }) {
         ) : tab === "conteudo" ? (
           <ContentCMS />
         ) : tab === "textos" ? (
-          <TextosEditor />
+          <div className="space-y-10">
+            <BotoesEditor />
+            <div className="hairline" />
+            <TextosEditor />
+          </div>
         ) : tab === "preview" ? (
           <PreviewPane />
         ) : (
