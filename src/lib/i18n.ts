@@ -46,6 +46,8 @@ export const ui: Dict = {
   "nav.informacoes": { pt: "Informações úteis", en: "Useful info", es: "Información útil" },
   "nav.documentos": { pt: "Documentos", en: "Documents", es: "Documentos" },
   "nav.favoritos": { pt: "Favoritos", en: "Favorites", es: "Favoritos" },
+  "nav.paginas": { pt: "Páginas", en: "Pages", es: "Páginas" },
+  "navd.paginas": { pt: "Guias e conteúdos extras", en: "Extra guides & content", es: "Guías y contenidos extra" },
   "nav.roteiro": { pt: "Roteiro", en: "Route", es: "Ruta" },
   "nav.restaurantes": { pt: "Restaurantes", en: "Restaurants", es: "Restaurantes" },
   "navd.restaurantes": { pt: "Mesas para reservar", en: "Tables to book", es: "Mesas para reservar" },

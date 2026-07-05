@@ -12,12 +12,13 @@ import { Icon } from "@/components/Icon";
 import { ContentCMS } from "./ContentCMS";
 import { TextosEditor } from "./TextosEditor";
 import { BotoesEditor } from "./BotoesEditor";
+import { PagesBuilder } from "./PagesBuilder";
 import { OperationsCenter } from "./OperationsCenter";
 import { PreviewPane } from "./PreviewPane";
 import { PublishModal } from "./PublishModal";
 import clsx from "clsx";
 
-type Tab = "inicio" | "passeios" | "participantes" | "reservas" | "conteudo" | "textos" | "preview";
+type Tab = "inicio" | "passeios" | "participantes" | "reservas" | "conteudo" | "paginas" | "textos" | "preview";
 
 export function AdminApp() {
   const [ready, setReady] = useState(false);
@@ -99,6 +100,7 @@ function Shell({ email }: { email?: string }) {
     { key: "participantes", label: "Participantes", icon: "Users" },
     { key: "reservas", label: "Reservas", icon: "Check" },
     { key: "conteudo", label: "Conteúdo", icon: "LayoutGrid" },
+    { key: "paginas", label: "Páginas", icon: "BookOpen" },
     { key: "textos", label: "Textos & botões", icon: "Languages" },
     { key: "preview", label: "Pré-visualizar", icon: "Eye" },
   ];
@@ -141,6 +143,8 @@ function Shell({ email }: { email?: string }) {
           <Participantes parts={parts} onChange={reload} />
         ) : tab === "conteudo" ? (
           <ContentCMS />
+        ) : tab === "paginas" ? (
+          <PagesBuilder />
         ) : tab === "textos" ? (
           <div className="space-y-10">
             <BotoesEditor />

@@ -39,6 +39,7 @@ export const descobrirLinks: HubLink[] = [
 export const maisLinks: HubLink[] = [
   { key: "concierge", href: "/concierge", icon: "Bell" },
   { key: "informacoes", href: "/informacoes", icon: "Info" },
+  { key: "paginas", href: "/paginas", icon: "BookOpen" },
   { key: "documentos", href: "/documentos", icon: "FileText" },
   { key: "favoritos", href: "/favoritos", icon: "Heart" },
 ];

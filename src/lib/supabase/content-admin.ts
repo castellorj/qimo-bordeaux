@@ -152,6 +152,44 @@ export async function contentCounts(): Promise<KindCount[]> {
   });
 }
 
+// ---- Páginas customizadas (construtor de blocos) ----
+import type { Block } from "@/lib/blocks";
+export interface PageRow {
+  id: string; slug: string; title: string; icon: string;
+  blocks: Block[]; published: boolean; sort: number; updated_at: string;
+}
+
+export async function listPages(): Promise<PageRow[]> {
+  const { data } = await supabase().from("bordeaux_pages").select("*").order("sort");
+  return (data as PageRow[]) || [];
+}
+
+export async function createPage(): Promise<PageRow | null> {
+  const slug = `pagina-${Math.random().toString(36).slice(2, 7)}`;
+  const { data } = await supabase().from("bordeaux_pages")
+    .insert({ slug, title: "Nova página", icon: "FileText", blocks: [], published: false, sort: 999 })
+    .select().single();
+  return (data as PageRow) || null;
+}
+
+export async function savePage(p: PageRow) {
+  return supabase().from("bordeaux_pages")
+    .update({ slug: p.slug, title: p.title, icon: p.icon, blocks: p.blocks, published: p.published, sort: p.sort, updated_at: new Date().toISOString() })
+    .eq("id", p.id);
+}
+
+export async function setPagePublished(id: string, published: boolean) {
+  return supabase().from("bordeaux_pages").update({ published }).eq("id", id);
+}
+
+export async function deletePage(id: string) {
+  return supabase().from("bordeaux_pages").delete().eq("id", id);
+}
+
+export async function updatePageSort(id: string, sort: number) {
+  return supabase().from("bordeaux_pages").update({ sort }).eq("id", id);
+}
+
 // ---- Publicação (Netlify Build Hook) ----
 export async function getBuildHookUrl(): Promise<string> {
   const { data } = await supabase().from("bordeaux_settings").select("pt").eq("key", "build_hook_url").maybeSingle();

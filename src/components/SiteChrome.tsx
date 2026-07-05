@@ -24,7 +24,7 @@ function activeSection(pathname: string): string {
   if (/^\/(viagem|programacao|barco|mapa|documentos)/.test(p)) return "/viagem";
   if (/^\/(descobrir|vinicolas|restaurantes|vinhos|gastronomia|experiencias|compras|cidades)/.test(p)) return "/descobrir";
   if (p.startsWith("/favoritos")) return "/favoritos";
-  if (/^\/(mais|concierge|informacoes)/.test(p)) return "/mais";
+  if (/^\/(mais|concierge|informacoes|paginas)/.test(p)) return "/mais";
   return "";
 }
 
