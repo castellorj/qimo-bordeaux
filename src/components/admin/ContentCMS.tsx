@@ -139,6 +139,8 @@ export function ContentCMS() {
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
+  const [dragIdx, setDragIdx] = useState<number | null>(null);
+  const [overIdx, setOverIdx] = useState<number | null>(null);
 
   const load = useCallback(async () => {
     setLoading(true); setRows(await listContent(kind)); setLoading(false);
@@ -159,11 +161,14 @@ export function ContentCMS() {
     setBusy(false); setEditing(null); await load();
   };
 
-  const move = async (i: number, dir: number) => {
-    const j = i + dir;
-    if (j < 0 || j >= rows.length) return;
-    const a = rows[i], b = rows[j];
-    await Promise.all([updateSort(a.id, b.sort), updateSort(b.id, a.sort)]);
+  // Reordena localmente (otimista) e persiste sort = índice*10 para todos.
+  const reorder = async (from: number, to: number) => {
+    if (from === to) return;
+    const next = [...rows];
+    const [moved] = next.splice(from, 1);
+    next.splice(to, 0, moved);
+    setRows(next);
+    await Promise.all(next.map((r, i) => (r.sort === i * 10 ? null : updateSort(r.id, i * 10))).filter(Boolean) as Promise<any>[]);
     await load();
   };
 
@@ -212,24 +217,33 @@ export function ContentCMS() {
               <button onClick={doImport} disabled={busy} className="btn-primary mt-4">Importar conteúdo do guia</button>
             </div>
           ) : (
-            rows.map((r, i) => (
-              <div key={r.id} className="card flex items-center gap-3 p-4">
-                <div className="flex flex-col">
-                  <button onClick={() => move(i, -1)} disabled={i === 0} aria-label="Subir" className="text-muted hover:text-gold-deep disabled:opacity-30"><Icon name="ChevronDown" size={14} className="rotate-180" /></button>
-                  <button onClick={() => move(i, 1)} disabled={i === rows.length - 1} aria-label="Descer" className="text-muted hover:text-gold-deep disabled:opacity-30"><Icon name="ChevronDown" size={14} /></button>
+            <>
+              <p className="mb-1 flex items-center gap-1.5 font-sans text-[11px] text-muted"><Icon name="GripVertical" size={12} /> Arraste os cards para reordenar como aparecem no guia.</p>
+              {rows.map((r, i) => (
+                <div key={r.id}
+                  draggable
+                  onDragStart={() => setDragIdx(i)}
+                  onDragEnter={() => setOverIdx(i)}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDragEnd={() => { if (dragIdx !== null && overIdx !== null) reorder(dragIdx, overIdx); setDragIdx(null); setOverIdx(null); }}
+                  onDrop={(e) => { e.preventDefault(); if (dragIdx !== null) reorder(dragIdx, i); setDragIdx(null); setOverIdx(null); }}
+                  className={clsx("card flex items-center gap-3 p-4 transition-all",
+                    dragIdx === i && "opacity-40",
+                    overIdx === i && dragIdx !== i && "ring-2 ring-gold")}>
+                  <span className="cursor-grab text-muted active:cursor-grabbing" aria-label="Arrastar"><Icon name="GripVertical" size={16} /></span>
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-serif text-[17px] font-light">{label(r)}</p>
+                    <p className="truncate font-sans text-[12px] text-muted">{r.data?.tagline || r.data?.subtitle || r.slug}</p>
+                  </div>
+                  <button onClick={() => setPublished(r.id, !r.published).then(load)}
+                    className={clsx("flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px]", r.published ? "bg-olive/15 text-olive-deep" : "bg-black/5 text-muted")}>
+                    <Icon name={r.published ? "Eye" : "EyeOff"} size={12} /> {r.published ? "Publicado" : "Oculto"}
+                  </button>
+                  <button onClick={() => { setEditing(r); setDraft(structuredClone(r.data)); }} className="btn-ghost !px-3 !py-1.5"><Icon name="Pencil" size={14} /> Editar</button>
+                  <button onClick={() => { if (confirm(`Excluir "${label(r)}"?`)) deleteContent(r.id).then(load); }} aria-label="Excluir" className="text-muted hover:text-[#8f2f2f]"><Icon name="X" size={16} /></button>
                 </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate font-serif text-[17px] font-light">{label(r)}</p>
-                  <p className="truncate font-sans text-[12px] text-muted">{r.data?.tagline || r.data?.subtitle || r.slug}</p>
-                </div>
-                <button onClick={() => setPublished(r.id, !r.published).then(load)}
-                  className={clsx("rounded-full px-3 py-1 font-sans text-[11px]", r.published ? "bg-olive/15 text-olive-deep" : "bg-black/5 text-muted")}>
-                  {r.published ? "Publicado" : "Oculto"}
-                </button>
-                <button onClick={() => { setEditing(r); setDraft(structuredClone(r.data)); }} className="btn-ghost !px-3 !py-1.5"><Icon name="FileText" size={14} /> Editar</button>
-                <button onClick={() => deleteContent(r.id).then(load)} aria-label="Excluir" className="text-muted hover:text-[#8f2f2f]"><Icon name="X" size={16} /></button>
-              </div>
-            ))
+              ))}
+            </>
           )}
         </div>
       )}

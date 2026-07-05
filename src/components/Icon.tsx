@@ -7,6 +7,8 @@ import {
   QrCode, Plus, Minus, Check, Compass, Camera, Sunrise, Sunset, Thermometer,
   CloudRain, Wind, Wallet, ShieldCheck, Ticket, Bike, Music, Palette,
   BookOpen, Martini, Fish, Beef, ExternalLink, Navigation, Coffee, BedDouble, Mail,
+  Smartphone, Tablet, Monitor, Rocket, GripVertical, Eye, EyeOff, Pencil, Image,
+  Megaphone, AlertTriangle, TrendingUp, Copy, LayoutGrid, CircleCheck,
   type LucideIcon,
 } from "lucide-react";
 
@@ -19,6 +21,8 @@ const map: Record<string, LucideIcon> = {
   QrCode, Plus, Minus, Check, Compass, Camera, Sunrise, Sunset, Thermometer,
   CloudRain, Wind, Wallet, ShieldCheck, Ticket, Bike, Music, Palette,
   BookOpen, Martini, Fish, Beef, ExternalLink, Navigation, Coffee, BedDouble, Mail,
+  Smartphone, Tablet, Monitor, Rocket, GripVertical, Eye, EyeOff, Pencil, Image,
+  Megaphone, AlertTriangle, TrendingUp, Copy, LayoutGrid, CircleCheck,
 };
 
 export function Icon({

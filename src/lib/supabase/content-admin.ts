@@ -71,6 +71,58 @@ export async function upsertSetting(key: string, vals: SettingVals, grp = "geral
   return supabase().from("bordeaux_settings").upsert({ key, ...vals, grp }, { onConflict: "key" });
 }
 
+// ---- Central de Operações: mudanças recentes ----
+export interface ChangeRow {
+  id: string; kind: string; slug: string; name: string; published: boolean; updated_at: string;
+}
+export async function listRecentChanges(limit = 12): Promise<ChangeRow[]> {
+  const { data } = await supabase()
+    .from("bordeaux_content")
+    .select("id,kind,slug,data,published,updated_at")
+    .order("updated_at", { ascending: false })
+    .limit(limit);
+  return (data || []).map((r: any) => ({
+    id: r.id, kind: r.kind, slug: r.slug,
+    name: r.data?.name || r.slug, published: r.published, updated_at: r.updated_at,
+  }));
+}
+
+// ---- Central de Operações: contadores por tipo ----
+export interface KindCount { kind: string; label: string; total: number; hidden: number; noPhoto: number }
+export async function contentCounts(): Promise<KindCount[]> {
+  const { data } = await supabase().from("bordeaux_content").select("kind,published,data");
+  const rows = (data || []) as any[];
+  return CONTENT_KINDS.map((k) => {
+    const mine = rows.filter((r) => r.kind === k.kind);
+    const noPhoto = mine.filter((r) => !(r.data?.heroImage || r.data?.image || r.data?.photo)).length;
+    return {
+      kind: k.kind, label: k.label,
+      total: mine.length,
+      hidden: mine.filter((r) => !r.published).length,
+      noPhoto,
+    };
+  });
+}
+
+// ---- Publicação (Netlify Build Hook) ----
+export async function getBuildHookUrl(): Promise<string> {
+  const { data } = await supabase().from("bordeaux_settings").select("pt").eq("key", "build_hook_url").maybeSingle();
+  return (data as any)?.pt || "";
+}
+export async function setBuildHookUrl(url: string) {
+  return supabase().from("bordeaux_settings").upsert({ key: "build_hook_url", pt: url, grp: "sistema" }, { onConflict: "key" });
+}
+export async function triggerPublish(): Promise<{ ok: boolean; error?: string }> {
+  const url = await getBuildHookUrl();
+  if (!url) return { ok: false, error: "no-hook" };
+  try {
+    await fetch(url, { method: "POST", body: "{}", headers: { "content-type": "application/json" } });
+    return { ok: true };
+  } catch (e: any) {
+    return { ok: false, error: e?.message || "network" };
+  }
+}
+
 export async function importAllContent(): Promise<{ inserted: number }> {
   const sb = supabase();
   let count = 0;

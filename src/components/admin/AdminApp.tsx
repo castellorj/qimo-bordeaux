@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import {
   fetchActivities, fetchParticipants, fetchReservations,
@@ -11,25 +11,12 @@ import {
 import { Icon } from "@/components/Icon";
 import { ContentCMS } from "./ContentCMS";
 import { TextosEditor } from "./TextosEditor";
+import { OperationsCenter } from "./OperationsCenter";
+import { PreviewPane } from "./PreviewPane";
+import { PublishModal } from "./PublishModal";
 import clsx from "clsx";
 
-type Tab = "painel" | "passeios" | "participantes" | "reservas" | "conteudo" | "textos";
-
-function occupancy(a: BxActivityFull) {
-  if (a.capacity_total == null) return { label: "Livre", tone: "muted" };
-  if ((a.available ?? 0) <= 0) return { label: "Esgotado", tone: "red" };
-  if (a.reserved >= a.capacity_total * 0.8) return { label: "Poucas vagas", tone: "amber" };
-  return { label: "Disponível", tone: "green" };
-}
-function toneClass(t: string) {
-  return t === "red"
-    ? "bg-[#8f2f2f]/12 text-[#8f2f2f]"
-    : t === "amber"
-    ? "bg-gold/15 text-gold-deep"
-    : t === "green"
-    ? "bg-olive/15 text-olive-deep"
-    : "bg-black/5 text-muted";
-}
+type Tab = "inicio" | "passeios" | "participantes" | "reservas" | "conteudo" | "textos" | "preview";
 
 export function AdminApp() {
   const [ready, setReady] = useState(false);
@@ -91,11 +78,12 @@ function Login() {
 
 /* ---------------- Shell ---------------- */
 function Shell({ email }: { email?: string }) {
-  const [tab, setTab] = useState<Tab>("painel");
+  const [tab, setTab] = useState<Tab>("inicio");
   const [acts, setActs] = useState<BxActivityFull[]>([]);
   const [parts, setParts] = useState<BxParticipant[]>([]);
   const [res, setRes] = useState<BxReservation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [publishOpen, setPublishOpen] = useState(false);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -105,32 +93,34 @@ function Shell({ email }: { email?: string }) {
   useEffect(() => { reload(); }, [reload]);
 
   const tabs: { key: Tab; label: string; icon: string }[] = [
-    { key: "painel", label: "Painel", icon: "Home" },
+    { key: "inicio", label: "Início", icon: "Home" },
     { key: "passeios", label: "Passeios", icon: "Ticket" },
     { key: "participantes", label: "Participantes", icon: "Users" },
     { key: "reservas", label: "Reservas", icon: "Check" },
-    { key: "conteudo", label: "Conteúdo", icon: "FileText" },
-    { key: "textos", label: "Textos", icon: "Languages" },
+    { key: "conteudo", label: "Conteúdo", icon: "LayoutGrid" },
+    { key: "textos", label: "Textos & botões", icon: "Languages" },
+    { key: "preview", label: "Pré-visualizar", icon: "Eye" },
   ];
 
   return (
     <div className="container-editorial py-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="kicker">QIMO Bordeaux · Gestão</p>
-          <h1 className="display text-2xl sm:text-3xl">Passeios & Vagas</h1>
+          <p className="kicker">QIMO Bordeaux</p>
+          <h1 className="display text-2xl sm:text-3xl">Central de Operações</h1>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={reload} className="btn-ghost !px-4 !py-2"><Icon name="ArrowRight" size={14} /> Atualizar</button>
-          <button onClick={() => supabase().auth.signOut()} className="font-sans text-[12px] text-muted hover:text-gold-deep">Sair {email ? `(${email})` : ""}</button>
+          <button onClick={() => setPublishOpen(true)} className="btn-primary !px-5 !py-2.5"><Icon name="Rocket" size={15} /> Publicar</button>
+          <button onClick={reload} className="btn-ghost !px-4 !py-2" aria-label="Atualizar"><Icon name="ArrowRight" size={14} /></button>
+          <button onClick={() => supabase().auth.signOut()} className="font-sans text-[12px] text-muted hover:text-gold-deep">Sair</button>
         </div>
       </div>
 
       {/* Tabs */}
-      <div className="mt-6 flex gap-2 border-b" style={{ borderColor: "var(--line)" }}>
+      <div className="no-scrollbar mt-6 flex gap-1 overflow-x-auto border-b" style={{ borderColor: "var(--line)" }}>
         {tabs.map((t) => (
           <button key={t.key} onClick={() => setTab(t.key)}
-            className={clsx("flex items-center gap-2 border-b-2 px-4 py-3 font-sans text-[13px] transition-colors",
+            className={clsx("flex shrink-0 items-center gap-2 border-b-2 px-4 py-3 font-sans text-[13px] transition-colors",
               tab === t.key ? "border-petrol-600 text-petrol-600" : "border-transparent text-muted hover:text-petrol-600")}>
             <Icon name={t.icon} size={15} /> {t.label}
           </button>
@@ -138,10 +128,12 @@ function Shell({ email }: { email?: string }) {
       </div>
 
       <div className="py-8">
-        {loading ? (
+        {loading && tab !== "preview" && tab !== "conteudo" && tab !== "textos" ? (
           <p className="text-center text-muted">Carregando dados…</p>
-        ) : tab === "painel" ? (
-          <Painel acts={acts} res={res} />
+        ) : tab === "inicio" ? (
+          <OperationsCenter acts={acts} parts={parts} res={res} publishing={false}
+            onPublish={() => setPublishOpen(true)}
+            onGo={(t) => setTab(t)} />
         ) : tab === "passeios" ? (
           <Passeios acts={acts} onChange={reload} />
         ) : tab === "participantes" ? (
@@ -150,76 +142,14 @@ function Shell({ email }: { email?: string }) {
           <ContentCMS />
         ) : tab === "textos" ? (
           <TextosEditor />
+        ) : tab === "preview" ? (
+          <PreviewPane />
         ) : (
           <Reservas acts={acts} parts={parts} res={res} onChange={reload} />
         )}
       </div>
-    </div>
-  );
-}
 
-/* ---------------- Painel ---------------- */
-function Painel({ acts, res }: { acts: BxActivityFull[]; res: BxReservation[] }) {
-  const limited = acts.filter((a) => (a.capacity_total ?? 999) < 124);
-  const soldOut = acts.filter((a) => a.capacity_total != null && (a.available ?? 0) <= 0);
-  const few = acts.filter((a) => a.capacity_total != null && (a.available ?? 0) > 0 && a.reserved >= a.capacity_total * 0.8);
-  const confirmed = res.filter((r) => r.status === "confirmed").reduce((s, r) => s + r.seats, 0);
-  const waitlist = res.filter((r) => r.status === "waitlist").reduce((s, r) => s + r.seats, 0);
-
-  const stats = [
-    { n: acts.length, l: "Passeios", icon: "Ticket" },
-    { n: limited.length, l: "Com vagas limitadas", icon: "ShieldCheck" },
-    { n: soldOut.length, l: "Esgotados", icon: "X", tone: "red" },
-    { n: few.length, l: "Poucas vagas", icon: "Clock", tone: "amber" },
-    { n: confirmed, l: "Lugares confirmados", icon: "Check", tone: "green" },
-    { n: waitlist, l: "Em lista de espera", icon: "Users" },
-  ];
-
-  const byDay = useMemo(() => {
-    const m = new Map<number, BxActivityFull[]>();
-    acts.forEach((a) => { const d = a.day_number ?? 0; if (!m.has(d)) m.set(d, []); m.get(d)!.push(a); });
-    return [...m.entries()].sort((x, y) => x[0] - y[0]);
-  }, [acts]);
-
-  return (
-    <div className="space-y-8">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-        {stats.map((s) => (
-          <div key={s.l} className="card p-4 text-center">
-            <p className={clsx("font-serif text-4xl font-light", s.tone === "red" ? "text-[#8f2f2f]" : s.tone === "amber" ? "text-gold-deep" : s.tone === "green" ? "text-olive-deep" : "text-petrol-600")}>{s.n}</p>
-            <p className="mt-1 font-sans text-[11px] uppercase tracking-wide2 text-muted">{s.l}</p>
-          </div>
-        ))}
-      </div>
-
-      {byDay.map(([day, list]) => (
-        <div key={day}>
-          <p className="kicker">Dia {day}</p>
-          <div className="mt-3 space-y-2">
-            {list.map((a) => {
-              const o = occupancy(a);
-              const pct = a.capacity_total ? Math.min(100, Math.round((a.reserved / a.capacity_total) * 100)) : 0;
-              return (
-                <div key={a.id} className="card flex items-center gap-4 p-4">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate font-serif text-[17px] font-light">{a.title}</p>
-                    <p className="font-sans text-[12px] text-muted">{a.start_time} · {a.location}</p>
-                  </div>
-                  <div className="hidden w-40 sm:block">
-                    <div className="h-1.5 overflow-hidden rounded-full bg-black/5">
-                      <div className="h-full rounded-full" style={{ width: `${pct}%`, background: o.tone === "red" ? "#8f2f2f" : o.tone === "amber" ? "var(--gold)" : "var(--olive)" }} />
-                    </div>
-                    <p className="mt-1 text-right font-sans text-[11px] text-muted">
-                      {a.reserved}/{a.capacity_total ?? "∞"} {a.waitlisted > 0 && `· espera ${a.waitlisted}`}
-                    </p>
-                  </div>
-                  <span className={clsx("shrink-0 rounded-full px-3 py-1 font-sans text-[11px] font-medium", toneClass(o.tone))}>{o.label}</span>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ))}
+      {publishOpen && <PublishModal acts={acts} onClose={() => setPublishOpen(false)} />}
     </div>
   );
 }
