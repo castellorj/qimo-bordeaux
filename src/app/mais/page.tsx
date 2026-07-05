@@ -14,7 +14,7 @@ export default function MaisPage() {
     <>
       <PageHero section="mais" small />
       <div className="container-editorial space-y-10 py-10">
-        <HubGridIcons items={maisLinks} />
+        <HubGridIcons items={maisLinks} orderKey="mais" />
 
         {/* Idioma */}
         <section>

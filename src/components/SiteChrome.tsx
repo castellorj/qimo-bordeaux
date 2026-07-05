@@ -7,7 +7,7 @@ import clsx from "clsx";
 import { Icon } from "./Icon";
 import { useLocale, useFavorites } from "./providers";
 import { SearchOverlay } from "./Search";
-import { primaryNav } from "@/lib/nav";
+import { primaryNav, orderByKeys } from "@/lib/nav";
 import { getCurrentLang, setLang, type Lang } from "./GoogleTranslate";
 import type { SearchDoc } from "@/content";
 
@@ -114,8 +114,8 @@ export function SiteChrome({ searchIndex }: { searchIndex: SearchDoc[] }) {
   // O painel administrativo tem seu próprio layout (sem o chrome do guia)
   if (pathname.startsWith("/admin")) return null;
 
-  // Botões configuráveis no painel: ícone (navicon.<key>) e visibilidade (navhide.<key>)
-  const navVisible = primaryNav.filter((item) => cfg(`navhide.${item.key}`) !== "1");
+  // Botões configuráveis no painel: ordem (navorder.principal), ícone (navicon.<key>) e visibilidade (navhide.<key>)
+  const navVisible = orderByKeys(primaryNav, cfg("navorder.principal")).filter((item) => cfg(`navhide.${item.key}`) !== "1");
   const iconFor = (item: { key: string; icon: string }) => cfg(`navicon.${item.key}`) || item.icon;
   const gridColsClass = navVisible.length === 5 ? "grid-cols-5" : navVisible.length === 4 ? "grid-cols-4" : navVisible.length === 3 ? "grid-cols-3" : "grid-cols-2";
 

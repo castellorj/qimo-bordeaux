@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Icon } from "./Icon";
 import { useLocale } from "./providers";
+import { orderByKeys } from "@/lib/nav";
 
 export interface HubItem {
   href: string;
@@ -12,9 +13,9 @@ export interface HubItem {
 }
 
 // Card grande com foto (usado em Descobrir)
-export function HubGridPhotos({ items }: { items: HubItem[] }) {
+export function HubGridPhotos({ items, orderKey }: { items: HubItem[]; orderKey?: string }) {
   const { t, cfg } = useLocale();
-  const visible = items.filter((it) => cfg(`navhide.${it.key}`) !== "1");
+  const visible = orderByKeys(items, orderKey ? cfg(`navorder.${orderKey}`) : undefined).filter((it) => cfg(`navhide.${it.key}`) !== "1");
   return (
     <div className="grid gap-5 sm:grid-cols-2">
       {visible.map((it) => (
@@ -45,9 +46,9 @@ export function HubGridPhotos({ items }: { items: HubItem[] }) {
 }
 
 // Card com ícone (usado em Viagem / Mais)
-export function HubGridIcons({ items }: { items: HubItem[] }) {
+export function HubGridIcons({ items, orderKey }: { items: HubItem[]; orderKey?: string }) {
   const { t, cfg } = useLocale();
-  const visible = items.filter((it) => cfg(`navhide.${it.key}`) !== "1");
+  const visible = orderByKeys(items, orderKey ? cfg(`navorder.${orderKey}`) : undefined).filter((it) => cfg(`navhide.${it.key}`) !== "1");
   return (
     <div className="grid gap-4 sm:grid-cols-2">
       {visible.map((it) => (

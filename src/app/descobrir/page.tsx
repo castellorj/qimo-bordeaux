@@ -16,7 +16,7 @@ export default function DescobrirPage() {
     <>
       <PageHero section="descobrir" small />
       <div className="container-editorial py-10">
-        <HubGridPhotos items={items} />
+        <HubGridPhotos items={items} orderKey="descobrir" />
       </div>
     </>
   );

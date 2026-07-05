@@ -4,6 +4,16 @@ export interface NavItem {
   icon: string;
 }
 
+// Ordena itens por uma lista de chaves (CSV vinda do painel). Chaves não listadas
+// ficam no fim, preservando a ordem original.
+export function orderByKeys<T extends { key: string }>(items: T[], csv?: string): T[] {
+  if (!csv) return items;
+  const order = csv.split(",").map((s) => s.trim()).filter(Boolean);
+  if (!order.length) return items;
+  const rank = (k: string) => { const i = order.indexOf(k); return i < 0 ? 1000 : i; };
+  return items.map((it, i) => ({ it, i })).sort((a, b) => rank(a.it.key) - rank(b.it.key) || a.i - b.i).map((x) => x.it);
+}
+
 // Navegação principal — 5 áreas (tab bar nativa)
 export const primaryNav: NavItem[] = [
   { key: "hoje", href: "/", icon: "Home" },

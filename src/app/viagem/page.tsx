@@ -7,7 +7,7 @@ export default function ViagemPage() {
     <>
       <PageHero section="viagem" small />
       <div className="container-editorial py-10">
-        <HubGridIcons items={viagemLinks} />
+        <HubGridIcons items={viagemLinks} orderKey="viagem" />
       </div>
     </>
   );
