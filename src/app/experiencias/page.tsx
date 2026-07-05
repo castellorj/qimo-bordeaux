@@ -8,6 +8,7 @@ import { Icon } from "@/components/Icon";
 import { ActionBar } from "@/components/ActionBar";
 import { experienceActions } from "@/lib/reserve";
 import { useGuideKind } from "@/components/GuideContent";
+import { Editable } from "@/components/Editable";
 import type { Experience } from "@/lib/types";
 
 export default function ExperienciasPage() {
@@ -31,9 +32,9 @@ export default function ExperienciasPage() {
                 )}
               </div>
               <div className="flex flex-1 flex-col p-6">
-                <span className="font-sans text-[11px] uppercase tracking-wide2 text-gold">{e.category}</span>
-                <h2 className="mt-1.5 font-serif text-xl font-light leading-tight">{e.name}</h2>
-                <p className="mt-2 flex-1 font-sans text-[13px] leading-relaxed text-muted">{e.description}</p>
+                <Editable as="span" kind="experience" slug={e.slug} field="category" value={e.category} label="Categoria" className="font-sans text-[11px] uppercase tracking-wide2 text-gold">{e.category}</Editable>
+                <Editable as="h2" kind="experience" slug={e.slug} field="name" value={e.name} label="Nome" className="mt-1.5 font-serif text-xl font-light leading-tight">{e.name}</Editable>
+                <Editable as="p" kind="experience" slug={e.slug} field="description" value={e.description} label="Descrição" multiline className="mt-2 flex-1 font-sans text-[13px] leading-relaxed text-muted">{e.description}</Editable>
                 <div className="mt-4 flex flex-wrap items-center gap-2">
                   {e.location && <Pill icon="MapPin">{e.location}</Pill>}
                   {e.duration && <Pill icon="Clock">{e.duration}</Pill>}

@@ -6,6 +6,7 @@ import { FavoriteButton, QimoSeal, Pill } from "@/components/ui";
 import { Icon } from "@/components/Icon";
 import { taxFreeGuide } from "@/content";
 import { useGuideKind } from "@/components/GuideContent";
+import { Editable } from "@/components/Editable";
 import type { ShoppingItem } from "@/lib/types";
 
 export default function ComprasPage() {
@@ -28,16 +29,16 @@ export default function ComprasPage() {
                   <span className="font-sans text-[11px] uppercase tracking-wide2 text-gold">{s.category}</span>
                   {s.qimoSelect && <QimoSeal />}
                 </div>
-                <h2 className="mt-1.5 font-serif text-xl font-light leading-tight">{s.name}</h2>
-                <p className="mt-2 flex-1 font-sans text-[13px] leading-relaxed text-muted">{s.description}</p>
+                <Editable as="h2" kind="shopping" slug={s.slug} field="name" value={s.name} label="Nome" className="mt-1.5 font-serif text-xl font-light leading-tight">{s.name}</Editable>
+                <Editable as="p" kind="shopping" slug={s.slug} field="description" value={s.description} label="Descrição" multiline className="mt-2 flex-1 font-sans text-[13px] leading-relaxed text-muted">{s.description}</Editable>
                 <div className="mt-4 flex flex-wrap items-center gap-2">
                   {s.priceRange && <Pill icon="Wallet">{s.priceRange}</Pill>}
                   {s.taxFree && <Pill icon="ShieldCheck">Tax Free</Pill>}
                 </div>
                 {s.whereToBuy && (
-                  <p className="mt-3 font-sans text-[12px] text-muted">
+                  <Editable as="p" kind="shopping" slug={s.slug} field="whereToBuy" value={s.whereToBuy} label="Onde comprar" multiline className="mt-3 font-sans text-[12px] text-muted">
                     <span className="text-gold">Onde:</span> {s.whereToBuy.join(" · ")}
-                  </p>
+                  </Editable>
                 )}
               </div>
             </article>

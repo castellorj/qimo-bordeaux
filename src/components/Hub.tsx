@@ -13,10 +13,11 @@ export interface HubItem {
 
 // Card grande com foto (usado em Descobrir)
 export function HubGridPhotos({ items }: { items: HubItem[] }) {
-  const { t } = useLocale();
+  const { t, cfg } = useLocale();
+  const visible = items.filter((it) => cfg(`navhide.${it.key}`) !== "1");
   return (
     <div className="grid gap-5 sm:grid-cols-2">
-      {items.map((it) => (
+      {visible.map((it) => (
         <Link key={it.href} href={it.href} className="card card-hover group relative overflow-hidden">
           <div className="relative h-44 overflow-hidden sm:h-52">
             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -45,13 +46,14 @@ export function HubGridPhotos({ items }: { items: HubItem[] }) {
 
 // Card com ícone (usado em Viagem / Mais)
 export function HubGridIcons({ items }: { items: HubItem[] }) {
-  const { t } = useLocale();
+  const { t, cfg } = useLocale();
+  const visible = items.filter((it) => cfg(`navhide.${it.key}`) !== "1");
   return (
     <div className="grid gap-4 sm:grid-cols-2">
-      {items.map((it) => (
+      {visible.map((it) => (
         <Link key={it.href + it.key} href={it.href} className="card card-hover group flex items-center gap-4 p-5">
           <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full border text-petrol-600 transition-colors group-hover:border-gold group-hover:text-gold-deep" style={{ borderColor: "var(--line)" }}>
-            <Icon name={it.icon} size={22} />
+            <Icon name={cfg(`navicon.${it.key}`) || it.icon} size={22} />
           </span>
           <span className="flex-1">
             <span className="block font-serif text-xl font-light leading-tight">{t(`nav.${it.key}`)}</span>
