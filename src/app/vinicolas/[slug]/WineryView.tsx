@@ -8,6 +8,7 @@ import { ReadMore } from "@/components/ReadMore";
 import { ActionBar } from "@/components/ActionBar";
 import { wineryActions } from "@/lib/reserve";
 import { useGuideItem } from "@/components/GuideContent";
+import { Editable } from "@/components/Editable";
 import type { Winery } from "@/lib/types";
 
 function Block({ title, icon, children }: { title: string; icon: string; children: React.ReactNode }) {
@@ -45,11 +46,11 @@ export function WineryView({ slug }: { slug: string }) {
           <div className="mt-3 flex items-end justify-between gap-4">
             <div>
               <div className="flex items-center gap-3">
-                <p className="font-sans text-[11px] uppercase tracking-luxe text-gold-soft">{w.appellation}</p>
+                <Editable as="p" kind="winery" slug={w.slug} field="appellation" value={w.appellation} label="Denominação" className="font-sans text-[11px] uppercase tracking-luxe text-gold-soft">{w.appellation}</Editable>
                 {w.qimoSelect && <QimoSeal />}
               </div>
-              <h1 className="display mt-2 text-4xl text-cream sm:text-6xl">{w.name}</h1>
-              {w.classification && <p className="mt-2 font-serif text-lg font-light italic text-cream/80">{w.classification}</p>}
+              <Editable as="h1" kind="winery" slug={w.slug} field="name" value={w.name} label="Nome" className="display mt-2 text-4xl text-cream sm:text-6xl">{w.name}</Editable>
+              {w.classification && <Editable as="p" kind="winery" slug={w.slug} field="classification" value={w.classification} label="Classificação" className="mt-2 font-serif text-lg font-light italic text-cream/80">{w.classification}</Editable>}
             </div>
             <FavoriteButton id={`winery:${w.slug}`} floating />
           </div>
@@ -59,7 +60,9 @@ export function WineryView({ slug }: { slug: string }) {
       <div className="container-editorial py-14">
         <div className="grid gap-12 lg:grid-cols-[1fr_300px]">
           <div className="space-y-10">
-            <ReadMore text={w.history} className="font-serif text-xl font-light leading-relaxed sm:text-2xl" />
+            <Editable as="div" kind="winery" slug={w.slug} field="history" value={w.history} label="História" multiline>
+              <ReadMore text={w.history} className="font-serif text-xl font-light leading-relaxed sm:text-2xl" />
+            </Editable>
             <div className="hairline" />
             <div className="grid gap-10 sm:grid-cols-2">
               {w.terroir && (

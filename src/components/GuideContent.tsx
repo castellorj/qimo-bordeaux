@@ -19,6 +19,10 @@ const ANON =
 type ByKind = Record<string, { slug: string; data: any; sort: number }[]>;
 const Ctx = createContext<ByKind | null>(null);
 
+// Contexto de edição inline (ativo quando o guia roda dentro do preview do painel).
+const EditCtx = createContext<{ editMode: boolean }>({ editMode: false });
+export function useEditMode() { return useContext(EditCtx).editMode; }
+
 // Mescla conteúdo do banco (ao vivo) sobre os arquivos (base instantânea/offline).
 function merged<T extends { slug: string }>(kind: string, db: ByKind | null): T[] {
   const file = (FILES[kind] || []) as T[];
@@ -31,21 +35,43 @@ function merged<T extends { slug: string }>(kind: string, db: ByKind | null): T[
   return [...bySlug.values()].sort((a, b) => (order.get(a.slug) ?? 999) - (order.get(b.slug) ?? 999));
 }
 
+async function fetchContent(): Promise<ByKind> {
+  const r = await fetch(`${URL}/rest/v1/bordeaux_content?select=kind,slug,data,sort&published=eq.true&order=sort`, {
+    headers: { apikey: ANON, Authorization: `Bearer ${ANON}` },
+    cache: "no-store",
+  });
+  const rows: any[] = r.ok ? await r.json() : [];
+  const byKind: ByKind = {};
+  rows.forEach((row) => { (byKind[row.kind] ||= []).push(row); });
+  return byKind;
+}
+
 export function GuideContentProvider({ children }: { children: React.ReactNode }) {
   const [db, setDb] = useState<ByKind | null>(null);
+  const [editMode, setEditMode] = useState(false);
+
   useEffect(() => {
-    fetch(`${URL}/rest/v1/bordeaux_content?select=kind,slug,data,sort&published=eq.true&order=sort`, {
-      headers: { apikey: ANON, Authorization: `Bearer ${ANON}` },
-    })
-      .then((r) => (r.ok ? r.json() : []))
-      .then((rows: any[]) => {
-        const byKind: ByKind = {};
-        rows.forEach((r) => { (byKind[r.kind] ||= []).push(r); });
-        setDb(byKind);
-      })
-      .catch(() => {});
+    const refresh = () => fetchContent().then(setDb).catch(() => {});
+    refresh();
+
+    // Modo edição: ativado via query (?qimoedit=1) quando dentro do preview do painel.
+    const inFrame = typeof window !== "undefined" && window.self !== window.top;
+    const flagged = typeof window !== "undefined" && new URLSearchParams(window.location.search).has("qimoedit");
+    if (inFrame && flagged) setEditMode(true);
+
+    // Refresh ao vivo quando o painel avisa que salvou algo.
+    const onMsg = (e: MessageEvent) => {
+      if (e.data?.source === "qimo-admin" && e.data?.type === "qimo-refresh") refresh();
+    };
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
   }, []);
-  return <Ctx.Provider value={db}>{children}</Ctx.Provider>;
+
+  return (
+    <Ctx.Provider value={db}>
+      <EditCtx.Provider value={{ editMode }}>{children}</EditCtx.Provider>
+    </Ctx.Provider>
+  );
 }
 
 export function useGuideKind<T extends { slug: string }>(kind: string): T[] {

@@ -1,7 +1,8 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
+import { updateContentField } from "@/lib/supabase/content-admin";
 import clsx from "clsx";
 
 const DEVICES = [
@@ -14,24 +15,59 @@ const ROUTES = [
   { path: "/", label: "Início" },
   { path: "/programacao", label: "Programação" },
   { path: "/cidades", label: "Cidades" },
+  { path: "/cidades/bordeaux", label: "· Bordeaux (detalhe)" },
   { path: "/vinicolas", label: "Vinícolas" },
   { path: "/restaurantes", label: "Restaurantes" },
   { path: "/vinhos", label: "Vinhos" },
   { path: "/experiencias", label: "Experiências" },
 ];
 
+interface EditTarget {
+  kind: string; slug: string; field: string; label: string;
+  value: string | string[]; isArray: boolean; multiline: boolean;
+}
+
 export function PreviewPane() {
   const [device, setDevice] = useState<(typeof DEVICES)[number]["key"]>("mobile");
   const [route, setRoute] = useState("/");
+  const [editMode, setEditMode] = useState(false);
+  const [target, setTarget] = useState<EditTarget | null>(null);
+  const [draft, setDraft] = useState("");
+  const [saving, setSaving] = useState(false);
   const ref = useRef<HTMLIFrameElement>(null);
   const dev = DEVICES.find((d) => d.key === device)!;
 
-  const reload = () => { if (ref.current) ref.current.src = route; };
+  const src = (p: string) => (editMode ? `${p}${p.includes("?") ? "&" : "?"}qimoedit=1` : p);
+  const reload = () => { if (ref.current) ref.current.src = src(route); };
+
+  // Recebe cliques em campos editáveis vindos do guia (dentro do iframe).
+  useEffect(() => {
+    const onMsg = (e: MessageEvent) => {
+      if (e.data?.source === "qimo-guide" && e.data?.type === "edit-field") {
+        const d = e.data as any;
+        setTarget({ kind: d.kind, slug: d.slug, field: d.field, label: d.label, value: d.value, isArray: !!d.isArray, multiline: !!d.multiline });
+        setDraft(Array.isArray(d.value) ? d.value.join("\n") : String(d.value ?? ""));
+      }
+    };
+    window.addEventListener("message", onMsg);
+    return () => window.removeEventListener("message", onMsg);
+  }, []);
+
+  const save = async () => {
+    if (!target) return;
+    setSaving(true);
+    const val = target.isArray ? draft.split("\n").map((s) => s.trim()).filter(Boolean) : draft;
+    await updateContentField(target.kind, target.slug, target.field, val);
+    // Pede ao guia (iframe) que recarregue o conteúdo ao vivo.
+    ref.current?.contentWindow?.postMessage({ source: "qimo-admin", type: "qimo-refresh" }, "*");
+    setSaving(false);
+    setTarget(null);
+  };
 
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="flex gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           {DEVICES.map((d) => (
             <button key={d.key} onClick={() => setDevice(d.key)}
               className={clsx("flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-sans text-[12px] transition-colors",
@@ -40,9 +76,15 @@ export function PreviewPane() {
               <Icon name={d.icon} size={14} /> {d.label}
             </button>
           ))}
+          <button onClick={() => { setEditMode((v) => { const nv = !v; if (ref.current) ref.current.src = nv ? `${route}${route.includes("?") ? "&" : "?"}qimoedit=1` : route; return nv; }); }}
+            className={clsx("ml-2 flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-sans text-[12px] transition-colors",
+              editMode ? "border-petrol-600 bg-petrol-600 text-white" : "text-muted hover:text-petrol-600")}
+            style={{ borderColor: editMode ? undefined : "var(--line)" }}>
+            <Icon name="Pencil" size={13} /> {editMode ? "Editando" : "Modo edição"}
+          </button>
         </div>
         <div className="flex items-center gap-2">
-          <select value={route} onChange={(e) => setRoute(e.target.value)}
+          <select value={route} onChange={(e) => { setRoute(e.target.value); if (ref.current) ref.current.src = editMode ? `${e.target.value}${e.target.value.includes("?") ? "&" : "?"}qimoedit=1` : e.target.value; }}
             className="rounded-full border bg-transparent px-3 py-1.5 font-sans text-[12px] outline-none focus:border-gold" style={{ borderColor: "var(--line)" }}>
             {ROUTES.map((r) => <option key={r.path} value={r.path}>{r.label}</option>)}
           </select>
@@ -50,22 +92,46 @@ export function PreviewPane() {
         </div>
       </div>
 
-      <div className="mt-4 grid place-items-center rounded-[16px] bg-black/[0.03] p-4 sm:p-8">
-        <div
-          className="overflow-hidden rounded-[20px] border bg-white shadow-lg transition-all"
-          style={{ width: dev.w ? dev.w : "100%", maxWidth: "100%", borderColor: "var(--line)" }}
-        >
-          <iframe
-            ref={ref}
-            src={route}
-            title="Pré-visualização do guia"
-            className="block w-full border-0"
-            style={{ height: device === "desktop" ? 720 : 760 }}
-          />
+      {editMode && (
+        <p className="mt-3 flex items-center gap-2 rounded-[10px] bg-petrol-600/10 px-3 py-2 font-sans text-[12px] text-petrol-600">
+          <Icon name="Pencil" size={13} /> Clique em qualquer texto tracejado na pré-visualização para editá-lo. As alterações salvam direto no guia.
+        </p>
+      )}
+
+      <div className={clsx("mt-4 grid gap-4", target ? "lg:grid-cols-[1fr_320px]" : "grid-cols-1")}>
+        <div className="grid place-items-center rounded-[16px] bg-black/[0.03] p-4 sm:p-6">
+          <div className="overflow-hidden rounded-[20px] border bg-white shadow-lg transition-all"
+            style={{ width: dev.w ? dev.w : "100%", maxWidth: "100%", borderColor: "var(--line)" }}>
+            <iframe ref={ref} src={src(route)} title="Pré-visualização do guia" className="block w-full border-0"
+              style={{ height: device === "desktop" ? 720 : 760 }} />
+          </div>
         </div>
+
+        {target && (
+          <div className="card h-fit p-5 lg:sticky lg:top-4">
+            <div className="flex items-center justify-between">
+              <p className="kicker">Editar campo</p>
+              <button onClick={() => setTarget(null)} className="text-muted hover:text-gold-deep"><Icon name="X" size={16} /></button>
+            </div>
+            <p className="mt-2 font-serif text-lg font-light">{target.label}</p>
+            <p className="font-sans text-[11px] text-muted">{target.kind} · {target.slug}</p>
+            {target.multiline ? (
+              <textarea value={draft} onChange={(e) => setDraft(e.target.value)} rows={target.isArray ? 6 : 8}
+                className="mt-3 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm leading-relaxed outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+            ) : (
+              <input value={draft} onChange={(e) => setDraft(e.target.value)}
+                className="mt-3 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+            )}
+            {target.isArray && <p className="mt-1 font-sans text-[11px] text-muted">Um item por linha.</p>}
+            <div className="mt-4 flex gap-2">
+              <button onClick={save} disabled={saving} className="btn-primary flex-1">{saving ? "Salvando…" : "Salvar"}</button>
+              <button onClick={() => setTarget(null)} className="btn-ghost">Cancelar</button>
+            </div>
+          </div>
+        )}
       </div>
       <p className="mt-3 text-center font-sans text-[11px] text-muted">
-        As edições de conteúdo aparecem aqui em tempo real — recarregue para ver as últimas alterações.
+        As edições aparecem no guia em tempo real — o painel recarrega o conteúdo automaticamente ao salvar.
       </p>
     </div>
   );

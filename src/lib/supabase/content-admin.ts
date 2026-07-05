@@ -59,6 +59,18 @@ export async function updateSort(id: string, sort: number) {
   return supabase().from("bordeaux_content").update({ sort }).eq("id", id);
 }
 
+// ---- Edição inline: patch de um único campo ----
+export async function updateContentField(kind: string, slug: string, field: string, value: any) {
+  const sb = supabase();
+  const { data: row } = await sb.from("bordeaux_content").select("data,sort,published").eq("kind", kind).eq("slug", slug).maybeSingle();
+  const base = (row as any)?.data || { slug };
+  const merged = { ...base, [field]: value };
+  return sb.from("bordeaux_content").upsert(
+    { kind, slug, data: merged, sort: (row as any)?.sort ?? 999, published: (row as any)?.published ?? true },
+    { onConflict: "kind,slug" }
+  );
+}
+
 // ---- Textos / rótulos de botões (override do i18n) ----
 export interface SettingVals { pt?: string; en?: string; es?: string }
 export async function listSettings(): Promise<Record<string, SettingVals>> {

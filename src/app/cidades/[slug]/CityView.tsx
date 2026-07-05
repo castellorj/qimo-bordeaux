@@ -6,6 +6,7 @@ import { Icon } from "@/components/Icon";
 import { FavoriteButton, Crumb, Pill } from "@/components/ui";
 import { ReadMore } from "@/components/ReadMore";
 import { useGuideItem } from "@/components/GuideContent";
+import { Editable } from "@/components/Editable";
 import type { City } from "@/lib/types";
 
 function List({ title, icon, items }: { title: string; icon: string; items?: string[] }) {
@@ -44,9 +45,9 @@ export function CityView({ slug }: { slug: string }) {
           <Crumb href="/cidades" label="Cidades" />
           <div className="mt-3 flex items-end justify-between gap-4">
             <div>
-              <p className="font-sans text-[11px] uppercase tracking-luxe text-gold-soft">{c.region}</p>
-              <h1 className="display mt-2 text-4xl text-cream sm:text-6xl">{c.name}</h1>
-              <p className="mt-2 max-w-xl font-serif text-lg font-light italic text-cream/80">{c.tagline}</p>
+              <Editable as="p" kind="city" slug={c.slug} field="region" value={c.region} label="Região" className="font-sans text-[11px] uppercase tracking-luxe text-gold-soft">{c.region}</Editable>
+              <Editable as="h1" kind="city" slug={c.slug} field="name" value={c.name} label="Nome" className="display mt-2 text-4xl text-cream sm:text-6xl">{c.name}</Editable>
+              <Editable as="p" kind="city" slug={c.slug} field="tagline" value={c.tagline} label="Frase de destaque" className="mt-2 max-w-xl font-serif text-lg font-light italic text-cream/80">{c.tagline}</Editable>
             </div>
             <FavoriteButton id={`city:${c.slug}`} floating />
           </div>
@@ -58,9 +59,9 @@ export function CityView({ slug }: { slug: string }) {
           <div className="space-y-12">
             <div>
               <h2 className="kicker">História</h2>
-              <div className="mt-4">
+              <Editable as="div" kind="city" slug={c.slug} field="history" value={c.history} label="História" multiline className="mt-4">
                 <ReadMore text={c.history} className="font-serif text-xl font-light leading-relaxed sm:text-2xl" />
-              </div>
+              </Editable>
             </div>
             <div className="hairline" />
             <div className="grid gap-10 sm:grid-cols-2">

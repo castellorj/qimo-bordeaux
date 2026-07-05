@@ -4,6 +4,7 @@ import { PageHero } from "@/components/PageHero";
 import { Icon } from "@/components/Icon";
 import { FavoriteButton, QimoSeal, Crumb, Pill } from "@/components/ui";
 import { useGuideItem } from "@/components/GuideContent";
+import { Editable } from "@/components/Editable";
 import type { Appellation } from "@/lib/types";
 
 function Spec({ icon, label, value }: { icon: string; label: string; value?: string }) {
@@ -35,11 +36,11 @@ export function WineView({ slug }: { slug: string }) {
 
         <div className="grid gap-12 lg:grid-cols-[1fr_320px]">
           <div className="space-y-10">
-            <p className="font-serif text-xl font-light leading-relaxed sm:text-2xl" style={{ color: "var(--text)" }}>{a.description}</p>
+            <Editable as="p" kind="wine" slug={a.slug} field="description" value={a.description} label="Descrição" multiline className="font-serif text-xl font-light leading-relaxed sm:text-2xl" style={{ color: "var(--text)" }}>{a.description}</Editable>
 
             <div>
               <h3 className="kicker flex items-center gap-2"><Icon name="Martini" size={14} /> Perfil sensorial</h3>
-              <p className="mt-3 font-sans text-[15px] leading-relaxed" style={{ color: "var(--text-muted)" }}>{a.profile}</p>
+              <Editable as="p" kind="wine" slug={a.slug} field="profile" value={a.profile} label="Perfil sensorial" multiline className="mt-3 font-sans text-[15px] leading-relaxed" style={{ color: "var(--text-muted)" }}>{a.profile}</Editable>
             </div>
 
             <div>
