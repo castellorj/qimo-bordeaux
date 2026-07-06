@@ -184,10 +184,16 @@ function Shell({ email }: { email?: string }) {
 /* ---------------- Passeios (editar capacidade) ---------------- */
 function Passeios({ acts, onChange }: { acts: BxActivityFull[]; onChange: () => void }) {
   return (
-    <div className="space-y-2">
-      {acts.map((a) => (
-        <PasseioRow key={a.id} a={a} onChange={onChange} />
-      ))}
+    <div>
+      <p className="mb-4 flex items-start gap-2 font-sans text-[13px] text-muted">
+        <Icon name="Info" size={14} className="mt-0.5 shrink-0 text-gold-deep" />
+        <span>Defina a <strong>capacidade</strong> (vagas totais) de cada passeio. Deixe <strong>0</strong> para “livre” (sem limite). Passeios ocultos não aparecem no guia.</span>
+      </p>
+      <div className="space-y-2">
+        {acts.map((a) => (
+          <PasseioRow key={a.id} a={a} onChange={onChange} />
+        ))}
+      </div>
     </div>
   );
 }
@@ -197,21 +203,32 @@ function PasseioRow({ a, onChange }: { a: BxActivityFull; onChange: () => void }
   const dirty = cap !== (a.capacity_total ?? 0);
   const save = async () => { setBusy(true); await updateCapacity(a.id, cap); await onChange(); setBusy(false); };
   const hidden = a.status === "hidden";
+  const cap0 = a.capacity_total;
+  const pct = cap0 ? Math.min(100, Math.round((a.reserved / cap0) * 100)) : 0;
+  const tone = cap0 == null ? "muted" : (a.available ?? 0) <= 0 ? "red" : a.reserved >= cap0 * 0.8 ? "amber" : "green";
   return (
     <div className="card flex flex-wrap items-center gap-3 p-4">
       <div className="min-w-0 flex-1">
         <p className="truncate font-serif text-[17px] font-light">Dia {a.day_number} · {a.title}</p>
-        <p className="font-sans text-[12px] text-muted">Reservados: {a.reserved} · Espera: {a.waitlisted}</p>
+        <p className="font-sans text-[12px] text-muted">
+          {cap0 != null ? `${a.reserved} de ${cap0} vagas ocupadas` : `${a.reserved} reservados · livre`}
+          {a.waitlisted > 0 && ` · ${a.waitlisted} na lista de espera`}
+        </p>
+        {cap0 != null && (
+          <div className="mt-1.5 h-1.5 w-44 overflow-hidden rounded-full bg-black/5">
+            <div className="h-full rounded-full" style={{ width: `${pct}%`, background: tone === "red" ? "#8f2f2f" : tone === "amber" ? "var(--gold)" : "var(--olive)" }} />
+          </div>
+        )}
       </div>
-      <label className="flex items-center gap-2 font-sans text-[12px] text-muted">
-        Capacidade
+      <label className="flex flex-col gap-1">
+        <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Capacidade (vagas)</span>
         <input type="number" min={0} value={cap} onChange={(e) => setCap(parseInt(e.target.value) || 0)}
-          className="w-20 rounded-[8px] border bg-transparent px-2 py-1.5 text-center font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+          className="w-24 rounded-[8px] border bg-transparent px-2 py-1.5 text-center font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
       </label>
       {dirty && <button disabled={busy} onClick={save} className="btn-primary !px-4 !py-2">{busy ? "…" : "Salvar"}</button>}
       <button onClick={async () => { await setHidden(a.id, !hidden); onChange(); }}
-        className="flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-sans text-[11px] text-muted transition-colors hover:border-gold" style={{ borderColor: "var(--line)" }}>
-        <Icon name={hidden ? "Plus" : "Minus"} size={12} /> {hidden ? "Oculto" : "Visível"}
+        className={clsx("flex items-center gap-1.5 rounded-full px-3 py-1.5 font-sans text-[11px]", hidden ? "bg-black/5 text-muted" : "bg-olive/15 text-olive-deep")}>
+        <Icon name={hidden ? "EyeOff" : "Eye"} size={12} /> {hidden ? "Oculto" : "Visível"}
       </button>
     </div>
   );
@@ -229,16 +246,26 @@ function Participantes({ parts, onChange }: { parts: BxParticipant[]; onChange: 
     <div className="grid gap-8 lg:grid-cols-[340px_1fr]">
       <form onSubmit={add} className="card h-fit p-6">
         <h3 className="font-serif text-xl font-light">Novo participante</h3>
+        <p className="mt-1 font-sans text-[12px] leading-relaxed text-muted">Quem faz parte da viagem. Depois use “Reservas” para inscrevê-los nos passeios.</p>
         <div className="mt-4 space-y-3">
           {[
-            ["full_name", "Nome completo *"], ["family", "Família"], ["phone", "Telefone"], ["email", "E-mail"],
-          ].map(([k, ph]) => (
-            <input key={k} placeholder={ph} value={(f as any)[k]} onChange={(e) => setF({ ...f, [k]: e.target.value })}
-              className="w-full rounded-[10px] border bg-transparent px-4 py-2.5 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+            { k: "full_name", label: "Nome completo *" },
+            { k: "family", label: "Família / grupo", hint: "Para agrupar casais e famílias." },
+            { k: "phone", label: "Telefone" },
+            { k: "email", label: "E-mail" },
+          ].map(({ k, label, hint }) => (
+            <label key={k} className="block">
+              <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">{label}</span>
+              {hint && <span className="mb-1 block font-sans text-[11px] text-muted">{hint}</span>}
+              <input value={(f as any)[k]} onChange={(e) => setF({ ...f, [k]: e.target.value })}
+                className="mt-1 w-full rounded-[10px] border bg-transparent px-4 py-2.5 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+            </label>
           ))}
-          <label className="flex items-center gap-2 font-sans text-[12px] text-muted">Acompanhantes
+          <label className="block">
+            <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Acompanhantes</span>
+            <span className="mb-1 block font-sans text-[11px] text-muted">Quantas pessoas vêm com este participante.</span>
             <input type="number" min={0} value={f.companions} onChange={(e) => setF({ ...f, companions: parseInt(e.target.value) || 0 })}
-              className="w-20 rounded-[8px] border bg-transparent px-2 py-1.5 text-center outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+              className="mt-1 w-24 rounded-[8px] border bg-transparent px-3 py-2 text-center outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
           </label>
           <button disabled={busy} className="btn-primary w-full">{busy ? "…" : "Adicionar"}</button>
         </div>
