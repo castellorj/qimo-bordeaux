@@ -100,7 +100,7 @@ export function buildSearchIndex(): SearchDoc[] {
     docs.push({
       title: r.name,
       subtitle: `${r.city}${r.stars ? " · " + r.stars : ""}`,
-      href: `/restaurantes#${r.slug}`,
+      href: `/restaurantes/${r.slug}`,
       category: "Restaurante",
       keywords: `${r.name} ${r.city} ${r.specialty ?? ""} ${r.chef ?? ""}`,
     })
@@ -109,7 +109,7 @@ export function buildSearchIndex(): SearchDoc[] {
     docs.push({
       title: g.name,
       subtitle: g.category,
-      href: `/gastronomia#${g.slug}`,
+      href: `/gastronomia/${g.slug}`,
       category: "Gastronomia",
       keywords: `${g.name} ${g.description}`,
     })
@@ -118,7 +118,7 @@ export function buildSearchIndex(): SearchDoc[] {
     docs.push({
       title: e.name,
       subtitle: e.category,
-      href: `/experiencias#${e.slug}`,
+      href: `/experiencias/${e.slug}`,
       category: "Experiência",
       keywords: `${e.name} ${e.description}`,
     })
@@ -127,7 +127,7 @@ export function buildSearchIndex(): SearchDoc[] {
     docs.push({
       title: s.name,
       subtitle: s.category,
-      href: `/compras#${s.slug}`,
+      href: `/compras/${s.slug}`,
       category: "Compras",
       keywords: `${s.name} ${s.description}`,
     })

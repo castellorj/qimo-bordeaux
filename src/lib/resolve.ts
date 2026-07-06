@@ -2,6 +2,7 @@ import {
   cities,
   wineries,
   appellations,
+  restaurants,
   gastronomy,
   experiences,
   shopping,
@@ -32,17 +33,21 @@ export function resolveFav(id: string): Resolved | null {
       const a = appellations.find((x) => x.slug === slug);
       return a ? { id, title: a.name, subtitle: a.tagline, href: `/vinhos/${a.slug}`, category: "Vinho" } : null;
     }
+    case "resto": {
+      const r = restaurants.find((x) => x.slug === slug);
+      return r ? { id, title: r.name, subtitle: r.city, href: `/restaurantes/${r.slug}`, category: "Restaurante" } : null;
+    }
     case "gastro": {
       const g = gastronomy.find((x) => x.slug === slug);
-      return g ? { id, title: g.name, subtitle: g.category, href: `/gastronomia#${g.slug}`, category: "Gastronomia" } : null;
+      return g ? { id, title: g.name, subtitle: g.category, href: `/gastronomia/${g.slug}`, category: "Gastronomia" } : null;
     }
     case "exp": {
       const e = experiences.find((x) => x.slug === slug);
-      return e ? { id, title: e.name, subtitle: e.category, href: `/experiencias#${e.slug}`, category: "Experiência" } : null;
+      return e ? { id, title: e.name, subtitle: e.category, href: `/experiencias/${e.slug}`, category: "Experiência" } : null;
     }
     case "shop": {
       const s = shopping.find((x) => x.slug === slug);
-      return s ? { id, title: s.name, subtitle: s.category, href: `/compras#${s.slug}`, category: "Compras" } : null;
+      return s ? { id, title: s.name, subtitle: s.category, href: `/compras/${s.slug}`, category: "Compras" } : null;
     }
     case "act": {
       for (const d of itinerary) {

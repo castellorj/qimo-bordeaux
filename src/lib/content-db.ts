@@ -54,3 +54,6 @@ export async function getCity(slug: string) { return (await getCities()).find((c
 export async function getWinery(slug: string) { return (await getWineries()).find((w) => w.slug === slug); }
 export async function getWine(slug: string) { return (await getWines()).find((w) => w.slug === slug); }
 export async function getRestaurant(slug: string) { return (await getRestaurants()).find((r) => r.slug === slug); }
+export async function getExperience(slug: string) { return (await getExperiences()).find((e) => e.slug === slug); }
+export async function getGastronomyItem(slug: string) { return (await getGastronomy()).find((g) => g.slug === slug); }
+export async function getShoppingItem(slug: string) { return (await getShopping()).find((s) => s.slug === slug); }
