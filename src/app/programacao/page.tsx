@@ -47,7 +47,11 @@ export default function ProgramacaoPage() {
         </div>
       </nav>
 
-      <div className="container-editorial space-y-16 py-10">
+      <p className="container-editorial pt-6 font-sans text-[12px] italic text-muted">
+        Horários sujeitos a alterações — confirmados a bordo.
+      </p>
+
+      <div className="container-editorial space-y-14 pb-10 pt-6">
         {itinerary.map((day, idx) => (
           <section key={day.n} id={`dia-${day.n}`} className="scroll-mt-32">
             {/* Banner fotográfico do dia */}
