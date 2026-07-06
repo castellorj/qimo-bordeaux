@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { Icon } from "./Icon";
@@ -64,6 +65,7 @@ export function WelcomeSheet() {
   const [err, setErr] = useState("");
   const [leaving, setLeaving] = useState(false);
   const restoring = useRef(false);
+  const router = useRouter();
 
   useEffect(() => {
     if (restoring.current) return;
@@ -89,7 +91,11 @@ export function WelcomeSheet() {
   const enter = (guestName?: string) => {
     try { localStorage.setItem(GUEST_LS, JSON.stringify({ name: guestName ?? null })); } catch {}
     setLeaving(true);
-    setTimeout(() => setShow(false), 450);
+    const onHome = typeof window !== "undefined" && window.location.pathname === "/";
+    setTimeout(() => {
+      if (onHome) router.replace("/viagem"); // abre no Viagem como pagina principal
+      else setShow(false);
+    }, 450);
   };
 
   const submitPhone = async (e: React.FormEvent) => {
