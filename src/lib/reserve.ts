@@ -49,7 +49,6 @@ export function restaurantActions(r: Restaurant): Action[] {
   if (r.menuUrl) a.push({ kind: "menu", href: r.menuUrl, labelKey: "act.menu", icon: "BookOpen", external: true });
   if (r.website) a.push({ kind: "site", href: r.website, labelKey: "act.site", icon: "Globe", external: true });
   a.push({ kind: "maps", href: mapsUrl(r.address, r.name), labelKey: "act.maps", icon: "Navigation", external: true });
-  if (r.phone) a.push({ kind: "call", href: `tel:${r.phone}`, labelKey: "act.call", icon: "Phone" });
   if (r.email) a.push({ kind: "email", href: `mailto:${r.email}`, labelKey: "act.email", icon: "Mail" });
   if (r.instagram) a.push({ kind: "instagram", href: r.instagram, labelKey: "act.instagram", icon: "Instagram", external: true });
   return a;

@@ -53,3 +53,4 @@ export async function getShopping() { return merge(fileShopping, await fetchKind
 export async function getCity(slug: string) { return (await getCities()).find((c) => c.slug === slug); }
 export async function getWinery(slug: string) { return (await getWineries()).find((w) => w.slug === slug); }
 export async function getWine(slug: string) { return (await getWines()).find((w) => w.slug === slug); }
+export async function getRestaurant(slug: string) { return (await getRestaurants()).find((r) => r.slug === slug); }
