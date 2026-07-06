@@ -175,3 +175,41 @@ font[style] {
 .pb-safe {
   padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
 }
+
+/* Portão de entrada: telefone (react-phone-number-input) sobre foto escura */
+.qimo-gate .PhoneInput {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(251, 248, 243, 0.25);
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(4px);
+  border-radius: 9999px;
+  padding: 2px 18px;
+  transition: border-color 0.2s;
+}
+.qimo-gate .PhoneInput--focus,
+.qimo-gate .PhoneInput:focus-within {
+  border-color: var(--gold);
+}
+.qimo-gate .PhoneInputInput {
+  background: transparent;
+  border: none;
+  outline: none;
+  color: #fbf8f3;
+  font-size: 15px;
+  padding: 13px 0;
+  width: 100%;
+}
+.qimo-gate .PhoneInputInput::placeholder {
+  color: rgba(251, 248, 243, 0.5);
+}
+.qimo-gate .PhoneInputCountryIcon--border {
+  box-shadow: none;
+  background: transparent;
+}
+.qimo-gate .PhoneInputCountrySelectArrow {
+  color: rgba(251, 248, 243, 0.75);
+  opacity: 1;
+  border-color: currentColor;
+}
