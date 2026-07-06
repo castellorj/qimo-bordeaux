@@ -5,9 +5,49 @@ import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { Icon } from "./Icon";
 import { supabase } from "@/lib/supabase/client";
+import { setLang, getCurrentLang, type Lang } from "./GoogleTranslate";
 
 const DEVICE_LS = "qimo_device_token";
 const GUEST_LS = "qimo:guest";
+
+const LANGS: { code: Lang; label: string; flag: string }[] = [
+  { code: "pt", label: "PT", flag: "🇧🇷" },
+  { code: "en", label: "EN", flag: "🇬🇧" },
+  { code: "es", label: "ES", flag: "🇪🇸" },
+];
+
+const STR: Record<Lang, Record<string, string>> = {
+  pt: {
+    kicker: "Bordeaux Experience",
+    title1: "Bem-vindo a bordo",
+    sub1: "Seu concierge digital pela grande Bordeaux. Informe seu telefone para entrar.",
+    btn1: "Entrar", checking: "Verificando…",
+    title2: "Complete seu cadastro", sub2: "Só mais um passo para abrir o seu guia.",
+    name: "Nome completo *", email: "E-mail *", btn2: "Entrar no guia", registering: "Cadastrando…", back: "← Voltar",
+    errPhone: "Informe um telefone válido, com DDD.", errForm: "Preencha nome e e-mail válidos.",
+    priv: "Seus dados são tratados com discrição. Sem senha, sem spam.",
+  },
+  en: {
+    kicker: "Bordeaux Experience",
+    title1: "Welcome aboard",
+    sub1: "Your digital concierge through greater Bordeaux. Enter your phone number to access the guide.",
+    btn1: "Enter", checking: "Checking…",
+    title2: "Complete your registration", sub2: "Just one more step to open your guide.",
+    name: "Full name *", email: "Email *", btn2: "Enter the guide", registering: "Registering…", back: "← Back",
+    errPhone: "Enter a valid phone number.", errForm: "Enter a valid name and email.",
+    priv: "Your details are handled with discretion. No password, no spam.",
+  },
+  es: {
+    kicker: "Bordeaux Experience",
+    title1: "Bienvenido a bordo",
+    sub1: "Tu concierge digital por la gran Bordeaux. Ingresa tu teléfono para acceder a la guía.",
+    btn1: "Entrar", checking: "Verificando…",
+    title2: "Completa tu registro", sub2: "Solo un paso más para abrir tu guía.",
+    name: "Nombre completo *", email: "Correo *", btn2: "Entrar a la guía", registering: "Registrando…", back: "← Volver",
+    errPhone: "Ingresa un teléfono válido.", errForm: "Ingresa un nombre y correo válidos.",
+    priv: "Tus datos se tratan con discreción. Sin contraseña, sin spam.",
+  },
+};
 
 function deviceToken(): string {
   try {
@@ -19,6 +59,7 @@ function deviceToken(): string {
 
 export function WelcomeSheet() {
   const [show, setShow] = useState(false);
+  const [lang, setLangState] = useState<Lang>("pt");
   const [step, setStep] = useState<1 | 2>(1);
   const [phone, setPhone] = useState<string | undefined>();
   const [country, setCountry] = useState<string>("BR");
@@ -29,13 +70,13 @@ export function WelcomeSheet() {
   const [leaving, setLeaving] = useState(false);
   const restoring = useRef(false);
 
-  // Reconhecimento de dispositivo: se já entrou neste aparelho, abre direto.
   useEffect(() => {
     if (restoring.current) return;
     restoring.current = true;
+    setLangState(getCurrentLang());
     (async () => {
       try {
-        if (localStorage.getItem(GUEST_LS)) return; // já reconhecido
+        if (localStorage.getItem(GUEST_LS)) return;
         const dev = localStorage.getItem(DEVICE_LS);
         if (dev) {
           const { data } = await supabase().rpc("guest_by_device", { p_device: dev });
@@ -48,6 +89,7 @@ export function WelcomeSheet() {
   }, []);
 
   if (!show) return null;
+  const L = STR[lang] ?? STR.pt;
 
   const enter = (guestName?: string) => {
     try { localStorage.setItem(GUEST_LS, JSON.stringify({ name: guestName ?? null })); } catch {}
@@ -57,38 +99,28 @@ export function WelcomeSheet() {
 
   const submitPhone = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!phone || phone.replace(/\D/g, "").length < 8) { setErr("Informe um telefone válido, com DDD."); return; }
+    if (!phone || phone.replace(/\D/g, "").length < 8) { setErr(L.errPhone); return; }
     setBusy(true); setErr("");
     try {
       const { data, error } = await supabase().rpc("guest_check", { p_phone: phone });
       if (error) throw error;
       const g = (data as any[])?.[0];
-      if (g) {
-        const dev = deviceToken();
-        await supabase().rpc("guest_touch", { p_id: g.id, p_device: dev });
-        enter(g.name);
-      } else {
-        setStep(2);
-      }
-    } catch {
-      enter(); // nunca travar o hóspede
-    } finally { setBusy(false); }
+      if (g) { await supabase().rpc("guest_touch", { p_id: g.id, p_device: deviceToken() }); enter(g.name); }
+      else setStep(2);
+    } catch { enter(); } finally { setBusy(false); }
   };
 
   const submitRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setErr("Preencha nome e e-mail válidos."); return; }
+    if (!name.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setErr(L.errForm); return; }
     setBusy(true); setErr("");
     try {
-      const dev = deviceToken();
       const { error } = await supabase().rpc("guest_register", {
-        p_name: name.trim(), p_email: email.trim(), p_phone: phone, p_country: country, p_device: dev,
+        p_name: name.trim(), p_email: email.trim(), p_phone: phone, p_country: country, p_device: deviceToken(),
       });
       if (error) throw error;
       enter(name.trim());
-    } catch {
-      enter(name.trim());
-    } finally { setBusy(false); }
+    } catch { enter(name.trim()); } finally { setBusy(false); }
   };
 
   return (
@@ -97,45 +129,51 @@ export function WelcomeSheet() {
       <img src="/photos/hero-bordeaux.jpg" alt="Bordeaux" className="absolute inset-0 h-full w-full object-cover" />
       <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(42,20,25,.5), rgba(42,20,25,.82) 58%, rgba(42,20,25,.96))" }} />
 
+      {/* Seletor de idioma no topo */}
+      <div className="absolute inset-x-0 top-0 z-20 flex justify-center pt-[max(1.25rem,env(safe-area-inset-top))]">
+        <div className="flex gap-1 rounded-full border border-cream/25 bg-white/10 p-1 backdrop-blur-sm">
+          {LANGS.map((l) => (
+            <button key={l.code} onClick={() => { if (l.code !== lang) setLang(l.code); }}
+              className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 font-sans text-[12px] font-semibold transition-colors ${lang === l.code ? "bg-cream text-petrol-700" : "text-cream/80 hover:text-cream"}`}>
+              <span className="text-[14px] leading-none">{l.flag}</span> {l.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <div className="relative z-10 w-full max-w-sm px-6 text-center">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/qimo-logo.png" alt="QIMO" className="mx-auto h-14 w-auto object-contain" onError={(ev) => ((ev.target as HTMLImageElement).style.display = "none")} />
-        <p className="mt-6 font-sans text-[11px] uppercase tracking-luxe text-gold-soft">Bordeaux Experience</p>
+        <img src="/qimo-logo-full.png" alt="QIMO" className="mx-auto h-11 w-auto object-contain sm:h-12" />
+        <p className="mt-6 font-sans text-[11px] uppercase tracking-luxe text-gold-soft">{L.kicker}</p>
 
         {step === 1 ? (
           <form onSubmit={submitPhone} className="mt-3">
-            <h1 className="display text-4xl text-cream sm:text-5xl">Bem-vindo a bordo</h1>
-            <p className="mx-auto mt-3 max-w-xs font-serif text-[15px] font-light leading-relaxed text-cream/80">
-              Seu concierge digital pela grande Bordeaux. Informe seu telefone para entrar.
-            </p>
+            <h1 className="display text-4xl text-cream sm:text-5xl">{L.title1}</h1>
+            <p className="mx-auto mt-3 max-w-xs font-serif text-[15px] font-light leading-relaxed text-cream/80">{L.sub1}</p>
             <div className="mt-8">
               <PhoneInput international defaultCountry="BR" value={phone} onChange={setPhone}
                 onCountryChange={(c) => setCountry(c || "BR")} autoFocus placeholder="+55 21 99999-9999" />
             </div>
             {err && <p className="mt-3 font-sans text-[12px] text-gold-soft">{err}</p>}
             <button type="submit" disabled={busy} className="btn-primary mt-6 w-full !py-3.5 text-[15px]">
-              {busy ? "Verificando…" : "Entrar"} {!busy && <Icon name="ArrowRight" size={16} />}
+              {busy ? L.checking : L.btn1} {!busy && <Icon name="ArrowRight" size={16} />}
             </button>
-            <p className="mt-4 font-sans text-[11px] leading-relaxed text-cream/55">
-              Seus dados são tratados com discrição. Sem senha, sem spam.
-            </p>
+            <p className="mt-4 font-sans text-[11px] leading-relaxed text-cream/55">{L.priv}</p>
           </form>
         ) : (
           <form onSubmit={submitRegister} className="mt-3">
-            <h1 className="display text-4xl text-cream sm:text-5xl">Complete seu cadastro</h1>
-            <p className="mx-auto mt-3 max-w-xs font-serif text-[15px] font-light leading-relaxed text-cream/80">
-              Só mais um passo para abrir o seu guia.
-            </p>
+            <h1 className="display text-4xl text-cream sm:text-5xl">{L.title2}</h1>
+            <p className="mx-auto mt-3 max-w-xs font-serif text-[15px] font-light leading-relaxed text-cream/80">{L.sub2}</p>
             <div className="mt-7 space-y-3">
-              <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome completo *" autoComplete="name" autoFocus className={inputCls} />
-              <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder="E-mail *" autoComplete="email" inputMode="email" className={inputCls} />
+              <input value={name} onChange={(e) => setName(e.target.value)} placeholder={L.name} autoComplete="name" autoFocus className={inputCls} />
+              <input value={email} onChange={(e) => setEmail(e.target.value)} type="email" placeholder={L.email} autoComplete="email" inputMode="email" className={inputCls} />
               <input value={phone ?? ""} readOnly className={`${inputCls} opacity-60`} />
             </div>
             {err && <p className="mt-3 font-sans text-[12px] text-gold-soft">{err}</p>}
             <button type="submit" disabled={busy} className="btn-primary mt-6 w-full !py-3.5 text-[15px]">
-              {busy ? "Cadastrando…" : "Entrar no guia"} {!busy && <Icon name="ArrowRight" size={16} />}
+              {busy ? L.registering : L.btn2} {!busy && <Icon name="ArrowRight" size={16} />}
             </button>
-            <button type="button" onClick={() => { setStep(1); setErr(""); }} className="mt-4 font-sans text-[12px] text-cream/60 hover:text-cream">← Voltar</button>
+            <button type="button" onClick={() => { setStep(1); setErr(""); }} className="mt-4 font-sans text-[12px] text-cream/60 hover:text-cream">{L.back}</button>
           </form>
         )}
       </div>
