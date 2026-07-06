@@ -28,8 +28,8 @@ export function HubGridPhotos({ items, orderKey }: { items: HubItem[]; orderKey?
               loading="lazy"
               className="h-full w-full object-cover transition-transform duration-700 ease-luxe group-hover:scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-petrol-950/85 via-petrol-950/25 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 flex items-end justify-between p-5">
+            <div className="scrim-bottom absolute inset-0" />
+            <div className="text-on-photo absolute inset-x-0 bottom-0 flex items-end justify-between p-5">
               <div>
                 <h2 className="font-serif text-2xl font-light text-cream">{t(`nav.${it.key}`)}</h2>
                 <p className="mt-0.5 font-sans text-[12px] text-cream/70">{t(`navd.${it.key}`)}</p>

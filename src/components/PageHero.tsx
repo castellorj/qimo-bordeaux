@@ -33,7 +33,7 @@ export function PageHero({
       ) : (
         <div className="photo-placeholder absolute inset-0 opacity-[0.16]" />
       )}
-      <div className={`container-editorial relative z-10 ${small ? "py-14" : "py-20 sm:py-24"}`}>
+      <div className={`container-editorial relative z-10 ${bgImage ? "text-on-photo" : ""} ${small ? "py-14" : "py-20 sm:py-24"}`}>
         {k && <p className="kicker">{k}</p>}
         <h1 className={`display mt-4 text-4xl sm:text-5xl md:text-6xl ${bgImage ? "text-cream" : ""}`}>{ti}</h1>
         <div className="gold-rule mt-6" />

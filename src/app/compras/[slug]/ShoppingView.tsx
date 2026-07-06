@@ -15,7 +15,7 @@ export function ShoppingView({ slug }: { slug: string }) {
       <section className="relative">
         <SmartImage src={s.heroImage} alt={s.name} label={s.category} ratio="aspect-[16/9] sm:aspect-[21/9]" priority />
         <div className="absolute inset-0 bg-gradient-to-t from-petrol-950/85 via-petrol-950/25 to-transparent" />
-        <div className="container-editorial absolute inset-x-0 bottom-0 z-10 pb-8">
+        <div className="text-on-photo container-editorial absolute inset-x-0 bottom-0 z-10 pb-8">
           <Crumb href="/compras" label="Compras" />
           <div className="mt-3 flex items-end justify-between gap-4">
             <div>
