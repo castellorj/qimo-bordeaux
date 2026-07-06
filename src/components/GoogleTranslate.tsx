@@ -48,22 +48,28 @@ export function getCurrentLang(): Lang {
 }
 
 export function setLang(target: Lang) {
-  const host = window.location.hostname;
-  const clear = (domain?: string) => {
-    document.cookie = `googtrans=;path=/;expires=Thu, 01 Jan 1970 00:00:00 GMT${domain ? ";domain=" + domain : ""}`;
-  };
-  const set = (domain?: string) => {
-    document.cookie = `googtrans=/pt/${target};path=/${domain ? ";domain=" + domain : ""}`;
-  };
+  // Todos os escopos de domínio possíveis (host-only + cada sufixo, com e sem ponto).
+  // O Google Translate pode gravar o cookie no domínio-base (ex.: .qimobr.com);
+  // se não limparmos TODOS, o idioma antigo "gruda" e não troca mais.
+  const parts = window.location.hostname.split(".");
+  const domains = new Set<string>([""]);
+  for (let i = 0; i < parts.length - 1; i++) {
+    const d = parts.slice(i).join(".");
+    domains.add(d);
+    domains.add("." + d);
+  }
 
-  clear();
-  clear(host);
-  clear("." + host);
+  const expire = "expires=Thu, 01 Jan 1970 00:00:00 GMT";
+  domains.forEach((d) => {
+    document.cookie = `googtrans=;path=/;${expire}${d ? ";domain=" + d : ""}`;
+    document.cookie = `googtrans=;${expire}${d ? ";domain=" + d : ""}`;
+  });
 
   if (target !== "pt") {
-    set();
-    set(host);
-    set("." + host);
+    const val = `/pt/${target}`;
+    domains.forEach((d) => {
+      document.cookie = `googtrans=${val};path=/${d ? ";domain=" + d : ""}`;
+    });
   }
   try {
     localStorage.setItem("qimo:lang", target);
