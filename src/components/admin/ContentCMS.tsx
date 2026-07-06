@@ -11,7 +11,46 @@ import clsx from "clsx";
 
 const LONG = 70;
 
-function ImageField({ label, value, onChange }: { label: string; value: string; onChange: (v: string) => void }) {
+// Rótulos amigáveis (PT) — o usuário nunca vê o nome técnico do campo.
+const FIELD_LABELS: Record<string, string> = {
+  name: "Nome", slug: "Identificador", heroImage: "Foto de capa", gallery: "Galeria de fotos",
+  tagline: "Chamada (uma frase)", description: "Descrição", history: "História", region: "Região",
+  category: "Categoria", qimoSelect: "Seleção QIMO (selo)", visitedOnDays: "Visitada nos dias",
+  coords: "Coordenadas", bestTimes: "Melhores horários", localWines: "Vinhos locais",
+  toDo: "O que fazer", photoSpots: "Onde fotografar", curiosities: "Curiosidades",
+  restaurants: "Restaurantes", cafes: "Cafés", shops: "Compras",
+  appellation: "Denominação", classification: "Classificação", terroir: "Terroir", grapes: "Castas",
+  production: "Produção", family: "Proprietários", icons: "Vinhos icônicos", whatToTaste: "O que provar",
+  whatToBuy: "O que comprar", scores: "Notas da crítica", averagePrice: "Preço médio",
+  visitHours: "Horário de visita", dressCode: "Traje", bookingChannel: "Canal de reserva",
+  bookingUrl: "Link de reserva", phone: "Telefone", website: "Site", address: "Endereço",
+  email: "E-mail", instagram: "Instagram",
+  bank: "Margem", color: "Cor", profile: "Perfil sensorial", pairings: "Harmonizações",
+  topProducers: "Principais produtores", serveTemp: "Temperatura de serviço", aging: "Potencial de guarda",
+  qimoNote: "Nota QIMO",
+  city: "Cidade", chef: "Chef", specialty: "Especialidade", averageTicket: "Ticket médio",
+  menuUrl: "Cardápio (link)", days: "Funcionamento", reservationRequired: "Reserva recomendada",
+  stars: "Estrelas / distinção",
+  whereToTry: "Onde provar", pairing: "Harmonização",
+  duration: "Duração", location: "Local", relatedDay: "Dia relacionado", venueUrl: "Site do local",
+  whereToBuy: "Onde comprar", priceRange: "Faixa de preço", taxFree: "Tax Free",
+  sectionOrder: "Ordem das seções",
+};
+// Dicas curtas sob alguns campos.
+const FIELD_HINTS: Record<string, string> = {
+  tagline: "Uma frase curta que aparece sobre a foto.",
+  qimoSelect: "Mostra o selo “Seleção QIMO” no card.",
+  bookingUrl: "Link oficial de reserva (TheFork, OpenTable ou site próprio).",
+  address: "Endereço exato — usado no botão “Como chegar”.",
+  heroImage: "Foto grande do topo. Horizontal 16:9 · ~1600×900 px.",
+  gallery: "Fotos horizontais, largura mínima ~1200 px.",
+  sectionOrder: "Avançado — normalmente ajuste arrastando em “Editar no site”.",
+};
+function labelFor(k: string): string {
+  return FIELD_LABELS[k] ?? k.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase());
+}
+
+function ImageField({ label, hint, value, onChange }: { label: string; hint?: string; value: string; onChange: (v: string) => void }) {
   const [busy, setBusy] = useState(false);
   const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -23,6 +62,7 @@ function ImageField({ label, value, onChange }: { label: string; value: string; 
   return (
     <div>
       <span className="kicker-muted">{label}</span>
+      {hint && <span className="mb-1 block font-sans text-[11px] normal-case tracking-normal text-muted">{hint}</span>}
       <div className="mt-1 flex items-center gap-3">
         {value ? (
           // eslint-disable-next-line @next/next/no-img-element
@@ -80,17 +120,18 @@ function FieldEditor({ data, onChange }: { data: any; onChange: (d: any) => void
         if (k === "gallery" && Array.isArray(v))
           return <GalleryField key={k} value={v as string[]} onChange={(val) => set(k, val)} />;
         if (typeof v === "string" && /image|hero|photo|foto/i.test(k))
-          return <ImageField key={k} label={k} value={v} onChange={(val) => set(k, val)} />;
+          return <ImageField key={k} label={labelFor(k)} hint={FIELD_HINTS[k]} value={v} onChange={(val) => set(k, val)} />;
         if (typeof v === "boolean")
           return (
             <label key={k} className="flex items-center gap-2 font-sans text-[13px]">
-              <input type="checkbox" checked={v} onChange={(e) => set(k, e.target.checked)} /> {k}
+              <input type="checkbox" checked={v} onChange={(e) => set(k, e.target.checked)} /> {labelFor(k)}
+              {FIELD_HINTS[k] && <span className="font-sans text-[11px] text-muted">— {FIELD_HINTS[k]}</span>}
             </label>
           );
         if (typeof v === "number")
           return (
             <label key={k} className="block">
-              <span className="kicker-muted">{k}</span>
+              <span className="kicker-muted">{labelFor(k)}</span>
               <input type="number" value={v} onChange={(e) => set(k, parseFloat(e.target.value) || 0)}
                 className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
             </label>
@@ -98,7 +139,8 @@ function FieldEditor({ data, onChange }: { data: any; onChange: (d: any) => void
         if (Array.isArray(v) && v.every((x) => typeof x === "string"))
           return (
             <label key={k} className="block">
-              <span className="kicker-muted">{k} <span className="normal-case tracking-normal">(um por linha)</span></span>
+              <span className="kicker-muted">{labelFor(k)} <span className="normal-case tracking-normal">(um por linha)</span></span>
+              {FIELD_HINTS[k] && <span className="mb-1 block font-sans text-[11px] text-muted">{FIELD_HINTS[k]}</span>}
               <textarea value={(v as string[]).join("\n")} onChange={(e) => set(k, e.target.value.split("\n").filter(Boolean))}
                 rows={Math.min(8, Math.max(2, v.length))}
                 className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
@@ -107,7 +149,8 @@ function FieldEditor({ data, onChange }: { data: any; onChange: (d: any) => void
         if (typeof v === "string")
           return (
             <label key={k} className="block">
-              <span className="kicker-muted">{k}</span>
+              <span className="kicker-muted">{labelFor(k)}</span>
+              {FIELD_HINTS[k] && <span className="mb-1 block font-sans text-[11px] text-muted">{FIELD_HINTS[k]}</span>}
               {v.length > LONG ? (
                 <textarea value={v} onChange={(e) => set(k, e.target.value)} rows={Math.min(8, Math.ceil(v.length / 60))}
                   className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm leading-relaxed outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
@@ -120,7 +163,7 @@ function FieldEditor({ data, onChange }: { data: any; onChange: (d: any) => void
         // objetos/arrays complexos → JSON
         return (
           <label key={k} className="block">
-            <span className="kicker-muted">{k} <span className="normal-case tracking-normal">(JSON)</span></span>
+            <span className="kicker-muted">{labelFor(k)} <span className="normal-case tracking-normal">(avançado · JSON)</span></span>
             <textarea defaultValue={JSON.stringify(v, null, 2)} rows={5}
               onBlur={(e) => { try { set(k, JSON.parse(e.target.value)); } catch {} }}
               className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-mono text-[12px] outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
@@ -271,6 +314,12 @@ export function ContentCMS() {
                     dragIdx === i && "opacity-40",
                     overIdx === i && dragIdx !== i && "ring-2 ring-gold")}>
                   <span className="cursor-grab text-muted active:cursor-grabbing" aria-label="Arrastar"><Icon name="GripVertical" size={16} /></span>
+                  {r.data?.heroImage ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={r.data.heroImage} alt="" className="h-11 w-16 shrink-0 rounded-[8px] object-cover" />
+                  ) : (
+                    <div className="h-11 w-16 shrink-0 rounded-[8px] bg-black/5" />
+                  )}
                   <div className="min-w-0 flex-1">
                     <p className="truncate font-serif text-[17px] font-light">{label(r)}</p>
                     <p className="truncate font-sans text-[12px] text-muted">{r.data?.tagline || r.data?.subtitle || r.slug}</p>
