@@ -24,7 +24,7 @@ export function LangDropdown() {
         aria-label="Selecionar idioma / Select language"
         aria-expanded={open}
         className="flex items-center gap-1.5 rounded-full border px-2.5 py-1.5 transition-colors hover:border-gold"
-        style={{ borderColor: "var(--line)" }}
+        style={{ borderColor: "var(--line)", background: "var(--bg-elev)", color: "var(--text)" }}
       >
         <span className="text-[15px] leading-none">{current.flag}</span>
         <span className="font-sans text-[12px] font-semibold tracking-wide">{current.label}</span>

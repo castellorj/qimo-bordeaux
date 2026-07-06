@@ -125,7 +125,7 @@ export function WelcomeSheet() {
       <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(42,20,25,.5), rgba(42,20,25,.82) 58%, rgba(42,20,25,.96))" }} />
 
       {/* Seletor de idioma no topo — mesma caixa das outras páginas */}
-      <div className="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] z-30 text-cream">
+      <div className="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] z-30">
         <LangDropdown />
       </div>
 
