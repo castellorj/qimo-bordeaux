@@ -1,6 +1,6 @@
 "use client";
 
-import { PageHero } from "@/components/PageHero";
+import { SmartImage } from "@/components/SmartImage";
 import { Icon } from "@/components/Icon";
 import { FavoriteButton, QimoSeal, Crumb, Pill } from "@/components/ui";
 import { useGuideItem } from "@/components/GuideContent";
@@ -24,16 +24,27 @@ export function WineView({ slug }: { slug: string }) {
   const a = useGuideItem<Appellation>("wine", slug);
   if (!a) return <div className="container-editorial py-20 text-center text-muted">Vinho não encontrado.</div>;
 
+  const bankLabel = a.bank === "Left" ? "Margem esquerda" : a.bank === "Right" ? "Margem direita" : a.bank === "Entre-deux" ? "Entre-deux-Mers" : "Sauternais";
+
   return (
-    <>
-      <PageHero kicker={`${a.bank === "Left" ? "Margem esquerda" : a.bank === "Right" ? "Margem direita" : a.bank === "Entre-deux" ? "Entre-deux-Mers" : "Sauternais"} · ${a.color}`} title={a.name} intro={a.tagline} small bgImage={a.heroImage} />
+    <article>
+      <section className="relative">
+        <SmartImage src={a.heroImage} alt={a.name} label={a.color} ratio="aspect-[16/9] sm:aspect-[21/9]" priority />
+        <div className="absolute inset-0 bg-gradient-to-t from-petrol-950/85 via-petrol-950/25 to-transparent" />
+        <div className="text-on-photo container-editorial absolute inset-x-0 bottom-0 z-10 pb-8">
+          <Crumb href="/vinhos" label="Vinhos" />
+          <div className="mt-3 flex items-end justify-between gap-4">
+            <div>
+              <p className="font-sans text-[11px] uppercase tracking-luxe text-gold-soft">{bankLabel} · {a.color}</p>
+              <h1 className="display mt-2 text-4xl text-cream sm:text-6xl">{a.name}</h1>
+              <p className="mt-2 max-w-xl font-serif text-lg font-light italic text-cream/80">{a.tagline}</p>
+            </div>
+            <FavoriteButton id={`wine:${a.slug}`} floating />
+          </div>
+        </div>
+      </section>
 
       <div className="container-editorial py-12">
-        <div className="mb-8 flex items-center justify-between">
-          <Crumb href="/vinhos" label="Vinhos" />
-          <FavoriteButton id={`wine:${a.slug}`} />
-        </div>
-
         <div className="grid gap-12 lg:grid-cols-[1fr_320px]">
           <div className="space-y-10">
             <Editable as="p" kind="wine" slug={a.slug} field="description" value={a.description} label="Descrição" multiline className="font-serif text-xl font-light leading-relaxed sm:text-2xl" style={{ color: "var(--text)" }}>{a.description}</Editable>
@@ -79,6 +90,6 @@ export function WineView({ slug }: { slug: string }) {
           </aside>
         </div>
       </div>
-    </>
+    </article>
   );
 }
