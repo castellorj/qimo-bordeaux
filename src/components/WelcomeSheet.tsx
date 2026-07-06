@@ -5,16 +5,11 @@ import PhoneInput from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { Icon } from "./Icon";
 import { supabase } from "@/lib/supabase/client";
-import { setLang, getCurrentLang, type Lang } from "./GoogleTranslate";
+import { getCurrentLang, type Lang } from "./GoogleTranslate";
+import { LangDropdown } from "./LangSwitch";
 
 const DEVICE_LS = "qimo_device_token";
 const GUEST_LS = "qimo:guest";
-
-const LANGS: { code: Lang; label: string; name: string; flag: string }[] = [
-  { code: "pt", label: "PT", name: "Português", flag: "🇧🇷" },
-  { code: "en", label: "EN", name: "English", flag: "🇬🇧" },
-  { code: "es", label: "ES", name: "Español", flag: "🇪🇸" },
-];
 
 const STR: Record<Lang, Record<string, string>> = {
   pt: {
@@ -68,7 +63,6 @@ export function WelcomeSheet() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [leaving, setLeaving] = useState(false);
-  const [langOpen, setLangOpen] = useState(false);
   const restoring = useRef(false);
 
   useEffect(() => {
@@ -91,7 +85,6 @@ export function WelcomeSheet() {
 
   if (!show) return null;
   const L = STR[lang] ?? STR.pt;
-  const cur = LANGS.find((l) => l.code === lang) || LANGS[0];
 
   const enter = (guestName?: string) => {
     try { localStorage.setItem(GUEST_LS, JSON.stringify({ name: guestName ?? null })); } catch {}
@@ -131,29 +124,9 @@ export function WelcomeSheet() {
       <img src="/photos/hero-bordeaux.jpg" alt="Bordeaux" className="absolute inset-0 h-full w-full object-cover" />
       <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(42,20,25,.5), rgba(42,20,25,.82) 58%, rgba(42,20,25,.96))" }} />
 
-      {/* Seletor de idioma no topo (caixa única, como no cabeçalho do guia) */}
-      <div className="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] z-30">
-        <button onClick={() => setLangOpen((v) => !v)} aria-label="Idioma / Language" aria-expanded={langOpen}
-          className="flex items-center gap-1.5 rounded-full border border-cream/25 bg-white/10 px-3 py-1.5 text-cream backdrop-blur-sm transition-colors hover:border-gold">
-          <span className="text-[14px] leading-none">{cur.flag}</span>
-          <span className="font-sans text-[12px] font-semibold tracking-wide">{cur.label}</span>
-          <Icon name="ChevronDown" size={13} className={langOpen ? "rotate-180" : ""} />
-        </button>
-        {langOpen && (
-          <>
-            <button className="fixed inset-0 cursor-default" aria-hidden onClick={() => setLangOpen(false)} />
-            <div className="absolute right-0 z-10 mt-2 w-44 overflow-hidden rounded-[14px] border border-cream/20 backdrop-blur-md" style={{ background: "rgba(42,20,25,.85)" }}>
-              {LANGS.map((l) => (
-                <button key={l.code} onClick={() => { setLangOpen(false); if (l.code !== lang) setLang(l.code); }}
-                  className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-white/10 ${lang === l.code ? "bg-white/10" : ""}`}>
-                  <span className="text-[16px] leading-none">{l.flag}</span>
-                  <span className="font-serif text-[15px] font-light text-cream">{l.name}</span>
-                  {lang === l.code && <Icon name="Check" size={15} className="ml-auto text-gold-soft" />}
-                </button>
-              ))}
-            </div>
-          </>
-        )}
+      {/* Seletor de idioma no topo — mesma caixa das outras páginas */}
+      <div className="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] z-30 text-cream">
+        <LangDropdown />
       </div>
 
       <div className="relative z-10 w-full max-w-sm px-6 text-center">
