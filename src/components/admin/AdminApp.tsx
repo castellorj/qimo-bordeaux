@@ -318,19 +318,30 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
     <div className="grid gap-8 lg:grid-cols-[360px_1fr]">
       <form onSubmit={submit} className="card h-fit p-6">
         <h3 className="font-serif text-xl font-light">Nova reserva</h3>
+        <p className="mt-1 font-sans text-[12px] leading-relaxed text-muted">Inscreva alguém num passeio. Se estiver lotado, entra automaticamente na lista de espera.</p>
         <div className="mt-4 space-y-3">
-          <select value={activityId} onChange={(e) => setActivityId(e.target.value)} className="w-full rounded-[10px] border bg-transparent px-4 py-2.5 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }}>
-            <option value="">Passeio…</option>
-            {acts.map((a) => (
-              <option key={a.id} value={a.id}>Dia {a.day_number} · {a.title} ({a.available ?? "∞"} vagas)</option>
-            ))}
-          </select>
-          <select value={participantId} onChange={(e) => setParticipantId(e.target.value)} className="w-full rounded-[10px] border bg-transparent px-4 py-2.5 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }}>
-            <option value="">Participante cadastrado…</option>
-            {parts.map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}
-          </select>
+          <label className="block">
+            <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Passeio</span>
+            <select value={activityId} onChange={(e) => setActivityId(e.target.value)} className="mt-1 w-full rounded-[10px] border bg-transparent px-4 py-2.5 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }}>
+              <option value="">Escolha o passeio…</option>
+              {acts.map((a) => (
+                <option key={a.id} value={a.id}>Dia {a.day_number} · {a.title} ({a.available ?? "∞"} vagas)</option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Participante</span>
+            <select value={participantId} onChange={(e) => setParticipantId(e.target.value)} className="mt-1 w-full rounded-[10px] border bg-transparent px-4 py-2.5 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }}>
+              <option value="">Escolha um cadastrado…</option>
+              {parts.map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}
+            </select>
+          </label>
           {!participantId && (
-            <input placeholder="…ou nome avulso" value={guest} onChange={(e) => setGuest(e.target.value)} className="w-full rounded-[10px] border bg-transparent px-4 py-2.5 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+            <label className="block">
+              <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">…ou nome avulso</span>
+              <span className="mb-1 block font-sans text-[11px] text-muted">Para alguém que ainda não está cadastrado em Participantes.</span>
+              <input placeholder="Nome" value={guest} onChange={(e) => setGuest(e.target.value)} className="mt-1 w-full rounded-[10px] border bg-transparent px-4 py-2.5 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+            </label>
           )}
           <div className="flex gap-3">
             <label className="flex flex-1 items-center gap-2 font-sans text-[12px] text-muted">Adultos
