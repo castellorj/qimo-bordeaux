@@ -10,10 +10,10 @@ import { setLang, getCurrentLang, type Lang } from "./GoogleTranslate";
 const DEVICE_LS = "qimo_device_token";
 const GUEST_LS = "qimo:guest";
 
-const LANGS: { code: Lang; label: string; flag: string }[] = [
-  { code: "pt", label: "PT", flag: "🇧🇷" },
-  { code: "en", label: "EN", flag: "🇬🇧" },
-  { code: "es", label: "ES", flag: "🇪🇸" },
+const LANGS: { code: Lang; label: string; name: string; flag: string }[] = [
+  { code: "pt", label: "PT", name: "Português", flag: "🇧🇷" },
+  { code: "en", label: "EN", name: "English", flag: "🇬🇧" },
+  { code: "es", label: "ES", name: "Español", flag: "🇪🇸" },
 ];
 
 const STR: Record<Lang, Record<string, string>> = {
@@ -68,6 +68,7 @@ export function WelcomeSheet() {
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
   const [leaving, setLeaving] = useState(false);
+  const [langOpen, setLangOpen] = useState(false);
   const restoring = useRef(false);
 
   useEffect(() => {
@@ -90,6 +91,7 @@ export function WelcomeSheet() {
 
   if (!show) return null;
   const L = STR[lang] ?? STR.pt;
+  const cur = LANGS.find((l) => l.code === lang) || LANGS[0];
 
   const enter = (guestName?: string) => {
     try { localStorage.setItem(GUEST_LS, JSON.stringify({ name: guestName ?? null })); } catch {}
@@ -129,16 +131,29 @@ export function WelcomeSheet() {
       <img src="/photos/hero-bordeaux.jpg" alt="Bordeaux" className="absolute inset-0 h-full w-full object-cover" />
       <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(42,20,25,.5), rgba(42,20,25,.82) 58%, rgba(42,20,25,.96))" }} />
 
-      {/* Seletor de idioma no topo */}
-      <div className="absolute inset-x-0 top-0 z-20 flex justify-center pt-[max(1.25rem,env(safe-area-inset-top))]">
-        <div className="flex gap-1 rounded-full border border-cream/25 bg-white/10 p-1 backdrop-blur-sm">
-          {LANGS.map((l) => (
-            <button key={l.code} onClick={() => { if (l.code !== lang) setLang(l.code); }}
-              className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 font-sans text-[12px] font-semibold transition-colors ${lang === l.code ? "bg-cream text-petrol-700" : "text-cream/80 hover:text-cream"}`}>
-              <span className="text-[14px] leading-none">{l.flag}</span> {l.label}
-            </button>
-          ))}
-        </div>
+      {/* Seletor de idioma no topo (caixa única, como no cabeçalho do guia) */}
+      <div className="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] z-30">
+        <button onClick={() => setLangOpen((v) => !v)} aria-label="Idioma / Language" aria-expanded={langOpen}
+          className="flex items-center gap-1.5 rounded-full border border-cream/25 bg-white/10 px-3 py-1.5 text-cream backdrop-blur-sm transition-colors hover:border-gold">
+          <span className="text-[14px] leading-none">{cur.flag}</span>
+          <span className="font-sans text-[12px] font-semibold tracking-wide">{cur.label}</span>
+          <Icon name="ChevronDown" size={13} className={langOpen ? "rotate-180" : ""} />
+        </button>
+        {langOpen && (
+          <>
+            <button className="fixed inset-0 cursor-default" aria-hidden onClick={() => setLangOpen(false)} />
+            <div className="absolute right-0 z-10 mt-2 w-44 overflow-hidden rounded-[14px] border border-cream/20 backdrop-blur-md" style={{ background: "rgba(42,20,25,.85)" }}>
+              {LANGS.map((l) => (
+                <button key={l.code} onClick={() => { setLangOpen(false); if (l.code !== lang) setLang(l.code); }}
+                  className={`flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-white/10 ${lang === l.code ? "bg-white/10" : ""}`}>
+                  <span className="text-[16px] leading-none">{l.flag}</span>
+                  <span className="font-serif text-[15px] font-light text-cream">{l.name}</span>
+                  {lang === l.code && <Icon name="Check" size={15} className="ml-auto text-gold-soft" />}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       <div className="relative z-10 w-full max-w-sm px-6 text-center">
