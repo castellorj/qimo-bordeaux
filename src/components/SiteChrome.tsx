@@ -17,7 +17,7 @@ export { LangDropdown, LangRow } from "./LangSwitch";
 
 // Qual das 5 áreas está ativa, mesmo em subpáginas
 function activeSection(pathname: string): string {
-  if (pathname === "/") return "/";
+  if (pathname === "/" || pathname.startsWith("/hoje")) return "/hoje";
   const p = pathname;
   if (/^\/(viagem|programacao)/.test(p)) return "/programacao";
   if (/^\/(descobrir|vinicolas|restaurantes|vinhos|gastronomia|experiencias|compras|cidades)/.test(p)) return "/descobrir";
@@ -52,7 +52,7 @@ export function SiteChrome({ searchIndex }: { searchIndex: SearchDoc[] }) {
       >
         <div className="container-editorial relative flex h-16 items-center gap-4">
           <Link
-            href="/"
+            href="/programacao"
             className="absolute left-1/2 flex shrink-0 -translate-x-1/2 items-center md:static md:translate-x-0"
           >
             {/* eslint-disable-next-line @next/next/no-img-element */}

@@ -16,7 +16,7 @@ export function orderByKeys<T extends { key: string }>(items: T[], csv?: string)
 
 // Navegação principal — 5 áreas (tab bar nativa)
 export const primaryNav: NavItem[] = [
-  { key: "hoje", href: "/", icon: "Home" },
+  { key: "hoje", href: "/hoje", icon: "Home" },
   { key: "viagem", href: "/programacao", icon: "CalendarDays" },
   { key: "descobrir", href: "/descobrir", icon: "Grape" },
   { key: "favoritos", href: "/favoritos", icon: "Heart" },
