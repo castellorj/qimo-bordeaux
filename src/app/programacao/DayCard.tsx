@@ -26,7 +26,6 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={img} alt={day.title} loading={priority ? undefined : "lazy"} decoding="async"
             className="animate-ken-burns aspect-[16/11] w-full object-cover sm:aspect-[21/9]" />
-          {/* Escurecimento uniforme + reforço na base = texto sempre legível */}
           <div className="absolute inset-0" style={{ background: "rgba(20,7,11,0.38)" }} />
           <div className="scrim-strong absolute inset-0" />
 
@@ -48,75 +47,66 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
         </div>
       </button>
 
-      {/* Detalhes (colapsáveis) */}
       {open ? (
         <div className="animate-fade-up">
           {day.note && (
             <p className="mt-6 border-l-2 pl-4 font-serif text-lg font-light italic text-muted" style={{ borderColor: "var(--gold)" }}>{day.note}</p>
           )}
 
-          <ol className="mt-6 space-y-3">
+          {/* Timeline visual das atividades */}
+          <ol className="relative mt-6 pl-1">
+            <div className="absolute bottom-6 left-[21px] top-4 w-px" style={{ background: "linear-gradient(to bottom, color-mix(in srgb, var(--gold) 55%, transparent), color-mix(in srgb, var(--gold) 20%, transparent))" }} />
             {day.activities.map((a) => (
-              <li key={a.id} className="card p-5">
-                <div className="flex items-start gap-4">
-                  <span className="mt-0.5 grid h-10 w-10 shrink-0 place-items-center rounded-full border text-gold" style={{ borderColor: "var(--line)" }}>
-                    <Icon name={TYPE_ICON[a.type]} size={17} />
-                  </span>
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        {a.time && <span className="font-sans text-[12px] font-medium tabular-nums text-gold">{a.time}</span>}
-                        <h3 className="font-serif text-xl font-light leading-snug">{a.title}</h3>
-                      </div>
-                      <FavoriteButton id={`act:${a.id}`} />
+              <li key={a.id} className="relative flex gap-4 pb-4 last:pb-0">
+                <span className="relative z-10 mt-1 grid h-[42px] w-[42px] shrink-0 place-items-center rounded-full bg-petrol-600 text-cream shadow-card">
+                  <Icon name={TYPE_ICON[a.type]} size={18} />
+                </span>
+                <div className="min-w-0 flex-1 card p-4">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      {a.time && <span className="font-sans text-[13px] font-semibold tabular-nums text-gold-deep">{a.time}</span>}
+                      <h3 className="font-serif text-xl font-light leading-snug">{a.title}</h3>
                     </div>
-                    {a.description && <p className="mt-2 font-sans text-[13px] leading-relaxed text-muted">{a.description}</p>}
-                    <div className="mt-3 flex flex-wrap items-center gap-2">
-                      {a.qimoSelect && <QimoSeal />}
-                      {a.location && <span className="chip">{a.location}</span>}
-                      {a.capacity && <span className="chip">até {a.capacity}</span>}
-                      {a.linkedWinery && <Link href={`/vinicolas/${a.linkedWinery}`} className="chip hover:text-gold"><Icon name="Grape" size={13} /> Ver vinícola</Link>}
-                      {a.linkedCity && <Link href={`/cidades/${a.linkedCity}`} className="chip hover:text-gold"><Icon name="Landmark" size={13} /> Ver cidade</Link>}
-                    </div>
+                    <FavoriteButton id={`act:${a.id}`} />
+                  </div>
+                  {a.description && <p className="mt-2 font-sans text-[13px] leading-relaxed text-muted">{a.description}</p>}
+                  <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {a.qimoSelect && <QimoSeal />}
+                    {a.location && <span className="chip">{a.location}</span>}
+                    {a.capacity && <span className="chip">até {a.capacity}</span>}
+                    {a.linkedWinery && <Link href={`/vinicolas/${a.linkedWinery}`} className="chip hover:text-gold"><Icon name="Grape" size={13} /> Ver vinícola</Link>}
+                    {a.linkedCity && <Link href={`/cidades/${a.linkedCity}`} className="chip hover:text-gold"><Icon name="Landmark" size={13} /> Ver cidade</Link>}
                   </div>
                 </div>
               </li>
             ))}
           </ol>
 
-          <div className="mt-5 grid gap-4 sm:grid-cols-2">
-            <div className="rounded-[12px] border p-4" style={{ borderColor: "var(--line)" }}>
-              <p className="kicker-muted flex items-center gap-1.5"><Icon name="Ship" size={13} /> Agenda do navio</p>
-              <ul className="mt-2.5 space-y-1.5">
-                {day.ship.map((s, i) => (
-                  <li key={i} className="flex items-center justify-between font-sans text-[12px]">
-                    <span>{s.city}</span>
-                    <span className="tabular-nums text-muted">
-                      {s.eta && s.eta !== "overnight" ? `⚓ ${s.eta}` : s.eta === "overnight" ? "pernoite" : ""}
-                      {s.etd && s.etd !== "overnight" ? ` → ${s.etd}` : s.etd === "overnight" ? " · pernoite" : ""}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-            {day.dressCode && (
-              <div className="flex items-start gap-2 rounded-[12px] border p-4 font-sans text-[13px] text-muted" style={{ borderColor: "var(--line)" }}>
-                <Icon name="Shirt" size={15} className="mt-0.5 shrink-0 text-gold" />
-                <span>{day.dressCode}</span>
-              </div>
-            )}
+          {/* Agenda do navio */}
+          <div className="mt-5 rounded-[12px] border p-4" style={{ borderColor: "var(--line)" }}>
+            <p className="kicker-muted flex items-center gap-1.5"><Icon name="Ship" size={13} /> Agenda do navio</p>
+            <ul className="mt-2.5 space-y-1.5">
+              {day.ship.map((s, i) => (
+                <li key={i} className="flex items-center justify-between font-sans text-[12px]">
+                  <span>{s.city}</span>
+                  <span className="tabular-nums text-muted">
+                    {s.eta && s.eta !== "overnight" ? `⚓ ${s.eta}` : s.eta === "overnight" ? "pernoite" : ""}
+                    {s.etd && s.etd !== "overnight" ? ` → ${s.etd}` : s.etd === "overnight" ? " · pernoite" : ""}
+                  </span>
+                </li>
+              ))}
+            </ul>
           </div>
 
           <button type="button" onClick={() => setOpen(false)}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-[12px] border py-3 font-sans text-[12px] uppercase tracking-wide2 text-muted transition-colors hover:border-gold" style={{ borderColor: "var(--line)" }}>
-            Ocultar <Icon name="ChevronDown" size={14} className="rotate-180" />
+            className="btn-ghost mt-4 w-full !rounded-[14px] !border-2 !py-4">
+            <Icon name="ChevronDown" size={16} className="rotate-180" /> Ocultar programação
           </button>
         </div>
       ) : (
-        <button type="button" onClick={() => setOpen(true)}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-[12px] border py-3.5 font-sans text-[12px] font-medium uppercase tracking-wide2 text-petrol-600 transition-colors hover:border-gold" style={{ borderColor: "var(--line)" }}>
+        <button type="button" onClick={() => setOpen(true)} className="btn-primary mt-3 w-full !rounded-[14px] !py-4 text-[13px]">
           Ver programação do dia · {nAtiv} {nAtiv === 1 ? "atividade" : "atividades"}
-          <Icon name="ChevronDown" size={14} />
+          <Icon name="ChevronDown" size={16} />
         </button>
       )}
     </section>
