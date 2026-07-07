@@ -19,10 +19,10 @@ export { LangDropdown, LangRow } from "./LangSwitch";
 function activeSection(pathname: string): string {
   if (pathname === "/") return "/";
   const p = pathname;
-  if (/^\/(viagem|programacao|barco|mapa|documentos)/.test(p)) return "/viagem";
+  if (/^\/(viagem|programacao)/.test(p)) return "/programacao";
   if (/^\/(descobrir|vinicolas|restaurantes|vinhos|gastronomia|experiencias|compras|cidades)/.test(p)) return "/descobrir";
   if (p.startsWith("/favoritos")) return "/favoritos";
-  if (/^\/(mais|concierge|informacoes|paginas)/.test(p)) return "/mais";
+  if (/^\/(mais|concierge|informacoes|paginas|barco|mapa|documentos)/.test(p)) return "/mais";
   return "";
 }
 

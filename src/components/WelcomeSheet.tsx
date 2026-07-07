@@ -93,7 +93,7 @@ export function WelcomeSheet() {
     setLeaving(true);
     const onHome = typeof window !== "undefined" && window.location.pathname === "/";
     setTimeout(() => {
-      if (onHome) router.replace("/viagem"); // abre no Viagem como pagina principal
+      if (onHome) router.replace("/programacao"); // abre direto na Viagem (programacao)
       else setShow(false);
     }, 450);
   };

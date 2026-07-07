@@ -3,8 +3,16 @@
 import { useEffect, useState } from "react";
 import { PageHero } from "@/components/PageHero";
 import { Icon } from "@/components/Icon";
+import { EditorialCard } from "@/components/EditorialCard";
+import { useLocale } from "@/components/providers";
 import { conciergeContacts, frenchPhrases } from "@/content";
 import type { ConciergeContact } from "@/lib/types";
+
+const TRIP_SECTIONS = [
+  { key: "barco", href: "/barco", image: "/photos/ship-exterior.jpg" },
+  { key: "mapa", href: "/mapa", image: "/photos/hero-vignoble.jpg" },
+  { key: "documentos", href: "/documentos", image: "/photos/hero-medoc.jpg" },
+];
 
 const WHATSAPP = process.env.NEXT_PUBLIC_QIMO_WHATSAPP || "5521995453817";
 const PHONE = process.env.NEXT_PUBLIC_QIMO_PHONE || "+5521995453817";
@@ -79,6 +87,7 @@ function CurrencyConverter() {
 }
 
 export default function ConciergePage() {
+  const { t } = useLocale();
   const qimo = conciergeContacts.filter((c) => c.slug.startsWith("qimo"));
   const emergency = conciergeContacts.filter((c) => c.type === "emergency" || c.slug.includes("hospital") || c.slug.includes("consulado"));
   const utils = conciergeContacts.filter(
@@ -113,6 +122,24 @@ export default function ConciergePage() {
       <PageHero section="concierge" small />
 
       <div className="container-editorial space-y-12 py-14">
+        {/* Sua viagem: navio, mapa e documentos */}
+        <section>
+          <h2 className="display text-2xl">Sua viagem</h2>
+          <div className="mt-5 grid gap-4 sm:grid-cols-3">
+            {TRIP_SECTIONS.map((s, i) => (
+              <EditorialCard
+                key={s.key}
+                href={s.href}
+                image={s.image}
+                title={t(`nav.${s.key}`)}
+                subtitle={t(`navd.${s.key}`)}
+                ratio="aspect-[16/10]"
+                priority={i < 3}
+              />
+            ))}
+          </div>
+        </section>
+
         {/* Suporte QIMO em destaque */}
         <section>
           <h2 className="display text-2xl">Suporte QIMO</h2>

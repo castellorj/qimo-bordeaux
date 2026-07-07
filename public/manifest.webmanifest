@@ -2,7 +2,7 @@
   "name": "QIMO · Bordeaux Experience",
   "short_name": "QIMO Bordeaux",
   "description": "O concierge digital de luxo da QIMO para o cruzeiro Bordeaux Experience.",
-  "start_url": "/viagem",
+  "start_url": "/programacao",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
