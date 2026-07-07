@@ -19,29 +19,26 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
 
   return (
     <section id={`dia-${day.n}`} className="scroll-mt-32">
-      {/* Banner fotográfico — clicar abre/fecha os detalhes */}
+      {/* Banner fotográfico — clicar abre/fecha */}
       <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open}
         className="block w-full overflow-hidden rounded-[20px] text-left">
         <div className="relative">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={img} alt={day.title} loading={priority ? undefined : "lazy"} decoding="async"
-            className="animate-ken-burns aspect-[16/10] w-full object-cover sm:aspect-[21/8]" />
+            className="animate-ken-burns aspect-[16/11] w-full object-cover sm:aspect-[21/9]" />
+          {/* Escurecimento uniforme + reforço na base = texto sempre legível */}
+          <div className="absolute inset-0" style={{ background: "rgba(20,7,11,0.38)" }} />
           <div className="scrim-strong absolute inset-0" />
 
-          <span className="chip-on-photo absolute right-4 top-4 z-10 font-medium uppercase tracking-wide2">
-            {open ? "Ocultar" : "+ Detalhes"}
-            <Icon name="ChevronDown" size={13} className={open ? "rotate-180" : ""} />
-          </span>
-
-          <div className="text-on-photo absolute inset-x-0 bottom-0 p-6 sm:p-8">
+          <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8" style={{ textShadow: "0 1px 18px rgba(12,4,7,.85), 0 1px 3px rgba(12,4,7,.7)" }}>
             <div className="flex items-end gap-3">
               <span className="font-serif text-5xl font-light leading-none text-gold-soft sm:text-6xl">{String(day.n).padStart(2, "0")}</span>
               <div className="pb-1">
-                <p className="font-sans text-[11px] uppercase tracking-luxe text-cream/90">{weekday(day.date)} · {dayMonth(day.date)}</p>
+                <p className="font-sans text-[11px] uppercase tracking-luxe text-cream">{weekday(day.date)} · {dayMonth(day.date)}</p>
                 <h2 className="display text-3xl leading-tight text-cream sm:text-4xl">{day.title}</h2>
               </div>
             </div>
-            {day.subtitle && <p className="mt-2 max-w-xl font-serif text-[15px] font-light italic text-cream/90">{day.subtitle}</p>}
+            {day.subtitle && <p className="mt-2 max-w-xl font-serif text-[15px] font-light italic text-cream/95">{day.subtitle}</p>}
             <div className="mt-3 flex flex-wrap gap-2">
               {day.ports.map((p) => (
                 <span key={p} className="chip-on-photo"><Icon name="MapPin" size={13} /> {p}</span>
@@ -109,10 +106,15 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
               </div>
             )}
           </div>
+
+          <button type="button" onClick={() => setOpen(false)}
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-[12px] border py-3 font-sans text-[12px] uppercase tracking-wide2 text-muted transition-colors hover:border-gold" style={{ borderColor: "var(--line)" }}>
+            Ocultar <Icon name="ChevronDown" size={14} className="rotate-180" />
+          </button>
         </div>
       ) : (
         <button type="button" onClick={() => setOpen(true)}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-[12px] border py-3 font-sans text-[12px] uppercase tracking-wide2 text-petrol-600 transition-colors hover:border-gold" style={{ borderColor: "var(--line)" }}>
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-[12px] border py-3.5 font-sans text-[12px] font-medium uppercase tracking-wide2 text-petrol-600 transition-colors hover:border-gold" style={{ borderColor: "var(--line)" }}>
           Ver programação do dia · {nAtiv} {nAtiv === 1 ? "atividade" : "atividades"}
           <Icon name="ChevronDown" size={14} />
         </button>
