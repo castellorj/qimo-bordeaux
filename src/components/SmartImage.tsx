@@ -36,7 +36,7 @@ export function SmartImage({
           loading={priority ? "eager" : "lazy"}
           decoding="async"
           onError={() => setFailed(true)}
-          className="h-full w-full object-cover transition-transform duration-[1.2s] ease-luxe"
+          className={clsx("h-full w-full object-cover transition-transform duration-[1.2s] ease-luxe", priority && "animate-ken-burns")}
         />
       ) : (
         <div className="photo-placeholder flex h-full w-full items-center justify-center">

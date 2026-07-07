@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { FavoriteButton, QimoSeal } from "./ui";
 
@@ -7,6 +8,7 @@ import { FavoriteButton, QimoSeal } from "./ui";
  * Card editorial estilo capa de revista: a fotografia É o card.
  * Foto grande + gradiente + (kicker) título + uma frase. Nada mais.
  * Todo o detalhe vive na página de detalhe (disclosure progressivo).
+ * Surge com um fade-up discreto ao entrar na tela (escalona naturalmente ao rolar).
  */
 export function EditorialCard({
   href, image, kicker, title, subtitle, favoriteId, seal = false,
@@ -22,14 +24,39 @@ export function EditorialCard({
   ratio?: string;
   priority?: boolean;
 }) {
+  const ref = useRef<HTMLAnchorElement | null>(null);
+  const [shown, setShown] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduce || typeof IntersectionObserver === "undefined") { setShown(true); return; }
+    // Já visível ao carregar → aparece na hora (sem risco de ficar oculto).
+    if (el.getBoundingClientRect().top < window.innerHeight * 0.92) { setShown(true); return; }
+    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setShown(true); io.disconnect(); } }, { rootMargin: "0px 0px -6% 0px" });
+    io.observe(el);
+    const t = setTimeout(() => setShown(true), 1500);
+    return () => { io.disconnect(); clearTimeout(t); };
+  }, []);
+
   return (
-    <Link href={href} className={`group relative block ${ratio} overflow-hidden rounded-[18px] photo-placeholder`}>
+    <Link
+      ref={ref}
+      href={href}
+      className={`group relative block ${ratio} overflow-hidden rounded-[18px] photo-placeholder`}
+      style={{
+        opacity: shown ? 1 : 0,
+        transform: shown ? "none" : "translateY(20px)",
+        transition: "opacity .7s cubic-bezier(.22,1,.36,1), transform .7s cubic-bezier(.22,1,.36,1)",
+      }}
+    >
       {image && (
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={image}
           alt={title}
           loading={priority ? undefined : "lazy"}
+          decoding="async"
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] ease-luxe group-hover:scale-[1.05]"
         />
       )}

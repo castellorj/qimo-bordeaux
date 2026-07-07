@@ -176,6 +176,19 @@ font[style] {
   padding-bottom: calc(env(safe-area-inset-bottom) + 0.5rem);
 }
 
+/* Ken Burns — deriva/zoom lento nas fotos de herói (dá "vida" à imagem) */
+@keyframes kenBurns {
+  from { transform: scale(1.001) translate3d(0, 0, 0); }
+  to { transform: scale(1.09) translate3d(-1.2%, -1.2%, 0); }
+}
+.animate-ken-burns {
+  animation: kenBurns 22s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .animate-ken-burns { animation: none; }
+}
+
 /* Legibilidade garantida de texto sobre fotografia (mesmo em fotos claras) */
 .text-on-photo {
   text-shadow: 0 1px 24px rgba(20, 8, 12, 0.55), 0 1px 4px rgba(20, 8, 12, 0.45);

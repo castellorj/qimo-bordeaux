@@ -57,7 +57,7 @@ export default function ProgramacaoPage() {
             {/* Banner fotográfico do dia */}
             <div className="relative overflow-hidden rounded-[20px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={dayImage(day, idx)} alt={day.title} className="aspect-[16/10] w-full object-cover sm:aspect-[21/8]" />
+              <img src={dayImage(day, idx)} alt={day.title} className="animate-ken-burns aspect-[16/10] w-full object-cover sm:aspect-[21/8]" />
               <div className="scrim-bottom absolute inset-0" />
               <div className="text-on-photo absolute inset-x-0 bottom-0 p-6 sm:p-8">
                 <div className="flex items-end gap-3">

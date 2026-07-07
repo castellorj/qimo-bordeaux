@@ -26,7 +26,7 @@ export default function HojePage() {
       {/* -------- Saudação + clima + contagem -------- */}
       <section className="relative overflow-hidden">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/photos/hero-bordeaux.jpg" alt="Bordeaux" className="absolute inset-0 h-full w-full object-cover" />
+        <img src="/photos/hero-bordeaux.jpg" alt="Bordeaux" className="animate-ken-burns absolute inset-0 h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-b from-petrol-950/80 via-petrol-900/70 to-petrol-950/92" />
 
         <div className="text-on-photo container-editorial relative z-10 pb-20 pt-12 text-center sm:pt-16">

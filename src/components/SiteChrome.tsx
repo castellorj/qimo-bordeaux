@@ -8,6 +8,7 @@ import { Icon } from "./Icon";
 import { useLocale, useFavorites } from "./providers";
 import { SearchOverlay } from "./Search";
 import { WelcomeSheet } from "./WelcomeSheet";
+import { ConciergeFab } from "./ConciergeFab";
 import { LangDropdown } from "./LangSwitch";
 import { primaryNav, orderByKeys } from "@/lib/nav";
 import type { SearchDoc } from "@/content";
@@ -43,6 +44,7 @@ export function SiteChrome({ searchIndex }: { searchIndex: SearchDoc[] }) {
   return (
     <>
       <WelcomeSheet />
+      <ConciergeFab />
       {/* -------- Top bar -------- */}
       <header
         className="sticky top-0 z-50 border-b backdrop-blur-md"

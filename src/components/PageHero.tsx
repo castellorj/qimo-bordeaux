@@ -27,7 +27,7 @@ export function PageHero({
       {bgImage ? (
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={bgImage} alt="" aria-hidden className="absolute inset-0 h-full w-full object-cover" />
+          <img src={bgImage} alt="" aria-hidden className="animate-ken-burns absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-0 bg-gradient-to-r from-petrol-950/92 via-petrol-950/80 to-petrol-950/60" />
         </>
       ) : (
