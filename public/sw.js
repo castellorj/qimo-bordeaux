@@ -5,7 +5,7 @@
    - API de clima (open-meteo): network-first com fallback ao cache
    Resultado: todo conteúdo já acessado funciona offline.
 */
-const VERSION = "qimo-v1";
+const VERSION = "qimo-v2";
 const SHELL = `${VERSION}-shell`;
 const IMG = `${VERSION}-img`;
 
@@ -16,6 +16,10 @@ self.addEventListener("install", (event) => {
     caches.open(SHELL).then((c) => c.addAll(PRECACHE)).catch(() => {})
   );
   self.skipWaiting();
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
@@ -67,7 +71,22 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Navegação e demais GET — stale-while-revalidate
+  // Navegação (HTML) — NETWORK-FIRST: online sempre pega a versão mais nova;
+  // cache só como fallback offline. (Evita ficar preso numa build antiga.)
+  if (request.mode === "navigate" || request.destination === "document") {
+    event.respondWith(
+      fetch(request)
+        .then((res) => {
+          const copy = res.clone();
+          caches.open(SHELL).then((c) => c.put(request, copy));
+          return res;
+        })
+        .catch(() => caches.match(request).then((c) => c || caches.match("/offline")))
+    );
+    return;
+  }
+
+  // Demais GET (chunks JS/CSS com hash, etc.) — stale-while-revalidate
   event.respondWith(
     caches.match(request).then((cached) => {
       const network = fetch(request)
