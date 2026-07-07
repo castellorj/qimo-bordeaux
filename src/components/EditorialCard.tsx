@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { FavoriteButton, QimoSeal } from "./ui";
+import { FavoriteButton } from "./ui";
+import { Icon } from "./Icon";
 
 /**
  * Card editorial estilo capa de revista: a fotografia É o card.
@@ -60,6 +61,8 @@ export function EditorialCard({
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] ease-luxe group-hover:scale-[1.05]"
         />
       )}
+      {/* Escurecimento uniforme + reforço na base = texto sempre legível, mesmo em foto clara */}
+      <div className="absolute inset-0" style={{ background: "rgba(20,7,11,0.32)" }} />
       <div className="scrim-bottom absolute inset-0" />
 
       {favoriteId && (
@@ -68,15 +71,15 @@ export function EditorialCard({
         </div>
       )}
       {seal && (
-        <div className="absolute left-3 top-3 z-10">
-          <QimoSeal />
+        <div className="chip-on-photo absolute left-3 top-3 z-10 !border-gold/50 font-sans text-[10px] font-semibold uppercase tracking-luxe text-gold-soft">
+          <Icon name="Star" size={11} /> Seleção QIMO
         </div>
       )}
 
-      <div className="text-on-photo absolute inset-x-0 bottom-0 p-5 sm:p-6">
+      <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6" style={{ textShadow: "0 1px 16px rgba(12,4,7,.85), 0 1px 3px rgba(12,4,7,.7)" }}>
         {kicker && <p className="font-sans text-[10px] uppercase tracking-luxe text-gold-soft">{kicker}</p>}
         <h3 className="mt-1.5 font-serif text-2xl font-light leading-[1.1] text-cream sm:text-[28px]">{title}</h3>
-        {subtitle && <p className="mt-1.5 line-clamp-1 font-serif text-[14px] font-light italic text-cream/80">{subtitle}</p>}
+        {subtitle && <p className="mt-1.5 line-clamp-1 font-serif text-[14px] font-light italic text-cream/85">{subtitle}</p>}
       </div>
     </Link>
   );

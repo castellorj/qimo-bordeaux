@@ -96,8 +96,8 @@ export function SiteChrome({ searchIndex }: { searchIndex: SearchDoc[] }) {
 
       {/* -------- Tab bar (mobile) -------- */}
       <nav
-        className="fixed inset-x-0 bottom-0 z-40 border-t backdrop-blur-md pb-safe md:hidden"
-        style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--bg-elev) 92%, transparent)" }}
+        className="fixed inset-x-0 bottom-0 z-40 border-t pb-safe md:hidden"
+        style={{ borderColor: "var(--line)", background: "var(--bg-elev)", transform: "translateZ(0)", WebkitTransform: "translateZ(0)" }}
       >
         <div className={clsx("grid", gridColsClass)}>
           {navVisible.map((item) => {
