@@ -28,16 +28,21 @@ export function PageHero({
         <>
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={bgImage} alt="" aria-hidden className="animate-ken-burns absolute inset-0 h-full w-full object-cover" />
-          <div className="absolute inset-0 bg-gradient-to-r from-petrol-950/92 via-petrol-950/80 to-petrol-950/60" />
+          {/* Escurecimento uniforme + reforço na base = texto legível mesmo em foto clara */}
+          <div className="absolute inset-0" style={{ background: "rgba(18,6,10,0.5)" }} />
+          <div className="absolute inset-0 bg-gradient-to-t from-petrol-950/60 via-transparent to-transparent" />
         </>
       ) : (
         <div className="photo-placeholder absolute inset-0 opacity-[0.16]" />
       )}
-      <div className={`container-editorial relative z-10 ${bgImage ? "text-on-photo" : ""} ${small ? "py-14" : "py-20 sm:py-24"}`}>
-        {k && <p className="kicker">{k}</p>}
+      <div
+        className={`container-editorial relative z-10 ${small ? "py-14" : "py-20 sm:py-24"}`}
+        style={bgImage ? { textShadow: "0 1px 18px rgba(12,4,7,.9), 0 1px 3px rgba(12,4,7,.7)" } : undefined}
+      >
+        {k && <p className={`kicker ${bgImage ? "!text-gold-soft" : ""}`}>{k}</p>}
         <h1 className={`display mt-4 text-4xl sm:text-5xl md:text-6xl ${bgImage ? "text-cream" : ""}`}>{ti}</h1>
         <div className="gold-rule mt-6" />
-        {i && <p className={`prose-luxe mt-6 max-w-2xl ${bgImage ? "!text-cream/80" : ""}`}>{i}</p>}
+        {i && <p className={`prose-luxe mt-6 max-w-2xl ${bgImage ? "!text-cream/95" : ""}`}>{i}</p>}
       </div>
     </section>
   );
