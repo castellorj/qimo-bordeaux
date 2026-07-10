@@ -23,7 +23,7 @@ export function HubGridPhotos({ items, orderKey }: { items: HubItem[]; orderKey?
           <div className="relative h-44 overflow-hidden sm:h-52">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={it.image}
+              src={cfg(`img.hub.${it.key}`)?.trim() || it.image}
               alt={t(`nav.${it.key}`)}
               loading="lazy"
               className="h-full w-full object-cover transition-transform duration-700 ease-luxe group-hover:scale-105"

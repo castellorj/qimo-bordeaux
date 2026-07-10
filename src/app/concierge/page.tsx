@@ -88,7 +88,7 @@ function CurrencyConverter() {
 }
 
 export default function ConciergePage() {
-  const { t } = useLocale();
+  const { t, cfg } = useLocale();
   const conciergeContacts = useGuideList<ConciergeContact>("concierge");
   const qimo = conciergeContacts.filter((c) => c.slug.startsWith("qimo"));
   const emergency = conciergeContacts.filter((c) => c.type === "emergency" || c.slug.includes("hospital") || c.slug.includes("consulado"));
@@ -132,7 +132,7 @@ export default function ConciergePage() {
               <EditorialCard
                 key={s.key}
                 href={s.href}
-                image={s.image}
+                image={cfg(`img.viagem.${s.key}`)?.trim() || s.image}
                 title={t(`nav.${s.key}`)}
                 subtitle={t(`navd.${s.key}`)}
                 ratio="aspect-[16/10]"

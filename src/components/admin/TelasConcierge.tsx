@@ -9,6 +9,7 @@ import {
   type ContentRow,
 } from "@/lib/supabase/content-admin";
 import type { ConciergeContact } from "@/lib/types";
+import { SITE_IMAGES, type SiteImage } from "@/lib/siteImages";
 import clsx from "clsx";
 
 const CONTACT_TYPES = [
@@ -16,12 +17,6 @@ const CONTACT_TYPES = [
   { v: "maps", l: "Mapa / endereço" }, { v: "link", l: "Link / site" }, { v: "info", l: "Informação" },
 ];
 const CONTACT_ICONS = ["MessageCircle", "Phone", "Siren", "Ambulance", "Shield", "Cross", "Landmark", "MapPin", "Globe", "Mail", "Info", "Bell", "Navigation", "Coins", "Car"];
-
-/* Telas cujas fotos de fundo podem ser trocadas (chave em bordeaux_settings) */
-const SCREENS = [
-  { key: "img.hero.viagem", label: "Tela Viagem (entrada)", hint: "A primeira tela que o cliente vê.", def: "/photos/hero-bordeaux.jpg" },
-  { key: "img.hero.hoje", label: "Tela Hoje", hint: "Foto de fundo da saudação.", def: "/photos/hero-dordogne-sunset.jpg" },
-];
 
 export function TelasConcierge() {
   return (
@@ -33,7 +28,7 @@ export function TelasConcierge() {
   );
 }
 
-/* -------------------- Fotos das telas -------------------- */
+/* -------------------- Fotos do site (todas as fotos fixas) -------------------- */
 function ScreenPhotos() {
   const [vals, setVals] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
@@ -41,25 +36,41 @@ function ScreenPhotos() {
   useEffect(() => {
     listSettings().then((s) => {
       const v: Record<string, string> = {};
-      SCREENS.forEach((sc) => (v[sc.key] = s[sc.key]?.pt || ""));
+      SITE_IMAGES.forEach((sc) => (v[sc.key] = s[sc.key]?.pt || ""));
       setVals(v);
       setLoading(false);
     });
   }, []);
 
+  const groups = [...new Set(SITE_IMAGES.map((s) => s.group))];
+
   return (
     <div>
-      <h3 className="font-serif text-xl font-light">Fotos das telas</h3>
+      <h3 className="font-serif text-xl font-light">Fotos do site</h3>
       <p className="mt-1 max-w-2xl font-sans text-[13px] leading-relaxed text-muted">
-        Troque a foto de fundo das telas principais. A mudança aparece no guia em instantes, <strong>sem republicar</strong>.
+        Troque qualquer foto fixa do guia — telas, topos de seção, cards do Descobrir, concierge e o navio.
+        A mudança aparece no app em instantes, <strong>sem republicar</strong>.
       </p>
+      <p className="mt-2 flex items-start gap-1.5 font-sans text-[12px] text-muted">
+        <Icon name="Info" size={13} className="mt-0.5 shrink-0 text-gold-deep" />
+        As fotos de cada <strong>ficha</strong> do Descobrir (cada vinícola, cidade, restaurante…) e a <strong>foto de cada dia</strong> do roteiro
+        são trocadas nas abas <strong>Conteúdo</strong> e <strong>Roteiro</strong>.
+      </p>
+
       {loading ? (
         <p className="mt-4 text-muted">Carregando…</p>
       ) : (
-        <div className="mt-4 grid gap-4 sm:grid-cols-2">
-          {SCREENS.map((sc) => (
-            <ScreenPhotoCard key={sc.key} sc={sc} current={vals[sc.key]}
-              onChange={(url) => setVals((v) => ({ ...v, [sc.key]: url }))} />
+        <div className="mt-5 space-y-7">
+          {groups.map((g) => (
+            <div key={g}>
+              <p className="kicker mb-3">{g}</p>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {SITE_IMAGES.filter((s) => s.group === g).map((sc) => (
+                  <ScreenPhotoCard key={sc.key} sc={sc} current={vals[sc.key]}
+                    onChange={(url) => setVals((v) => ({ ...v, [sc.key]: url }))} />
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       )}
@@ -68,7 +79,7 @@ function ScreenPhotos() {
 }
 
 function ScreenPhotoCard({ sc, current, onChange }: {
-  sc: (typeof SCREENS)[number]; current: string; onChange: (url: string) => void;
+  sc: SiteImage; current: string; onChange: (url: string) => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);

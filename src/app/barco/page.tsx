@@ -17,7 +17,8 @@ const onboard = itinerary.flatMap((d) =>
 );
 
 export default function BarcoPage() {
-  const { t } = useLocale();
+  const { t, cfg } = useLocale();
+  const img = (key: string, def: string) => cfg(key)?.trim() || def;
 
   return (
     <>
@@ -27,7 +28,7 @@ export default function BarcoPage() {
         {/* Retrato + introdução */}
         <div className="grid gap-10 lg:grid-cols-[1.1fr_1fr] lg:items-center">
           <div className="card overflow-hidden">
-            <SmartImage src="/photos/ship-exterior.jpg" alt={ship.name} label={ship.name} ratio="aspect-[4/3]" priority />
+            <SmartImage src={img("img.barco.exterior", "/photos/ship-exterior.jpg")} alt={ship.name} label={ship.name} ratio="aspect-[4/3]" priority />
           </div>
           <div>
             <p className="kicker">{t("ship.aboard")}</p>
@@ -126,7 +127,7 @@ export default function BarcoPage() {
           </div>
           <div className="relative mt-6 h-48 overflow-hidden rounded-[3px] sm:h-60">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/photos/ship-dining.jpg" alt="Gastronomia a bordo" className="h-full w-full object-cover" loading="lazy" />
+            <img src={img("img.barco.dining", "/photos/ship-dining.jpg")} alt="Gastronomia a bordo" className="h-full w-full object-cover" loading="lazy" />
             <div className="absolute inset-0 bg-gradient-to-t from-petrol-950/50 to-transparent" />
           </div>
           <div className="mt-6 grid gap-5 md:grid-cols-3">
@@ -159,7 +160,7 @@ export default function BarcoPage() {
             </div>
           </div>
           <div className="card overflow-hidden">
-            <SmartImage src="/photos/ship-suite.jpg" alt="Suíte" label={ship.suites.title} ratio="aspect-[16/10]" />
+            <SmartImage src={img("img.barco.suite", "/photos/ship-suite.jpg")} alt="Suíte" label={ship.suites.title} ratio="aspect-[16/10]" />
           </div>
         </section>
 

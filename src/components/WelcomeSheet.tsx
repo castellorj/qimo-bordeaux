@@ -8,6 +8,8 @@ import { Icon } from "./Icon";
 import { supabase } from "@/lib/supabase/client";
 import { getCurrentLang, type Lang } from "./GoogleTranslate";
 import { LangDropdown } from "./LangSwitch";
+import { useLocale } from "./providers";
+import { siteImageDef } from "@/lib/siteImages";
 
 const DEVICE_LS = "qimo_device_token";
 const GUEST_LS = "qimo:guest";
@@ -66,6 +68,8 @@ export function WelcomeSheet() {
   const [leaving, setLeaving] = useState(false);
   const restoring = useRef(false);
   const router = useRouter();
+  const { cfg } = useLocale();
+  const gateImg = cfg("img.hero.gate")?.trim() || siteImageDef("img.hero.gate");
 
   useEffect(() => {
     if (restoring.current) return;
@@ -128,7 +132,7 @@ export function WelcomeSheet() {
   return (
     <div className={`qimo-gate notranslate fixed inset-0 z-[100] flex items-center justify-center overflow-hidden transition-opacity duration-500 ${leaving ? "opacity-0" : "opacity-100"}`} translate="no">
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src="/photos/hero-bordeaux.jpg" alt="Bordeaux" className="animate-ken-burns absolute inset-0 h-full w-full object-cover" />
+      <img src={gateImg} alt="Bordeaux" className="animate-ken-burns absolute inset-0 h-full w-full object-cover" />
       <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(42,20,25,.5), rgba(42,20,25,.82) 58%, rgba(42,20,25,.96))" }} />
 
       {/* Seletor de idioma no topo — mesma caixa das outras páginas */}
