@@ -95,6 +95,9 @@ export const ui: Dict = {
   openConcierge: { pt: "Abrir o concierge", en: "Open the concierge", es: "Abrir el concierge" },
   knowShip: { pt: "Conhecer o navio", en: "Discover the ship", es: "Conocer el barco" },
   fullItinerary: { pt: "Ver a programação completa", en: "See the full itinerary", es: "Ver el programa completo" },
+  // Botão de cada dia na programação (o "· N atividades" é acrescentado automaticamente)
+  "prog.seeDay": { pt: "Ver programação do dia", en: "See the day's schedule", es: "Ver el programa del día" },
+  "prog.hideDay": { pt: "Ocultar programação", en: "Hide schedule", es: "Ocultar programa" },
   explore: { pt: "Explorar", en: "Explore", es: "Explorar" },
   details: { pt: "Detalhes", en: "Details", es: "Detalles" },
   openMap: { pt: "Abrir no mapa", en: "Open in maps", es: "Abrir en el mapa" },
@@ -319,6 +322,7 @@ export const EDITABLE_LABELS: { key: string; grp: string }[] = [
   { key: "nav.cidades", grp: "Menu" }, { key: "nav.vinicolas", grp: "Menu" }, { key: "nav.restaurantes", grp: "Menu" },
   { key: "nav.vinhos", grp: "Menu" }, { key: "nav.gastronomia", grp: "Menu" }, { key: "nav.experiencias", grp: "Menu" },
   { key: "nav.compras", grp: "Menu" }, { key: "nav.concierge", grp: "Menu" }, { key: "nav.informacoes", grp: "Menu" },
+  { key: "prog.seeDay", grp: "Programação" }, { key: "prog.hideDay", grp: "Programação" },
   { key: "whatNow", grp: "Botões" }, { key: "howToGet", grp: "Botões" }, { key: "startNav", grp: "Botões" },
   { key: "seeDetails", grp: "Botões" }, { key: "startExperience", grp: "Botões" }, { key: "openConcierge", grp: "Botões" },
   { key: "knowShip", grp: "Botões" }, { key: "exploreBordeaux", grp: "Botões" }, { key: "fullItinerary", grp: "Botões" },

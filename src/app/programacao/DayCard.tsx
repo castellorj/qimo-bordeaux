@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { QimoSeal } from "@/components/ui";
 import { ActivityReserve } from "@/components/ActivityReserve";
+import { useLocale } from "@/components/providers";
 import { weekday, dayMonth } from "@/lib/format";
 import type { ActivityType, Day } from "@/lib/types";
 
@@ -15,6 +16,7 @@ const TYPE_ICON: Record<ActivityType, string> = {
 };
 
 export function DayCard({ day, img, priority = false }: { day: Day; img: string; priority?: boolean }) {
+  const { t } = useLocale();
   const [open, setOpen] = useState(false);
   const nAtiv = day.activities.length;
 
@@ -98,12 +100,12 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
 
           <button type="button" onClick={() => setOpen(false)}
             className="btn-ghost mt-4 w-full !rounded-[14px] !border-2 !py-4">
-            <Icon name="ChevronDown" size={16} className="rotate-180" /> Ocultar programação
+            <Icon name="ChevronDown" size={16} className="rotate-180" /> {t("prog.hideDay")}
           </button>
         </div>
       ) : (
         <button type="button" onClick={() => setOpen(true)} className="btn-primary mt-3 w-full !rounded-[14px] !py-4 text-[13px]">
-          Ver programação do dia · {nAtiv} {nAtiv === 1 ? "atividade" : "atividades"}
+          {t("prog.seeDay")} · {nAtiv} {nAtiv === 1 ? "atividade" : "atividades"}
           <Icon name="ChevronDown" size={16} />
         </button>
       )}
