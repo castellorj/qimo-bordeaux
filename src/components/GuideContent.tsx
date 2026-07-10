@@ -80,17 +80,16 @@ export function useGuideKind<T extends { slug: string }>(kind: string): T[] {
   return merged<T>(kind, useContext(Ctx));
 }
 
-// Como merged, mas preserva a ORDEM do arquivo (não reordena por edições do banco)
-// e não adiciona itens que só existam no banco. Ideal para listas fixas (ex.: Concierge).
-function mergedStable<T extends { slug: string }>(kind: string, db: ByKind | null): T[] {
-  const file = (FILES[kind] || []) as T[];
+// Lista 100% gerida pelo banco (add/editar/ocultar/excluir/ordenar no painel).
+// Enquanto não houver nenhum registro no banco, usa o arquivo como semente.
+// Ideal para listas onde a equipe controla tudo (ex.: Concierge).
+function guideList<T>(kind: string, db: ByKind | null): T[] {
   const rows = db?.[kind];
-  if (!rows || !rows.length) return file;
-  const bySlug = new Map(rows.map((r) => [r.slug, r.data]));
-  return file.map((f) => (bySlug.has(f.slug) ? ({ ...f, ...bySlug.get(f.slug) } as T) : f));
+  if (rows && rows.length) return rows.map((r) => r.data as T); // banco = fonte da verdade (publicados, ordenados)
+  return (FILES[kind] || []) as T[];
 }
-export function useGuideKindStable<T extends { slug: string }>(kind: string): T[] {
-  return mergedStable<T>(kind, useContext(Ctx));
+export function useGuideList<T>(kind: string): T[] {
+  return guideList<T>(kind, useContext(Ctx));
 }
 export function useGuideItem<T extends { slug: string }>(kind: string, slug: string): T | undefined {
   return merged<T>(kind, useContext(Ctx)).find((x) => x.slug === slug);

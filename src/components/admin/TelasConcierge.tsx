@@ -1,11 +1,21 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { conciergeContacts as BASE } from "@/content";
-import { uploadImage, upsertSetting, listSettings, upsertContent, listContent } from "@/lib/supabase/content-admin";
+import {
+  uploadImage, upsertSetting, listSettings,
+  upsertContent, listContent, deleteContent, setPublished, updateSort,
+  type ContentRow,
+} from "@/lib/supabase/content-admin";
 import type { ConciergeContact } from "@/lib/types";
 import clsx from "clsx";
+
+const CONTACT_TYPES = [
+  { v: "whatsapp", l: "WhatsApp" }, { v: "call", l: "Ligação" }, { v: "emergency", l: "Emergência" },
+  { v: "maps", l: "Mapa / endereço" }, { v: "link", l: "Link / site" }, { v: "info", l: "Informação" },
+];
+const CONTACT_ICONS = ["MessageCircle", "Phone", "Siren", "Ambulance", "Shield", "Cross", "Landmark", "MapPin", "Globe", "Mail", "Info", "Bell", "Navigation", "Coins", "Car"];
 
 /* Telas cujas fotos de fundo podem ser trocadas (chave em bordeaux_settings) */
 const SCREENS = [
@@ -111,62 +121,110 @@ function ScreenPhotoCard({ sc, current, onChange }: {
   );
 }
 
-/* -------------------- Concierge: contatos -------------------- */
+/* -------------------- Concierge: contatos (CRUD completo) -------------------- */
 function ConciergeContactsEditor() {
-  const [overrides, setOverrides] = useState<Record<string, any>>({});
-  const [loading, setLoading] = useState(true);
+  const [rows, setRows] = useState<ContentRow[] | null>(null);
+  const [seeding, setSeeding] = useState(false);
 
-  useEffect(() => {
-    listContent("concierge").then((rows) => {
-      const m: Record<string, any> = {};
-      rows.forEach((r) => (m[r.slug] = r.data));
-      setOverrides(m);
-      setLoading(false);
-    });
+  const load = useCallback(async () => {
+    let r = await listContent("concierge");
+    // Semente: na primeira vez, importa os contatos do código para o banco,
+    // para que a equipe possa editar/ocultar/excluir/incluir livremente.
+    if (!r.length) {
+      setSeeding(true);
+      for (let i = 0; i < BASE.length; i++) {
+        await upsertContent("concierge", BASE[i].slug, BASE[i], i * 10, true);
+      }
+      r = await listContent("concierge");
+      setSeeding(false);
+    }
+    setRows(r);
   }, []);
+  useEffect(() => { load(); }, [load]);
+
+  const addNew = async () => {
+    const slug = "contato-" + Math.random().toString(36).slice(2, 7);
+    const sort = (rows?.reduce((m, r) => Math.max(m, r.sort), 0) ?? 0) + 10;
+    await upsertContent("concierge", slug, { slug, label: "Novo contato", type: "call", value: "", hint: "", icon: "Phone" }, sort, true);
+    load();
+  };
+
+  const move = async (idx: number, dir: number) => {
+    if (!rows) return;
+    const a = rows[idx], b = rows[idx + dir];
+    if (!a || !b) return;
+    await Promise.all([updateSort(a.id, b.sort), updateSort(b.id, a.sort)]);
+    load();
+  };
 
   return (
     <div>
-      <h3 className="font-serif text-xl font-light">Concierge — contatos</h3>
-      <p className="mt-1 max-w-2xl font-sans text-[13px] leading-relaxed text-muted">
-        Edite os textos e telefones que aparecem no balão do concierge e na página Concierge. Salva na hora, <strong>sem republicar</strong>.
-      </p>
-      {loading ? (
-        <p className="mt-4 text-muted">Carregando…</p>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 className="font-serif text-xl font-light">Concierge — contatos</h3>
+          <p className="mt-1 max-w-2xl font-sans text-[13px] leading-relaxed text-muted">
+            Edite, oculte, exclua, reordene e adicione contatos do balão e da página Concierge. Salva na hora, <strong>sem republicar</strong>.
+          </p>
+        </div>
+        <button onClick={addNew} className="btn-primary !px-4 !py-2 text-[12px]"><Icon name="Plus" size={14} /> Adicionar contato</button>
+      </div>
+
+      {rows === null ? (
+        <p className="mt-4 text-muted">{seeding ? "Preparando contatos…" : "Carregando…"}</p>
       ) : (
         <div className="mt-4 space-y-2">
-          {BASE.map((c, i) => (
-            <ContactRow key={c.slug} base={c} data={overrides[c.slug]} sort={i * 10} />
+          {rows.map((row, idx) => (
+            <ContactRow key={row.id} row={row} onChange={load}
+              canUp={idx > 0} canDown={idx < rows.length - 1} onMove={(dir) => move(idx, dir)} />
           ))}
+          {rows.length === 0 && <p className="text-muted">Nenhum contato. Use “Adicionar contato”.</p>}
         </div>
       )}
     </div>
   );
 }
 
-function ContactRow({ base, data, sort }: { base: ConciergeContact; data: any; sort: number }) {
-  const merged = { ...base, ...(data || {}) } as ConciergeContact;
-  const [label, setLabel] = useState(merged.label);
-  const [hint, setHint] = useState(merged.hint || "");
-  const [value, setValue] = useState(merged.value);
+function ContactRow({ row, onChange, canUp, canDown, onMove }: {
+  row: ContentRow; onChange: () => void; canUp: boolean; canDown: boolean; onMove: (dir: number) => void;
+}) {
+  const d = (row.data || {}) as ConciergeContact;
+  const [label, setLabel] = useState(d.label || "");
+  const [hint, setHint] = useState(d.hint || "");
+  const [value, setValue] = useState(d.value || "");
+  const [type, setType] = useState(d.type || "call");
+  const [icon, setIcon] = useState(d.icon || "Phone");
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const dirty = label !== merged.label || hint !== (merged.hint || "") || value !== merged.value;
-  const valueLabel = base.type === "whatsapp" || base.type === "call" || base.type === "emergency" ? "Telefone" : "Valor / endereço";
+  const dirty = label !== (d.label || "") || hint !== (d.hint || "") || value !== (d.value || "") || type !== (d.type || "call") || icon !== (d.icon || "Phone");
+  const valueLabel = type === "maps" ? "Endereço / local" : type === "link" ? "Link (URL)" : "Telefone / valor";
 
   const save = async () => {
     setBusy(true);
-    await upsertContent("concierge", base.slug, { ...base, ...(data || {}), label, hint, value }, sort);
+    await upsertContent("concierge", row.slug, { ...d, slug: row.slug, label, hint, value, type, icon }, row.sort, row.published);
     setBusy(false); setSaved(true); setTimeout(() => setSaved(false), 1500);
+    onChange();
+  };
+  const toggleHide = async () => { setBusy(true); await setPublished(row.id, !row.published); setBusy(false); onChange(); };
+  const remove = async () => {
+    if (!confirm(`Excluir o contato “${d.label || row.slug}”? Esta ação some com ele do guia.`)) return;
+    setBusy(true); await deleteContent(row.id); setBusy(false); onChange();
   };
 
   return (
-    <div className="card p-4">
-      <div className="flex items-center gap-2">
-        <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-black/[0.04] text-gold-deep"><Icon name={base.icon} size={15} /></span>
-        <span className="font-sans text-[11px] uppercase tracking-wide2 text-muted">{base.slug}</span>
+    <div className={clsx("card p-4", !row.published && "opacity-60")}>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-black/[0.04] text-gold-deep"><Icon name={icon} size={15} /></span>
+          <span className="font-sans text-[11px] uppercase tracking-wide2 text-muted">{row.slug}</span>
+          {!row.published && <span className="rounded-full bg-black/[0.06] px-2 py-0.5 font-sans text-[10px] uppercase tracking-wide2 text-muted">oculto</span>}
+        </div>
+        <div className="flex items-center gap-1">
+          <button onClick={() => onMove(-1)} disabled={!canUp} aria-label="Subir" className="grid h-7 w-7 place-items-center rounded-md text-muted hover:text-petrol-600 disabled:opacity-30"><Icon name="ChevronDown" size={15} className="rotate-180" /></button>
+          <button onClick={() => onMove(1)} disabled={!canDown} aria-label="Descer" className="grid h-7 w-7 place-items-center rounded-md text-muted hover:text-petrol-600 disabled:opacity-30"><Icon name="ChevronDown" size={15} /></button>
+        </div>
       </div>
+
       <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_1fr_160px]">
         <label className="block">
           <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Título</span>
@@ -184,11 +242,34 @@ function ContactRow({ base, data, sort }: { base: ConciergeContact; data: any; s
             className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
         </label>
       </div>
-      <div className="mt-2 flex items-center gap-2">
+      <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_1fr]">
+        <label className="block">
+          <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Tipo (ação do botão)</span>
+          <select value={type} onChange={(e) => setType(e.target.value as any)}
+            className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }}>
+            {CONTACT_TYPES.map((t) => <option key={t.v} value={t.v}>{t.l}</option>)}
+          </select>
+        </label>
+        <label className="block">
+          <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Ícone</span>
+          <select value={icon} onChange={(e) => setIcon(e.target.value)}
+            className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }}>
+            {CONTACT_ICONS.map((ic) => <option key={ic} value={ic}>{ic}</option>)}
+          </select>
+        </label>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
         <button onClick={save} disabled={!dirty || busy} className={clsx("btn-primary !px-4 !py-1.5 text-[12px]", (!dirty || busy) && "opacity-50")}>
           {busy ? "…" : "Salvar"}
         </button>
         {saved && <span className="font-sans text-[12px] text-olive-deep">✓ Salvo</span>}
+        <button onClick={toggleHide} disabled={busy} className="btn-ghost !px-3 !py-1.5 text-[12px]">
+          <Icon name={row.published ? "EyeOff" : "Eye"} size={13} /> {row.published ? "Ocultar" : "Mostrar"}
+        </button>
+        <button onClick={remove} disabled={busy} className="ml-auto flex items-center gap-1.5 font-sans text-[12px] text-muted hover:text-[#8f2f2f]">
+          <Icon name="X" size={14} /> Excluir
+        </button>
       </div>
     </div>
   );

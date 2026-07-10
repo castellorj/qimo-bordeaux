@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Icon } from "./Icon";
-import { useGuideKindStable } from "./GuideContent";
+import { useGuideList } from "./GuideContent";
 import type { ConciergeContact } from "@/lib/types";
 
 // Contatos de acesso rápido no botão flutuante (os demais ficam na página Concierge).
@@ -25,7 +25,7 @@ export function ConciergeFab() {
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
-  const contacts = useGuideKindStable<ConciergeContact>("concierge");
+  const contacts = useGuideList<ConciergeContact>("concierge");
   const items = QUICK.map((slug) => contacts.find((c) => c.slug === slug)).filter(Boolean) as ConciergeContact[];
 
   return (

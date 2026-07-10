@@ -5,7 +5,7 @@ import { PageHero } from "@/components/PageHero";
 import { Icon } from "@/components/Icon";
 import { EditorialCard } from "@/components/EditorialCard";
 import { useLocale } from "@/components/providers";
-import { useGuideKindStable } from "@/components/GuideContent";
+import { useGuideList } from "@/components/GuideContent";
 import { frenchPhrases } from "@/content";
 import type { ConciergeContact } from "@/lib/types";
 
@@ -89,7 +89,7 @@ function CurrencyConverter() {
 
 export default function ConciergePage() {
   const { t } = useLocale();
-  const conciergeContacts = useGuideKindStable<ConciergeContact>("concierge");
+  const conciergeContacts = useGuideList<ConciergeContact>("concierge");
   const qimo = conciergeContacts.filter((c) => c.slug.startsWith("qimo"));
   const emergency = conciergeContacts.filter((c) => c.type === "emergency" || c.slug.includes("hospital") || c.slug.includes("consulado"));
   const utils = conciergeContacts.filter(
