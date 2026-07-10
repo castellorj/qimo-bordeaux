@@ -59,7 +59,7 @@ function PaginasInner() {
       {pages.length === 0 ? (
         <p className="mt-6 font-sans text-[14px] text-muted">Nenhuma página publicada ainda.</p>
       ) : (
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2">
           {pages.map((p) => (
             <Link key={p.slug} href={`/paginas?p=${p.slug}`} className="card card-hover flex items-center gap-4 p-5">
               <span className="grid h-12 w-12 shrink-0 place-items-center rounded-full border text-petrol-600" style={{ borderColor: "var(--line)" }}>

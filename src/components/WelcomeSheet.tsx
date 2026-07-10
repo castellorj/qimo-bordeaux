@@ -125,7 +125,7 @@ export function WelcomeSheet() {
   };
 
   return (
-    <div className={`qimo-gate notranslate fixed inset-0 z-[100] flex items-center justify-center transition-opacity duration-500 ${leaving ? "opacity-0" : "opacity-100"}`} translate="no">
+    <div className={`qimo-gate notranslate fixed inset-0 z-[100] flex items-center justify-center overflow-hidden transition-opacity duration-500 ${leaving ? "opacity-0" : "opacity-100"}`} translate="no">
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/photos/hero-bordeaux.jpg" alt="Bordeaux" className="animate-ken-burns absolute inset-0 h-full w-full object-cover" />
       <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(42,20,25,.5), rgba(42,20,25,.82) 58%, rgba(42,20,25,.96))" }} />

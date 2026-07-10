@@ -35,7 +35,7 @@ export default function InformacoesPage() {
         {/* Fatos rápidos */}
         <section>
           <h2 className="display text-2xl">O essencial</h2>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {facts.map((f) => (
               <div key={f.label} className="card flex items-start gap-4 p-5">
                 <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border text-gold" style={{ borderColor: "var(--line)" }}>
@@ -53,7 +53,7 @@ export default function InformacoesPage() {
         {/* Etiqueta */}
         <section>
           <h2 className="display text-2xl">Etiqueta & cultura local</h2>
-          <div className="mt-6 grid gap-4 sm:grid-cols-2">
+          <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {etiquette.map((e, i) => (
               <div key={i} className="flex items-start gap-3 rounded-[3px] border p-5" style={{ borderColor: "var(--line)" }}>
                 <Icon name="Sparkles" size={16} className="mt-0.5 shrink-0 text-gold" />

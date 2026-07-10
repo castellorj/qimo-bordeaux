@@ -91,7 +91,7 @@ export function WineryView({ slug }: { slug: string }) {
               const full = [...saved, ...WINERY_SECTION_ORDER.filter((k) => !saved.includes(k))];
               const present = full.filter((k) => nodes[k]?.has);
               return (
-                <div className="grid gap-10 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-10 sm:grid-cols-2">
                   {present.map((key) => (
                     <Section key={key} kind="winery" slug={w.slug} sectionKey={key} order={present}>{nodes[key].node}</Section>
                   ))}
@@ -103,7 +103,7 @@ export function WineryView({ slug }: { slug: string }) {
               <>
                 <div className="hairline" />
                 <Block title="Nas taças da crítica" icon="Star">
-                  <div className="mt-2 grid gap-3 sm:grid-cols-2">
+                  <div className="mt-2 grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {w.scores.map((s, i) => (
                       <div key={i} className="rounded-[3px] border p-4" style={{ borderColor: "var(--line)" }}>
                         <p className="font-serif text-lg font-light">{s.critic}</p>

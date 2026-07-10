@@ -80,7 +80,7 @@ export function CityView({ slug }: { slug: string }) {
               const full = [...saved, ...CITY_LIST_ORDER.filter((k) => !saved.includes(k))];
               const present = full.filter((k) => ((c as any)[CITY_LIST_DEFS[k].field] as string[] | undefined)?.length);
               return (
-                <div className="grid gap-10 sm:grid-cols-2">
+                <div className="grid grid-cols-1 gap-10 sm:grid-cols-2">
                   {present.map((key) => {
                     const def = CITY_LIST_DEFS[key];
                     return (

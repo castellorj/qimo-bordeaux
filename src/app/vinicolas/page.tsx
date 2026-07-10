@@ -11,7 +11,7 @@ export default function VinicolasPage() {
     <>
       <PageHero section="vinicolas" small bgImage="/photos/hero-lafite.jpg" />
       <div className="container-editorial py-10">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {wineries.map((w, i) => (
             <EditorialCard
               key={w.slug}

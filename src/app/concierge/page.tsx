@@ -125,7 +125,7 @@ export default function ConciergePage() {
         {/* Sua viagem: navio, mapa e documentos */}
         <section>
           <h2 className="display text-2xl">Sua viagem</h2>
-          <div className="mt-5 grid gap-4 sm:grid-cols-3">
+          <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-3">
             {TRIP_SECTIONS.map((s, i) => (
               <EditorialCard
                 key={s.key}
@@ -144,7 +144,7 @@ export default function ConciergePage() {
         <section>
           <h2 className="display text-2xl">Suporte QIMO</h2>
           <p className="mt-1 font-sans text-[13px] text-muted">Nossa equipe à disposição durante toda a viagem.</p>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {qimo.map((c) => <Card key={c.slug} c={c} />)}
           </div>
         </section>
@@ -154,7 +154,7 @@ export default function ConciergePage() {
         {/* Emergências */}
         <section>
           <h2 className="display text-2xl">Emergências & assistência</h2>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {emergency.map((c) => <Card key={c.slug} c={c} />)}
           </div>
         </section>
@@ -162,7 +162,7 @@ export default function ConciergePage() {
         {/* Utilidades */}
         <section>
           <h2 className="display text-2xl">Transporte & utilidades</h2>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2">
             {utils.map((c) => <Card key={c.slug} c={c} />)}
           </div>
         </section>
@@ -170,7 +170,7 @@ export default function ConciergePage() {
         {/* Frases em francês */}
         <section>
           <h2 className="display text-2xl">Frases úteis em francês</h2>
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-5 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {frenchPhrases.map((p, i) => (
               <div key={i} className="card p-4">
                 <p className="font-sans text-[12px] text-muted">{p.pt}</p>

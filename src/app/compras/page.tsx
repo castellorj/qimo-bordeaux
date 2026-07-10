@@ -13,7 +13,7 @@ export default function ComprasPage() {
     <>
       <PageHero section="compras" small bgImage="/photos/shop-laguiole.jpg" />
       <div className="container-editorial py-10">
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {shopping.map((s, i) => (
             <EditorialCard
               key={s.slug}
@@ -36,7 +36,7 @@ export default function ComprasPage() {
             <h2 className="display text-2xl sm:text-3xl">{taxFreeGuide.title}</h2>
           </div>
           <p className="prose-luxe mt-4 max-w-2xl">{taxFreeGuide.intro}</p>
-          <ol className="mt-6 grid gap-4 sm:grid-cols-2">
+          <ol className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
             {taxFreeGuide.steps.map((step, i) => (
               <li key={i} className="flex gap-4">
                 <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full border font-serif text-lg text-gold" style={{ borderColor: "var(--line)" }}>{i + 1}</span>

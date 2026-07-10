@@ -48,7 +48,7 @@ export default function BarcoPage() {
         </div>
 
         {/* Ficha rápida */}
-        <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {ship.facts.map((f) => (
             <div key={f.label} className="card p-5">
               <p className="kicker-muted">{f.label}</p>
@@ -171,7 +171,7 @@ export default function BarcoPage() {
               <h2 className="display text-2xl sm:text-3xl">{t("ship.moments")}</h2>
             </div>
             <p className="mt-2 font-sans text-[13px] text-muted">{t("ship.momentsText")}</p>
-            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+            <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
               {onboard.map((a) => (
                 <Link key={a.id} href={`/programacao#dia-${a.dayN}`} className="card card-hover flex items-center gap-4 p-4">
                   <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full border text-gold" style={{ borderColor: "var(--line)" }}>

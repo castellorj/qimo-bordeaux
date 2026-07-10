@@ -126,7 +126,7 @@ export function PagesBuilder() {
           {/* Coluna: composição */}
           <div>
             <div className="card p-5">
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                 <TextInput label="Título da página" value={draft.title} onChange={(v) => setDraft({ ...draft, title: v })} />
                 <TextInput label="Endereço (slug)" value={draft.slug} onChange={(v) => setDraft({ ...draft, slug: v.replace(/[^a-z0-9-]/gi, "-").toLowerCase() })} />
               </div>

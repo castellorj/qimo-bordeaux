@@ -17,7 +17,7 @@ export function HubGridPhotos({ items, orderKey }: { items: HubItem[]; orderKey?
   const { t, cfg } = useLocale();
   const visible = orderByKeys(items, orderKey ? cfg(`navorder.${orderKey}`) : undefined).filter((it) => cfg(`navhide.${it.key}`) !== "1");
   return (
-    <div className="grid gap-5 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
       {visible.map((it) => (
         <Link key={it.href} href={it.href} className="card card-hover group relative overflow-hidden">
           <div className="relative h-44 overflow-hidden sm:h-52">
@@ -50,7 +50,7 @@ export function HubGridIcons({ items, orderKey }: { items: HubItem[]; orderKey?:
   const { t, cfg } = useLocale();
   const visible = orderByKeys(items, orderKey ? cfg(`navorder.${orderKey}`) : undefined).filter((it) => cfg(`navhide.${it.key}`) !== "1");
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       {visible.map((it) => (
         <Link key={it.href + it.key} href={it.href} className="card card-hover group flex items-center gap-4 p-5">
           <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full border text-petrol-600 transition-colors group-hover:border-gold group-hover:text-gold-deep" style={{ borderColor: "var(--line)" }}>

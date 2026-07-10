@@ -92,7 +92,7 @@ export default function MapaPage() {
         </div>
 
         {/* Lista de pontos */}
-        <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((p) => (
             <div key={p.name} className="card card-hover flex items-center gap-3 p-4">
               <Link href={p.href} className="flex min-w-0 flex-1 items-center gap-3">

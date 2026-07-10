@@ -24,7 +24,7 @@ export default function VinhosPage() {
           return (
             <div key={bank.key}>
               <h2 className="display text-2xl sm:text-3xl">{bank.label}</h2>
-              <div className="mt-5 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {list.map((a, i) => (
                   <EditorialCard
                     key={a.slug}

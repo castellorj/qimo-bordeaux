@@ -38,7 +38,7 @@ export default function FavoritosPage() {
             {Object.entries(byCat).map(([cat, list]) => (
               <section key={cat}>
                 <h2 className="kicker">{cat}</h2>
-                <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2">
                   {list.map((it) => (
                     <div key={it.id} className="card card-hover flex items-center gap-3 p-4">
                       <Link href={it.href} className="min-w-0 flex-1">
