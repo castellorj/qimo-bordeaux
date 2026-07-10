@@ -13,13 +13,14 @@ import { ContentCMS } from "./ContentCMS";
 import { TextosEditor } from "./TextosEditor";
 import { BotoesEditor } from "./BotoesEditor";
 import { PagesBuilder } from "./PagesBuilder";
+import { RoteiroEditor } from "./RoteiroEditor";
 import { TelasConcierge } from "./TelasConcierge";
 import { OperationsCenter } from "./OperationsCenter";
 import { PreviewPane } from "./PreviewPane";
 import { PublishModal } from "./PublishModal";
 import clsx from "clsx";
 
-type Tab = "inicio" | "passeios" | "participantes" | "reservas" | "conteudo" | "telas" | "paginas" | "textos" | "preview";
+type Tab = "inicio" | "roteiro" | "passeios" | "participantes" | "reservas" | "conteudo" | "telas" | "paginas" | "textos" | "preview";
 
 export function AdminApp() {
   const [ready, setReady] = useState(false);
@@ -97,6 +98,7 @@ function Shell({ email }: { email?: string }) {
 
   const tabs: { key: Tab; label: string; icon: string }[] = [
     { key: "inicio", label: "Início", icon: "Home" },
+    { key: "roteiro", label: "Roteiro", icon: "CalendarDays" },
     { key: "passeios", label: "Passeios", icon: "Ticket" },
     { key: "participantes", label: "Participantes", icon: "Users" },
     { key: "reservas", label: "Reservas", icon: "Check" },
@@ -135,6 +137,7 @@ function Shell({ email }: { email?: string }) {
       {(() => {
         const hints: Record<Tab, string> = {
           inicio: "Visão geral da viagem. Toque nas ações rápidas para ir direto ao ponto.",
+          roteiro: "Edite o dia a dia completo: textos, foto, portos, agenda do navio e atividades. Salvar sincroniza as reservas.",
           passeios: "Defina a capacidade (vagas) de cada passeio e mostre ou oculte no guia.",
           participantes: "Cadastre e gerencie quem está na viagem.",
           reservas: "Faça e cancele reservas dos passeios com vagas limitadas.",
@@ -152,12 +155,14 @@ function Shell({ email }: { email?: string }) {
       })()}
 
       <div className="py-8">
-        {loading && tab !== "preview" && tab !== "conteudo" && tab !== "textos" && tab !== "telas" ? (
+        {loading && tab !== "preview" && tab !== "conteudo" && tab !== "textos" && tab !== "telas" && tab !== "roteiro" ? (
           <p className="text-center text-muted">Carregando dados…</p>
         ) : tab === "inicio" ? (
           <OperationsCenter acts={acts} parts={parts} res={res} publishing={false}
             onPublish={() => setPublishOpen(true)}
             onGo={(t) => setTab(t)} />
+        ) : tab === "roteiro" ? (
+          <RoteiroEditor />
         ) : tab === "passeios" ? (
           <Passeios acts={acts} onChange={reload} />
         ) : tab === "participantes" ? (

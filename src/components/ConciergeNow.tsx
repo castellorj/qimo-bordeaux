@@ -2,8 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { itinerary, cities } from "@/content";
+import { cities } from "@/content";
 import { useLocale } from "./providers";
+import { useGuideList } from "./GuideContent";
+import type { Day } from "@/lib/types";
 import { Icon } from "./Icon";
 import { weekday } from "@/lib/format";
 
@@ -19,7 +21,7 @@ interface Flat {
   linkedCity?: string;
 }
 
-function flatten(): Flat[] {
+function flatten(itinerary: Day[]): Flat[] {
   const out: Flat[] = [];
   itinerary.forEach((d) => {
     d.activities.forEach((a) => {
@@ -64,13 +66,14 @@ function mapsUrl(a: Flat) {
 
 export function ConciergeNow() {
   const { t } = useLocale();
+  const itinerary = useGuideList<Day>("day");
   const [next, setNext] = useState<Flat | null>(null);
   const [cd, setCd] = useState<{ days: number; hours: number; mins: number } | null>(null);
   const [temp, setTemp] = useState<number | null>(null);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    const all = flatten();
+    const all = flatten(itinerary);
     const n = all.find((a) => a.start > Date.now()) || all[all.length - 1];
     setNext(n || null);
     if (n) setCd(countdown(n.start));
@@ -80,7 +83,8 @@ export function ConciergeNow() {
       .then((j) => setTemp(Math.round(j.current.temperature_2m)))
       .catch(() => {});
     return () => clearInterval(id);
-  }, []);
+    // re-executa quando o roteiro editado chega do banco
+  }, [itinerary]);
 
   if (!next) return null;
 

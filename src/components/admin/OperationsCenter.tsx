@@ -31,7 +31,7 @@ const KIND_LABEL: Record<string, string> = {
   gastronomy: "Gastronomia", experience: "Experiência", shopping: "Compras",
 };
 
-type QuickTab = "passeios" | "participantes" | "reservas" | "conteudo" | "telas" | "paginas" | "textos" | "preview";
+type QuickTab = "roteiro" | "passeios" | "participantes" | "reservas" | "conteudo" | "telas" | "paginas" | "textos" | "preview";
 
 // Hub "O que deseja editar?" — mesma estrutura do painel do guia da Croácia:
 // seções temáticas com links diretos para o editor certo.
@@ -48,8 +48,9 @@ const HUB: { icon: string; title: string; desc: string; items: { label: string; 
   {
     icon: "CalendarDays",
     title: "Programação",
-    desc: "O roteiro dia a dia — vagas dos passeios e textos dos botões.",
+    desc: "O roteiro dia a dia — dias, atividades, vagas e textos.",
     items: [
+      { label: "Editar roteiro (dias e atividades)", hint: "títulos, horários, descrições, fotos, agenda do navio", go: "roteiro" },
       { label: "Passeios: vagas e visibilidade", hint: "capacidade de cada passeio · ocultar/mostrar", go: "passeios" },
       { label: "Textos do botão do dia", hint: "“Ver programação do dia”, “atividades”…", go: "textos" },
     ],

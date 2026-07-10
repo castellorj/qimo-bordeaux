@@ -4,13 +4,14 @@ import { createContext, useContext, useEffect, useState } from "react";
 import {
   cities as fCities, wineries as fWineries, restaurants as fRestaurants,
   appellations as fWines, gastronomy as fGastro, experiences as fExp, shopping as fShop,
-  conciergeContacts as fConcierge,
+  conciergeContacts as fConcierge, itinerary as fItinerary,
 } from "@/content";
 
 const FILES: Record<string, any[]> = {
   city: fCities, winery: fWineries, restaurant: fRestaurants,
   wine: fWines, gastronomy: fGastro, experience: fExp, shopping: fShop,
   concierge: fConcierge,
+  day: fItinerary, // roteiro dia a dia (editável no painel; slug "dia-N")
 };
 
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://vvvzitszfcajfrvzpace.supabase.co";

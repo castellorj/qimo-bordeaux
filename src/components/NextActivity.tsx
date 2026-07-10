@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { itinerary } from "@/content";
 import { fullDate, weekday } from "@/lib/format";
 import { Icon } from "./Icon";
+import { useGuideList } from "./GuideContent";
+import type { Day } from "@/lib/types";
 
 interface Flat {
   dayN: number;
@@ -15,7 +16,7 @@ interface Flat {
   location?: string;
 }
 
-function flatten(): Flat[] {
+function flatten(itinerary: Day[]): Flat[] {
   const out: Flat[] = [];
   itinerary.forEach((d) => {
     d.activities.forEach((a) => {
@@ -30,11 +31,12 @@ function flatten(): Flat[] {
 }
 
 export function NextActivity() {
+  const itinerary = useGuideList<Day>("day");
   const [next, setNext] = useState<Flat | null>(null);
   const [upcoming, setUpcoming] = useState(true);
 
   useEffect(() => {
-    const all = flatten();
+    const all = flatten(itinerary);
     const now = Date.now();
     const n = all.find((a) => a.start > now);
     if (n) {
@@ -44,7 +46,7 @@ export function NextActivity() {
       setNext(all[all.length - 1] ?? null);
       setUpcoming(false);
     }
-  }, []);
+  }, [itinerary]);
 
   if (!next) return null;
 
