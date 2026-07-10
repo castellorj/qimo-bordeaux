@@ -12,7 +12,7 @@ export default function HojePage() {
   return (
     <div className="pb-4">
       {/* -------- Saudação + clima + contagem -------- */}
-      <TripHero imageKey="img.hero.hoje" defaultImage="/photos/hero-bordeaux.jpg" />
+      <TripHero imageKey="img.hero.hoje" defaultImage="/photos/hero-dordogne-sunset.jpg" />
 
       {/* -------- Concierge: o que faço agora -------- */}
       <section className="container-editorial relative z-20 -mt-12">

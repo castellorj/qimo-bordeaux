@@ -19,8 +19,8 @@ const CONTACT_ICONS = ["MessageCircle", "Phone", "Siren", "Ambulance", "Shield",
 
 /* Telas cujas fotos de fundo podem ser trocadas (chave em bordeaux_settings) */
 const SCREENS = [
-  { key: "img.hero.viagem", label: "Tela Viagem (entrada)", hint: "A primeira tela que o cliente vê.", def: "/photos/hero-dordogne-sunset.jpg" },
-  { key: "img.hero.hoje", label: "Tela Hoje", hint: "Foto de fundo da saudação.", def: "/photos/hero-bordeaux.jpg" },
+  { key: "img.hero.viagem", label: "Tela Viagem (entrada)", hint: "A primeira tela que o cliente vê.", def: "/photos/hero-bordeaux.jpg" },
+  { key: "img.hero.hoje", label: "Tela Hoje", hint: "Foto de fundo da saudação.", def: "/photos/hero-dordogne-sunset.jpg" },
 ];
 
 export function TelasConcierge() {

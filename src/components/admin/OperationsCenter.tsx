@@ -31,7 +31,64 @@ const KIND_LABEL: Record<string, string> = {
   gastronomy: "Gastronomia", experience: "Experiência", shopping: "Compras",
 };
 
-type QuickTab = "passeios" | "participantes" | "reservas" | "conteudo" | "textos" | "preview";
+type QuickTab = "passeios" | "participantes" | "reservas" | "conteudo" | "telas" | "paginas" | "textos" | "preview";
+
+// Hub "O que deseja editar?" — mesma estrutura do painel do guia da Croácia:
+// seções temáticas com links diretos para o editor certo.
+const HUB: { icon: string; title: string; desc: string; items: { label: string; hint?: string; go: QuickTab }[] }[] = [
+  {
+    icon: "Smartphone",
+    title: "Telas de entrada",
+    desc: "As primeiras telas que o hóspede vê: Viagem (porta de entrada) e Hoje.",
+    items: [
+      { label: "Fotos das telas (Viagem e Hoje)", hint: "troque a foto de fundo · sem republicar", go: "telas" },
+      { label: "Frases e títulos das telas", hint: "saudação, chamadas e botões", go: "textos" },
+    ],
+  },
+  {
+    icon: "CalendarDays",
+    title: "Programação",
+    desc: "O roteiro dia a dia — vagas dos passeios e textos dos botões.",
+    items: [
+      { label: "Passeios: vagas e visibilidade", hint: "capacidade de cada passeio · ocultar/mostrar", go: "passeios" },
+      { label: "Textos do botão do dia", hint: "“Ver programação do dia”, “atividades”…", go: "textos" },
+    ],
+  },
+  {
+    icon: "Ticket",
+    title: "Reservas & Participantes",
+    desc: "Quem vai a cada passeio — reservas feitas pelo app e pela equipe.",
+    items: [
+      { label: "Reservas por passeio", hint: "quem reservou, acompanhantes, lista de espera", go: "reservas" },
+      { label: "Participantes", hint: "cadastro de quem está na viagem", go: "participantes" },
+    ],
+  },
+  {
+    icon: "Grape",
+    title: "Descobrir (conteúdo)",
+    desc: "Cidades, vinícolas, restaurantes, vinhos, gastronomia, experiências e compras.",
+    items: [
+      { label: "Fichas & fotos", hint: "edite textos, troque fotos, arraste para reordenar", go: "conteudo" },
+      { label: "Editar direto no site (visual)", hint: "clique nos textos do guia e salve na hora", go: "preview" },
+    ],
+  },
+  {
+    icon: "Bell",
+    title: "Concierge",
+    desc: "Os contatos do balão flutuante e da página Concierge.",
+    items: [
+      { label: "Contatos (editar, ocultar, excluir, incluir)", hint: "nome, descrição, telefone, tipo e ícone", go: "telas" },
+    ],
+  },
+  {
+    icon: "BookOpen",
+    title: "Páginas novas",
+    desc: "Crie páginas extras montando blocos — aparecem no guia na hora.",
+    items: [
+      { label: "Construtor de páginas", go: "paginas" },
+    ],
+  },
+];
 
 export function OperationsCenter({
   acts, parts, res, onGo, onPublish, publishing,
@@ -66,16 +123,6 @@ export function OperationsCenter({
   if (totalHidden) pend.push({ icon: "EyeOff", tone: "muted", text: `${totalHidden} item(ns) ocultos do guia`, go: "conteudo" });
   if (!parts.length) pend.push({ icon: "Users", tone: "muted", text: "Nenhum participante cadastrado ainda", go: "participantes" });
 
-  const quick: { icon: string; label: string; go: QuickTab }[] = [
-    { icon: "CalendarDays", label: "Programação & passeios", go: "passeios" },
-    { icon: "Users", label: "Adicionar participante", go: "participantes" },
-    { icon: "Ticket", label: "Nova reserva", go: "reservas" },
-    { icon: "Image", label: "Trocar fotos", go: "conteudo" },
-    { icon: "LayoutGrid", label: "Editar conteúdo", go: "conteudo" },
-    { icon: "Languages", label: "Editar textos & botões", go: "textos" },
-    { icon: "Pencil", label: "Editar no site (visual)", go: "preview" },
-  ];
-
   return (
     <div className="space-y-8">
       {/* Viagem atual + publicar */}
@@ -101,6 +148,51 @@ export function OperationsCenter({
             </button>
             <p className="mt-2 text-center font-sans text-[11px] text-muted sm:text-right">Conteúdo reflete no ar em segundos</p>
           </div>
+        </div>
+      </div>
+
+      {/* O que deseja editar? — hub no estilo do painel da Croácia */}
+      <div>
+        <h2 className="display text-2xl">O que deseja editar?</h2>
+        <p className="mt-1 max-w-2xl font-sans text-[13px] leading-relaxed text-muted">
+          O guia da viagem (telas, programação, conteúdo, concierge…). As mudanças aparecem no app em instantes, sem republicar.
+        </p>
+
+        <button onClick={() => onGo("textos")}
+          className="mt-4 flex w-full items-center justify-between gap-3 rounded-[12px] border px-5 py-4 text-left transition-colors hover:border-gold"
+          style={{ borderColor: "color-mix(in srgb, var(--gold) 45%, transparent)", background: "color-mix(in srgb, var(--gold) 6%, transparent)" }}>
+          <span>
+            <span className="block font-serif text-lg font-light leading-tight" style={{ color: "var(--text)" }}>Renomear títulos das seções</span>
+            <span className="font-sans text-[11px] text-muted">“Ver programação do dia”, menus, botões, títulos das páginas… edite qualquer um</span>
+          </span>
+          <Icon name="ArrowRight" size={16} className="shrink-0 text-gold-deep" />
+        </button>
+
+        <div className="mt-5 grid gap-5 sm:grid-cols-2">
+          {HUB.map((s) => (
+            <section key={s.title} className="card flex flex-col p-6">
+              <div className="flex items-center gap-3">
+                <Icon name={s.icon} size={22} className="text-gold-deep" />
+                <h3 className="font-serif text-2xl font-light">{s.title}</h3>
+              </div>
+              <p className="mt-2 font-sans text-[13px] leading-relaxed text-muted">{s.desc}</p>
+              <ul className="mt-4 space-y-2">
+                {s.items.map((it) => (
+                  <li key={it.label}>
+                    <button onClick={() => onGo(it.go)}
+                      className="flex min-h-[52px] w-full items-center justify-between gap-3 rounded-[10px] border px-4 py-2 text-left transition-colors hover:border-gold"
+                      style={{ borderColor: "var(--line)" }}>
+                      <span>
+                        <span className="block font-serif text-[17px] font-light leading-tight" style={{ color: "var(--text)" }}>{it.label}</span>
+                        {it.hint && <span className="font-sans text-[11px] text-muted">{it.hint}</span>}
+                      </span>
+                      <Icon name="ArrowRight" size={15} className="shrink-0 text-gold-deep" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))}
         </div>
       </div>
 
@@ -162,19 +254,6 @@ export function OperationsCenter({
         </div>
       </div>
 
-      {/* Ações rápidas */}
-      <div>
-        <p className="kicker mb-3">Ações rápidas</p>
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {quick.map((q) => (
-            <button key={q.label} onClick={() => onGo(q.go)}
-              className="card flex items-center gap-3 p-4 text-left transition-transform hover:-translate-y-0.5">
-              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-petrol-600/10 text-petrol-600"><Icon name={q.icon} size={16} /></span>
-              <span className="font-sans text-[13px] font-medium leading-tight" style={{ color: "var(--text)" }}>{q.label}</span>
-            </button>
-          ))}
-        </div>
-      </div>
     </div>
   );
 }

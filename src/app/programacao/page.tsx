@@ -25,7 +25,7 @@ function dayImage(day: Day, idx: number): string {
 export default function ProgramacaoPage() {
   return (
     <>
-      <TripHero imageKey="img.hero.viagem" defaultImage="/photos/hero-dordogne-sunset.jpg" title="Sua viagem" />
+      <TripHero imageKey="img.hero.viagem" defaultImage="/photos/hero-bordeaux.jpg" title="Sua viagem" />
 
       {/* Índice de dias */}
       <nav className="sticky top-16 z-30 border-b backdrop-blur-md" style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--bg) 85%, transparent)" }}>
