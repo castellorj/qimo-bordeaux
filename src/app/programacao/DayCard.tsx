@@ -16,9 +16,15 @@ const TYPE_ICON: Record<ActivityType, string> = {
 };
 
 export function DayCard({ day, img, priority = false }: { day: Day; img: string; priority?: boolean }) {
-  const { t } = useLocale();
+  const { t, cfg } = useLocale();
   const [open, setOpen] = useState(false);
   const nAtiv = day.activities.length;
+  // Palavra da contagem: usa cfg() para respeitar um valor VAZIO salvo no painel
+  // (deixar em branco remove o "· N ..." do botão). Sem override, usa o padrão.
+  const actKey = nAtiv === 1 ? "prog.activity" : "prog.activities";
+  const rawWord = cfg(actKey);
+  const countWord = rawWord !== undefined ? rawWord : t(actKey);
+  const countSuffix = countWord.trim() ? ` · ${nAtiv} ${countWord}` : "";
 
   return (
     <section id={`dia-${day.n}`} className="scroll-mt-32">
@@ -105,7 +111,7 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
         </div>
       ) : (
         <button type="button" onClick={() => setOpen(true)} className="btn-primary mt-3 w-full !rounded-[14px] !py-4 text-[13px]">
-          {t("prog.seeDay")} · {nAtiv} {nAtiv === 1 ? "atividade" : "atividades"}
+          {t("prog.seeDay")}{countSuffix}
           <Icon name="ChevronDown" size={16} />
         </button>
       )}
