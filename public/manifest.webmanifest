@@ -18,6 +18,6 @@
   "shortcuts": [
     { "name": "Programação", "url": "/programacao" },
     { "name": "Concierge", "url": "/concierge" },
-    { "name": "Favoritos", "url": "/favoritos" }
+    { "name": "Reservas", "url": "/reservas" }
   ]
 }

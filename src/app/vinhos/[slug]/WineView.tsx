@@ -2,7 +2,7 @@
 
 import { SmartImage } from "@/components/SmartImage";
 import { Icon } from "@/components/Icon";
-import { FavoriteButton, QimoSeal, Crumb, Pill } from "@/components/ui";
+import { QimoSeal, Crumb, Pill } from "@/components/ui";
 import { useGuideItem } from "@/components/GuideContent";
 import { Editable } from "@/components/Editable";
 import type { Appellation } from "@/lib/types";
@@ -39,7 +39,6 @@ export function WineView({ slug }: { slug: string }) {
               <h1 className="display mt-2 text-4xl text-cream sm:text-6xl">{a.name}</h1>
               <p className="mt-2 max-w-xl font-serif text-lg font-light italic text-cream/80">{a.tagline}</p>
             </div>
-            <FavoriteButton id={`wine:${a.slug}`} floating />
           </div>
         </div>
       </section>

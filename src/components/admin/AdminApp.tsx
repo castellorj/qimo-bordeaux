@@ -314,11 +314,28 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
   };
 
   const active = res.filter((r) => r.status !== "cancelled");
+
+  // Agrupa por passeio (para ver quem reservou o quê)
+  const byActivity = acts
+    .map((a) => {
+      const list = active.filter((r) => r.activity_id === a.id);
+      const people = list.reduce((s, r) => s + (r.seats || 1), 0);
+      return { a, list, people };
+    })
+    .filter((g) => g.list.length > 0)
+    .sort((x, y) => (x.a.day_number ?? 99) - (y.a.day_number ?? 99));
+
+  const personLabel = (r: BxReservation) => {
+    if (r.source === "guest" && r.party && r.party.length) return r.party[0];
+    return r.participant?.full_name || r.guest_name || "—";
+  };
+  const companions = (r: BxReservation) => (r.source === "guest" && r.party ? r.party.slice(1) : []);
+
   return (
     <div className="grid gap-8 lg:grid-cols-[360px_1fr]">
       <form onSubmit={submit} className="card h-fit p-6">
         <h3 className="font-serif text-xl font-light">Nova reserva</h3>
-        <p className="mt-1 font-sans text-[12px] leading-relaxed text-muted">Inscreva alguém num passeio. Se estiver lotado, entra automaticamente na lista de espera.</p>
+        <p className="mt-1 font-sans text-[12px] leading-relaxed text-muted">Inscreva alguém num passeio manualmente. Os hóspedes também reservam pelo app — e aparecem aqui na hora.</p>
         <div className="mt-4 space-y-3">
           <label className="block">
             <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Passeio</span>
@@ -357,21 +374,53 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
       </form>
 
       <div>
-        <p className="kicker mb-3">{active.length} reservas ativas</p>
-        <div className="space-y-2">
-          {active.map((r) => (
-            <div key={r.id} className="card flex items-center gap-3 p-4">
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-serif text-[16px] font-light">{r.participant?.full_name || r.guest_name}</p>
-                <p className="truncate font-sans text-[12px] text-muted">Dia {r.activity?.day_number} · {r.activity?.title} · {r.seats} lugar(es)</p>
+        <p className="kicker mb-3">{active.length} reservas · {byActivity.length} passeios com inscritos</p>
+        {byActivity.length === 0 && <p className="text-muted">Nenhuma reserva ainda.</p>}
+        <div className="space-y-5">
+          {byActivity.map(({ a, list, people }) => (
+            <div key={a.id} className="card overflow-hidden">
+              <div className="flex flex-wrap items-center justify-between gap-2 border-b px-5 py-3.5" style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--petrol-600) 6%, transparent)" }}>
+                <div className="min-w-0">
+                  <p className="font-sans text-[11px] uppercase tracking-wide2 text-gold-deep">Dia {a.day_number}{a.start_time ? ` · ${a.start_time}` : ""}</p>
+                  <p className="truncate font-serif text-[17px] font-light">{a.title}</p>
+                </div>
+                <span className="shrink-0 rounded-full bg-petrol-600/10 px-3 py-1 font-sans text-[12px] font-medium text-petrol-600">
+                  {people} {people === 1 ? "pessoa" : "pessoas"}{a.capacity_total != null ? ` / ${a.capacity_total}` : ""}
+                </span>
               </div>
-              <span className={clsx("shrink-0 rounded-full px-3 py-1 font-sans text-[11px] font-medium", r.status === "confirmed" ? "bg-olive/15 text-olive-deep" : "bg-gold/15 text-gold-deep")}>
-                {r.status === "confirmed" ? "Confirmada" : "Lista de espera"}
-              </span>
-              <button onClick={async () => { await cancelReservation(r.id); onChange(); }} aria-label="Cancelar" className="text-muted hover:text-[#8f2f2f]"><Icon name="X" size={16} /></button>
+              <div className="divide-y" style={{ borderColor: "var(--line)" }}>
+                {list.map((r) => {
+                  const comps = companions(r);
+                  return (
+                    <div key={r.id} className="flex items-start gap-3 px-5 py-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="font-serif text-[16px] font-light">{personLabel(r)}</span>
+                          {r.source === "guest"
+                            ? <span className="rounded-full bg-olive/12 px-2 py-0.5 font-sans text-[10px] uppercase tracking-wide2 text-olive-deep">pelo app</span>
+                            : <span className="rounded-full bg-black/[0.05] px-2 py-0.5 font-sans text-[10px] uppercase tracking-wide2 text-muted">equipe</span>}
+                          {r.status !== "confirmed" && <span className="rounded-full bg-gold/15 px-2 py-0.5 font-sans text-[10px] uppercase tracking-wide2 text-gold-deep">lista de espera</span>}
+                        </div>
+                        <p className="mt-0.5 font-sans text-[12px] text-muted">
+                          {[r.guest_phone, `${r.seats} ${r.seats === 1 ? "lugar" : "lugares"}`].filter(Boolean).join(" · ")}
+                        </p>
+                        {comps.length > 0 && (
+                          <div className="mt-1.5 flex flex-wrap gap-1.5">
+                            {comps.map((c, i) => (
+                              <span key={i} className="inline-flex items-center gap-1 rounded-full bg-black/[0.04] px-2 py-0.5 font-sans text-[11px]">
+                                <Icon name="Users" size={11} className="text-gold-deep" /> {c}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <button onClick={async () => { await cancelReservation(r.id); onChange(); }} aria-label="Cancelar" className="shrink-0 text-muted hover:text-[#8f2f2f]"><Icon name="X" size={16} /></button>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           ))}
-          {active.length === 0 && <p className="text-muted">Nenhuma reserva ainda.</p>}
         </div>
       </div>
     </div>

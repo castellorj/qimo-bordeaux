@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { SmartImage } from "@/components/SmartImage";
 import { Icon } from "@/components/Icon";
-import { FavoriteButton, QimoSeal, Crumb } from "@/components/ui";
+import { QimoSeal, Crumb } from "@/components/ui";
 import { ActionBar } from "@/components/ActionBar";
 import { experienceActions } from "@/lib/reserve";
 import { useGuideItem } from "@/components/GuideContent";
@@ -41,7 +41,6 @@ export function ExperienceView({ slug }: { slug: string }) {
               </div>
               <h1 className="display mt-2 text-4xl text-cream sm:text-6xl">{e.name}</h1>
             </div>
-            <FavoriteButton id={`exp:${e.slug}`} floating />
           </div>
         </div>
       </section>

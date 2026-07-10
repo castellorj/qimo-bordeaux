@@ -19,7 +19,7 @@ export const primaryNav: NavItem[] = [
   { key: "hoje", href: "/hoje", icon: "Home" },
   { key: "viagem", href: "/programacao", icon: "CalendarDays" },
   { key: "descobrir", href: "/descobrir", icon: "Grape" },
-  { key: "favoritos", href: "/favoritos", icon: "Heart" },
+  { key: "reservas", href: "/reservas", icon: "CalendarCheck" },
   { key: "mais", href: "/mais", icon: "Menu" },
 ];
 
@@ -51,7 +51,7 @@ export const maisLinks: HubLink[] = [
   { key: "informacoes", href: "/informacoes", icon: "Info" },
   { key: "paginas", href: "/paginas", icon: "BookOpen" },
   { key: "documentos", href: "/documentos", icon: "FileText" },
-  { key: "favoritos", href: "/favoritos", icon: "Heart" },
+  { key: "reservas", href: "/reservas", icon: "CalendarCheck" },
 ];
 
 // mantido para o rodapé (todas as seções)
@@ -60,5 +60,5 @@ export const navItems: HubLink[] = [
   ...descobrirLinks,
   { key: "concierge", href: "/concierge", icon: "Bell" },
   { key: "informacoes", href: "/informacoes", icon: "Info" },
-  { key: "favoritos", href: "/favoritos", icon: "Heart" },
+  { key: "reservas", href: "/reservas", icon: "CalendarCheck" },
 ];

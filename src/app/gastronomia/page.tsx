@@ -20,7 +20,6 @@ export default function GastronomiaPage() {
               kicker={g.category}
               title={g.name}
               subtitle={g.pairing}
-              favoriteId={`gastro:${g.slug}`}
               seal={g.qimoSelect}
               priority={i < 3}
             />

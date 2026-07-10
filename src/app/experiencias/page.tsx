@@ -20,7 +20,6 @@ export default function ExperienciasPage() {
               kicker={e.category}
               title={e.name}
               subtitle={e.location || e.duration}
-              favoriteId={`exp:${e.slug}`}
               seal={e.qimoSelect}
               priority={i < 3}
             />

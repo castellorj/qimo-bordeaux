@@ -20,7 +20,6 @@ export default function RestaurantesPage() {
               kicker={r.stars ? `${r.city} · ${r.stars}` : r.city}
               title={r.name}
               subtitle={r.chef || r.specialty}
-              favoriteId={`resto:${r.slug}`}
               seal={r.qimoSelect}
               priority={i < 3}
             />

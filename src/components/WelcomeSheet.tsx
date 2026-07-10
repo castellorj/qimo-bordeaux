@@ -89,7 +89,8 @@ export function WelcomeSheet() {
   const L = STR[lang] ?? STR.pt;
 
   const enter = (guestName?: string) => {
-    try { localStorage.setItem(GUEST_LS, JSON.stringify({ name: guestName ?? null })); } catch {}
+    // Guarda nome E telefone (E.164) — o telefone identifica as reservas do convidado.
+    try { localStorage.setItem(GUEST_LS, JSON.stringify({ name: guestName ?? null, phone: phone ?? null })); } catch {}
     setLeaving(true);
     const onHome = typeof window !== "undefined" && window.location.pathname === "/";
     setTimeout(() => {

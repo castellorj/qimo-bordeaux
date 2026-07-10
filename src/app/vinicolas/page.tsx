@@ -20,7 +20,6 @@ export default function VinicolasPage() {
               kicker={w.appellation}
               title={w.name}
               subtitle={w.classification}
-              favoriteId={`winery:${w.slug}`}
               seal={w.qimoSelect}
               priority={i < 3}
             />

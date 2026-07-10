@@ -8,7 +8,7 @@ import { listSettings, upsertSetting } from "@/lib/supabase/content-admin";
 import clsx from "clsx";
 
 const ICON_OPTIONS = [
-  "Home", "CalendarDays", "Grape", "Heart", "Menu", "Map", "Ship", "FileText",
+  "Home", "CalendarDays", "CalendarCheck", "Grape", "Heart", "Menu", "Map", "Ship", "FileText",
   "Wine", "UtensilsCrossed", "Sparkles", "ShoppingBag", "Landmark", "Bell",
   "Info", "Compass", "Star", "Camera", "MapPin", "Ticket", "BookOpen", "Coffee",
   "Users", "Globe", "Anchor", "Martini", "Navigation",

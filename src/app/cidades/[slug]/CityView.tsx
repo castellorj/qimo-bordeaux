@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { SmartImage } from "@/components/SmartImage";
 import { Icon } from "@/components/Icon";
-import { FavoriteButton, Crumb, Pill } from "@/components/ui";
+import { Crumb, Pill } from "@/components/ui";
 import { ReadMore } from "@/components/ReadMore";
 import { useGuideItem } from "@/components/GuideContent";
 import { Editable } from "@/components/Editable";
@@ -60,7 +60,6 @@ export function CityView({ slug }: { slug: string }) {
               <Editable as="h1" kind="city" slug={c.slug} field="name" value={c.name} label="Nome" className="display mt-2 text-4xl text-cream sm:text-6xl">{c.name}</Editable>
               <Editable as="p" kind="city" slug={c.slug} field="tagline" value={c.tagline} label="Frase de destaque" className="mt-2 max-w-xl font-serif text-lg font-light italic text-cream/80">{c.tagline}</Editable>
             </div>
-            <FavoriteButton id={`city:${c.slug}`} floating />
           </div>
         </div>
       </section>

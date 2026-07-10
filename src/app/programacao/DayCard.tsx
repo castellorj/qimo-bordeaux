@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
-import { FavoriteButton, QimoSeal } from "@/components/ui";
+import { QimoSeal } from "@/components/ui";
+import { ActivityReserve } from "@/components/ActivityReserve";
 import { weekday, dayMonth } from "@/lib/format";
 import type { ActivityType, Day } from "@/lib/types";
 
@@ -62,21 +63,18 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
                   <Icon name={TYPE_ICON[a.type]} size={18} />
                 </span>
                 <div className="min-w-0 flex-1 card p-4">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="min-w-0">
-                      {a.time && <span className="font-sans text-[13px] font-semibold tabular-nums text-gold-deep">{a.time}</span>}
-                      <h3 className="font-serif text-xl font-light leading-snug">{a.title}</h3>
-                    </div>
-                    <FavoriteButton id={`act:${a.id}`} />
+                  <div className="min-w-0">
+                    {a.time && <span className="font-sans text-[13px] font-semibold tabular-nums text-gold-deep">{a.time}</span>}
+                    <h3 className="font-serif text-xl font-light leading-snug">{a.title}</h3>
                   </div>
                   {a.description && <p className="mt-2 font-sans text-[13px] leading-relaxed text-muted">{a.description}</p>}
                   <div className="mt-3 flex flex-wrap items-center gap-2">
                     {a.qimoSelect && <QimoSeal />}
                     {a.location && <span className="chip">{a.location}</span>}
-                    {a.capacity && <span className="chip">até {a.capacity}</span>}
                     {a.linkedWinery && <Link href={`/vinicolas/${a.linkedWinery}`} className="chip hover:text-gold"><Icon name="Grape" size={13} /> Ver vinícola</Link>}
                     {a.linkedCity && <Link href={`/cidades/${a.linkedCity}`} className="chip hover:text-gold"><Icon name="Landmark" size={13} /> Ver cidade</Link>}
                   </div>
+                  <ActivityReserve contentKey={a.id} />
                 </div>
               </li>
             ))}

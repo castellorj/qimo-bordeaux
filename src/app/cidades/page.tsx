@@ -20,7 +20,6 @@ export default function CidadesPage() {
               kicker={c.region}
               title={c.name}
               subtitle={c.tagline}
-              favoriteId={`city:${c.slug}`}
               priority={i < 3}
             />
           ))}

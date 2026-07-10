@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { SmartImage } from "@/components/SmartImage";
 import { Icon } from "@/components/Icon";
-import { FavoriteButton, QimoSeal, Crumb, Pill } from "@/components/ui";
+import { QimoSeal, Crumb, Pill } from "@/components/ui";
 import { ReadMore } from "@/components/ReadMore";
 import { ActionBar } from "@/components/ActionBar";
 import { wineryActions } from "@/lib/reserve";
@@ -55,7 +55,6 @@ export function WineryView({ slug }: { slug: string }) {
               <Editable as="h1" kind="winery" slug={w.slug} field="name" value={w.name} label="Nome" className="display mt-2 text-4xl text-cream sm:text-6xl">{w.name}</Editable>
               {w.classification && <Editable as="p" kind="winery" slug={w.slug} field="classification" value={w.classification} label="Classificação" className="mt-2 font-serif text-lg font-light italic text-cream/80">{w.classification}</Editable>}
             </div>
-            <FavoriteButton id={`winery:${w.slug}`} floating />
           </div>
         </div>
       </section>

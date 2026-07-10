@@ -38,13 +38,16 @@ export interface BxReservation {
   activity_id: string;
   participant_id: string | null;
   guest_name: string | null;
+  guest_phone: string | null;
+  party: string[] | null; // nomes (responsável + acompanhantes), quando a reserva vem do guia
+  source: string; // 'guest' (reservou pelo app) | 'admin' (equipe cadastrou)
   adults: number;
   children: number;
   seats: number;
   status: string;
   notes: string | null;
   created_at: string;
-  activity?: { title: string; day_number: number | null };
+  activity?: { title: string; day_number: number | null; start_time: string | null };
   participant?: { full_name: string } | null;
 }
 
@@ -83,7 +86,7 @@ export async function deleteParticipant(id: string) {
 export async function fetchReservations(): Promise<BxReservation[]> {
   const { data } = await supabase()
     .from("bordeaux_reservations")
-    .select("*, activity:bordeaux_activities(title,day_number), participant:bordeaux_participants(full_name)")
+    .select("*, activity:bordeaux_activities(title,day_number,start_time), participant:bordeaux_participants(full_name)")
     .order("created_at", { ascending: false });
   return (data as BxReservation[]) || [];
 }

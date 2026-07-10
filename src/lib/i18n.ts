@@ -45,7 +45,7 @@ export const ui: Dict = {
   "nav.concierge": { pt: "Concierge", en: "Concierge", es: "Concierge" },
   "nav.informacoes": { pt: "Informações úteis", en: "Useful info", es: "Información útil" },
   "nav.documentos": { pt: "Documentos", en: "Documents", es: "Documentos" },
-  "nav.favoritos": { pt: "Favoritos", en: "Favorites", es: "Favoritos" },
+  "nav.reservas": { pt: "Reservas", en: "Bookings", es: "Reservas" },
   "nav.paginas": { pt: "Páginas", en: "Pages", es: "Páginas" },
   "navd.paginas": { pt: "Guias e conteúdos extras", en: "Extra guides & content", es: "Guías y contenidos extra" },
   "nav.roteiro": { pt: "Roteiro", en: "Route", es: "Ruta" },
@@ -83,7 +83,7 @@ export const ui: Dict = {
   "navd.concierge": { pt: "Suporte & emergências", en: "Support & emergencies", es: "Soporte y emergencias" },
   "navd.informacoes": { pt: "Clima, moeda, etiqueta", en: "Weather, currency, etiquette", es: "Clima, moneda, etiqueta" },
   "navd.documentos": { pt: "Passaporte, vouchers, seguro", en: "Passport, vouchers, insurance", es: "Pasaporte, vouchers, seguro" },
-  "navd.favoritos": { pt: "Seu roteiro pessoal", en: "Your personal list", es: "Tu lista personal" },
+  "navd.reservas": { pt: "Seus passeios reservados", en: "Your booked activities", es: "Tus paseos reservados" },
   // comum
   menu: { pt: "Menu", en: "Menu", es: "Menú" },
   search: { pt: "Buscar", en: "Search", es: "Buscar" },
@@ -286,11 +286,11 @@ export const ui: Dict = {
     en: "Passport, insurance, tickets, vouchers and QR codes — stored only on this device and offline.",
     es: "Pasaporte, seguro, billetes, vouchers y códigos QR — guardados solo en este dispositivo y sin conexión.",
   },
-  "hero.favoritos.k": { pt: "Seu roteiro pessoal", en: "Your personal list", es: "Tu lista personal" },
-  "hero.favoritos.i": {
-    pt: "Tudo que você salvou, reunido em um só lugar — e disponível offline no seu dispositivo.",
-    en: "Everything you saved, gathered in one place — and available offline on your device.",
-    es: "Todo lo que guardaste, reunido en un solo lugar — y disponible sin conexión en tu dispositivo.",
+  "hero.reservas.k": { pt: "Seus passeios", en: "Your activities", es: "Tus paseos" },
+  "hero.reservas.i": {
+    pt: "As atividades que você reservou — para você e seus acompanhantes.",
+    en: "The activities you booked — for you and your companions.",
+    es: "Las actividades que reservaste — para ti y tus acompañantes.",
   },
   "hero.mapa.k": { pt: "A geografia da viagem", en: "The trip's geography", es: "La geografía del viaje" },
   "hero.mapa.i": {
@@ -314,7 +314,7 @@ export function makeT(locale: Locale, overrides?: UiOverrides) {
 // Chaves editáveis pela equipe (rótulos de botões e seções principais)
 export const EDITABLE_LABELS: { key: string; grp: string }[] = [
   { key: "nav.hoje", grp: "Menu" }, { key: "nav.viagem", grp: "Menu" }, { key: "nav.descobrir", grp: "Menu" },
-  { key: "nav.favoritos", grp: "Menu" }, { key: "nav.mais", grp: "Menu" },
+  { key: "nav.reservas", grp: "Menu" }, { key: "nav.mais", grp: "Menu" },
   { key: "nav.programacao", grp: "Menu" }, { key: "nav.barco", grp: "Menu" }, { key: "nav.mapa", grp: "Menu" },
   { key: "nav.cidades", grp: "Menu" }, { key: "nav.vinicolas", grp: "Menu" }, { key: "nav.restaurantes", grp: "Menu" },
   { key: "nav.vinhos", grp: "Menu" }, { key: "nav.gastronomia", grp: "Menu" }, { key: "nav.experiencias", grp: "Menu" },

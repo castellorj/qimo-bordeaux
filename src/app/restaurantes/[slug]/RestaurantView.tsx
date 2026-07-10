@@ -2,7 +2,7 @@
 
 import { SmartImage } from "@/components/SmartImage";
 import { Icon } from "@/components/Icon";
-import { FavoriteButton, QimoSeal, Crumb, Pill } from "@/components/ui";
+import { QimoSeal, Crumb, Pill } from "@/components/ui";
 import { ActionBar } from "@/components/ActionBar";
 import { restaurantActions } from "@/lib/reserve";
 import { useGuideItem } from "@/components/GuideContent";
@@ -42,7 +42,6 @@ export function RestaurantView({ slug }: { slug: string }) {
               <h1 className="display mt-2 text-4xl text-cream sm:text-6xl">{r.name}</h1>
               {r.chef && <p className="mt-2 font-serif text-lg font-light italic text-cream/80">{r.chef}</p>}
             </div>
-            <FavoriteButton id={`resto:${r.slug}`} floating />
           </div>
         </div>
       </section>

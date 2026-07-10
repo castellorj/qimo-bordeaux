@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { Icon } from "./Icon";
-import { useLocale, useFavorites } from "./providers";
+import { useLocale, useReservations } from "./providers";
 import { SearchOverlay } from "./Search";
 import { WelcomeSheet } from "./WelcomeSheet";
 import { ConciergeFab } from "./ConciergeFab";
@@ -21,7 +21,7 @@ function activeSection(pathname: string): string {
   const p = pathname;
   if (/^\/(viagem|programacao)/.test(p)) return "/programacao";
   if (/^\/(descobrir|vinicolas|restaurantes|vinhos|gastronomia|experiencias|compras|cidades)/.test(p)) return "/descobrir";
-  if (p.startsWith("/favoritos")) return "/favoritos";
+  if (p.startsWith("/reservas")) return "/reservas";
   if (/^\/(mais|concierge|informacoes|paginas|barco|mapa|documentos)/.test(p)) return "/mais";
   return "";
 }
@@ -29,7 +29,7 @@ function activeSection(pathname: string): string {
 export function SiteChrome({ searchIndex }: { searchIndex: SearchDoc[] }) {
   const [search, setSearch] = useState(false);
   const { t, cfg } = useLocale();
-  const { count } = useFavorites();
+  const { count } = useReservations();
   const pathname = usePathname();
   const section = activeSection(pathname);
 
@@ -113,7 +113,7 @@ export function SiteChrome({ searchIndex }: { searchIndex: SearchDoc[] }) {
               >
                 <div className="relative">
                   <Icon name={iconFor(item)} size={22} strokeWidth={active ? 2 : 1.6} />
-                  {item.href === "/favoritos" && count > 0 && (
+                  {item.href === "/reservas" && count > 0 && (
                     <span className="absolute -right-2 -top-1.5 grid h-4 min-w-4 place-items-center rounded-full bg-petrol-600 px-0.5 text-[9px] font-semibold text-cream">
                       {count}
                     </span>

@@ -33,7 +33,6 @@ export default function VinhosPage() {
                     kicker={a.color}
                     title={a.name}
                     subtitle={a.tagline}
-                    favoriteId={`wine:${a.slug}`}
                     ratio="aspect-[3/4]"
                     priority={i < 3}
                   />

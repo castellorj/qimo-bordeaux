@@ -2,7 +2,7 @@
 
 import { SmartImage } from "@/components/SmartImage";
 import { Icon } from "@/components/Icon";
-import { FavoriteButton, QimoSeal, Crumb } from "@/components/ui";
+import { QimoSeal, Crumb } from "@/components/ui";
 import { useGuideItem } from "@/components/GuideContent";
 import type { GastronomyItem } from "@/lib/types";
 
@@ -25,7 +25,6 @@ export function GastronomyView({ slug }: { slug: string }) {
               </div>
               <h1 className="display mt-2 text-4xl text-cream sm:text-6xl">{g.name}</h1>
             </div>
-            <FavoriteButton id={`gastro:${g.slug}`} floating />
           </div>
         </div>
       </section>

@@ -22,7 +22,6 @@ export default function ComprasPage() {
               kicker={s.category}
               title={s.name}
               subtitle={s.priceRange}
-              favoriteId={`shop:${s.slug}`}
               seal={s.qimoSelect}
               priority={i < 3}
             />

@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
-import { FavoriteButton } from "./ui";
 import { Icon } from "./Icon";
 
 /**
@@ -12,7 +11,7 @@ import { Icon } from "./Icon";
  * Surge com um fade-up discreto ao entrar na tela (escalona naturalmente ao rolar).
  */
 export function EditorialCard({
-  href, image, kicker, title, subtitle, favoriteId, seal = false,
+  href, image, kicker, title, subtitle, seal = false,
   ratio = "aspect-[4/5]", priority = false,
 }: {
   href: string;
@@ -20,7 +19,6 @@ export function EditorialCard({
   kicker?: string;
   title: string;
   subtitle?: string;
-  favoriteId?: string;
   seal?: boolean;
   ratio?: string;
   priority?: boolean;
@@ -65,11 +63,6 @@ export function EditorialCard({
       <div className="absolute inset-0" style={{ background: "rgba(20,7,11,0.32)" }} />
       <div className="scrim-bottom absolute inset-0" />
 
-      {favoriteId && (
-        <div className="absolute right-3 top-3 z-10">
-          <FavoriteButton id={favoriteId} floating />
-        </div>
-      )}
       {seal && (
         <div className="chip-on-photo absolute left-3 top-3 z-10 !border-gold/50 font-sans text-[10px] font-semibold uppercase tracking-luxe text-gold-soft">
           <Icon name="Star" size={11} /> Seleção QIMO

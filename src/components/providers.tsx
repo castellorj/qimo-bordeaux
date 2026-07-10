@@ -1,7 +1,11 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, useCallback } from "react";
+import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
 import { type Locale, DEFAULT_LOCALE, makeT, type UiOverrides } from "@/lib/i18n";
+import {
+  fetchReservable, fetchMyReservations, guestReserve, guestCancel,
+  type Reservable, type MyReservation,
+} from "@/lib/supabase/reservations";
 
 const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://vvvzitszfcajfrvzpace.supabase.co";
 const SB_ANON =
@@ -16,30 +20,67 @@ const LocaleCtx = createContext<{
   cfg: (key: string) => string | undefined;
 }>({ locale: DEFAULT_LOCALE, setLocale: () => {}, t: (k) => k, cfg: () => undefined });
 
-/* ---------------- Favoritos (offline, localStorage) ---------------- */
-const FavCtx = createContext<{
-  favs: string[];
-  has: (id: string) => boolean;
-  toggle: (id: string) => void;
-  count: number;
-}>({ favs: [], has: () => false, toggle: () => {}, count: 0 });
+/* ---------------- Reservas (atividades, via Supabase) ---------------- */
+export interface Guest { name?: string | null; phone?: string | null }
 
-const FAV_KEY = "qimo:favs";
+interface ReservationsValue {
+  ready: boolean;
+  guest: Guest | null;
+  setGuestPhone: (phone: string) => void;
+  reservableByKey: Map<string, Reservable>;
+  mine: Map<string, MyReservation>; // por activityId
+  count: number;
+  refresh: () => Promise<void>;
+  reserve: (activityId: string, party: string[]) => Promise<{ ok: boolean; status?: string; error?: string }>;
+  cancel: (activityId: string) => Promise<void>;
+}
+const ReservationsCtx = createContext<ReservationsValue>({
+  ready: false, guest: null, setGuestPhone: () => {}, reservableByKey: new Map(), mine: new Map(),
+  count: 0, refresh: async () => {}, reserve: async () => ({ ok: false }), cancel: async () => {},
+});
+
+const GUEST_LS = "qimo:guest";
 const LOCALE_KEY = "qimo:locale";
+
+function readGuest(): Guest | null {
+  try {
+    const raw = localStorage.getItem(GUEST_LS);
+    if (!raw) return null;
+    const g = JSON.parse(raw);
+    return typeof g === "object" && g ? g : null;
+  } catch { return null; }
+}
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
-  const [favs, setFavs] = useState<string[]>([]);
   const [overrides, setOverrides] = useState<UiOverrides>({});
   const [ready, setReady] = useState(false);
 
+  // reservas
+  const [guest, setGuest] = useState<Guest | null>(null);
+  const [reservable, setReservable] = useState<Reservable[]>([]);
+  const [mineArr, setMineArr] = useState<MyReservation[]>([]);
+  const started = useRef(false);
+
+  const loadMine = useCallback(async (phone?: string | null) => {
+    if (!phone) { setMineArr([]); return; }
+    setMineArr(await fetchMyReservations(phone));
+  }, []);
+
+  const refresh = useCallback(async () => {
+    const g = readGuest();
+    setGuest(g);
+    const [rv] = await Promise.all([fetchReservable(), loadMine(g?.phone)]);
+    setReservable(rv);
+  }, [loadMine]);
+
   useEffect(() => {
-    // Render base sempre em PT; a tradução PT→EN/ES é feita pelo Google Translate.
-    try {
-      const f = JSON.parse(localStorage.getItem(FAV_KEY) || "[]");
-      if (Array.isArray(f)) setFavs(f);
-    } catch {}
+    if (started.current) return;
+    started.current = true;
     setReady(true);
+    setGuest(readGuest());
+    // Passeios reserváveis + minhas reservas
+    refresh();
     // Rótulos de botões/menus editados no painel (aplicados sem rebuild)
     fetch(`${SB_URL}/rest/v1/bordeaux_settings?select=key,pt,en,es`, {
       headers: { apikey: SB_ANON, Authorization: `Bearer ${SB_ANON}` },
@@ -51,7 +92,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         setOverrides(m);
       })
       .catch(() => {});
-  }, []);
+  }, [refresh]);
 
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l);
@@ -61,28 +102,49 @@ export function Providers({ children }: { children: React.ReactNode }) {
     } catch {}
   }, []);
 
-  const toggleFav = useCallback((id: string) => {
-    setFavs((prev) => {
-      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
-      try {
-        localStorage.setItem(FAV_KEY, JSON.stringify(next));
-      } catch {}
-      return next;
-    });
-  }, []);
+  const setGuestPhone = useCallback((phone: string) => {
+    const next = { ...(readGuest() || {}), phone };
+    try { localStorage.setItem(GUEST_LS, JSON.stringify(next)); } catch {}
+    setGuest(next);
+    loadMine(phone);
+  }, [loadMine]);
 
-  const has = useCallback((id: string) => favs.includes(id), [favs]);
+  const reserve = useCallback<ReservationsValue["reserve"]>(async (activityId, party) => {
+    const g = readGuest();
+    const phone = g?.phone;
+    const name = g?.name || party[0] || "Convidado";
+    if (!phone) return { ok: false, error: "phone" };
+    const { data, error } = await guestReserve(activityId, name, phone, party);
+    if (error) return { ok: false, error: error.message };
+    await loadMine(phone);
+    return { ok: true, status: (data as any)?.status };
+  }, [loadMine]);
+
+  const cancel = useCallback(async (activityId: string) => {
+    const g = readGuest();
+    if (!g?.phone) return;
+    await guestCancel(activityId, g.phone);
+    await loadMine(g.phone);
+  }, [loadMine]);
+
+  const reservableByKey = new Map<string, Reservable>(); // por content_key
+  reservable.forEach((r) => { if (r.contentKey) reservableByKey.set(r.contentKey, r); });
+  const mine = new Map<string, MyReservation>();
+  mineArr.forEach((r) => mine.set(r.activityId, r));
+
   const t = makeT(locale, overrides);
   const cfg = useCallback((key: string) => overrides[key]?.pt, [overrides]);
 
   return (
     <LocaleCtx.Provider value={{ locale, setLocale, t, cfg }}>
-      <FavCtx.Provider value={{ favs, has, toggle: toggleFav, count: favs.length }}>
+      <ReservationsCtx.Provider
+        value={{ ready, guest, setGuestPhone, reservableByKey, mine, count: mineArr.length, refresh, reserve, cancel }}
+      >
         <div style={{ visibility: ready ? "visible" : "hidden" }}>{children}</div>
-      </FavCtx.Provider>
+      </ReservationsCtx.Provider>
     </LocaleCtx.Provider>
   );
 }
 
 export const useLocale = () => useContext(LocaleCtx);
-export const useFavorites = () => useContext(FavCtx);
+export const useReservations = () => useContext(ReservationsCtx);

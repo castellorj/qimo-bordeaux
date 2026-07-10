@@ -2,7 +2,7 @@
 
 import { SmartImage } from "@/components/SmartImage";
 import { Icon } from "@/components/Icon";
-import { FavoriteButton, QimoSeal, Crumb, Pill } from "@/components/ui";
+import { QimoSeal, Crumb, Pill } from "@/components/ui";
 import { useGuideItem } from "@/components/GuideContent";
 import type { ShoppingItem } from "@/lib/types";
 
@@ -25,7 +25,6 @@ export function ShoppingView({ slug }: { slug: string }) {
               </div>
               <h1 className="display mt-2 text-4xl text-cream sm:text-6xl">{s.name}</h1>
             </div>
-            <FavoriteButton id={`shop:${s.slug}`} floating />
           </div>
         </div>
       </section>
