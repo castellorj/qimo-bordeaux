@@ -3,7 +3,8 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { Icon } from "./Icon";
-import { conciergeContacts } from "@/content";
+import { useGuideKindStable } from "./GuideContent";
+import type { ConciergeContact } from "@/lib/types";
 
 // Contatos de acesso rápido no botão flutuante (os demais ficam na página Concierge).
 const QUICK = ["qimo-whatsapp", "qimo-call", "emergency-eu", "samu"];
@@ -24,7 +25,8 @@ export function ConciergeFab() {
     return () => { document.body.style.overflow = ""; };
   }, [open]);
 
-  const items = QUICK.map((slug) => conciergeContacts.find((c) => c.slug === slug)).filter(Boolean) as typeof conciergeContacts;
+  const contacts = useGuideKindStable<ConciergeContact>("concierge");
+  const items = QUICK.map((slug) => contacts.find((c) => c.slug === slug)).filter(Boolean) as ConciergeContact[];
 
   return (
     <>

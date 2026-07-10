@@ -4,11 +4,13 @@ import { createContext, useContext, useEffect, useState } from "react";
 import {
   cities as fCities, wineries as fWineries, restaurants as fRestaurants,
   appellations as fWines, gastronomy as fGastro, experiences as fExp, shopping as fShop,
+  conciergeContacts as fConcierge,
 } from "@/content";
 
 const FILES: Record<string, any[]> = {
   city: fCities, winery: fWineries, restaurant: fRestaurants,
   wine: fWines, gastronomy: fGastro, experience: fExp, shopping: fShop,
+  concierge: fConcierge,
 };
 
 const URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://vvvzitszfcajfrvzpace.supabase.co";
@@ -76,6 +78,19 @@ export function GuideContentProvider({ children }: { children: React.ReactNode }
 
 export function useGuideKind<T extends { slug: string }>(kind: string): T[] {
   return merged<T>(kind, useContext(Ctx));
+}
+
+// Como merged, mas preserva a ORDEM do arquivo (não reordena por edições do banco)
+// e não adiciona itens que só existam no banco. Ideal para listas fixas (ex.: Concierge).
+function mergedStable<T extends { slug: string }>(kind: string, db: ByKind | null): T[] {
+  const file = (FILES[kind] || []) as T[];
+  const rows = db?.[kind];
+  if (!rows || !rows.length) return file;
+  const bySlug = new Map(rows.map((r) => [r.slug, r.data]));
+  return file.map((f) => (bySlug.has(f.slug) ? ({ ...f, ...bySlug.get(f.slug) } as T) : f));
+}
+export function useGuideKindStable<T extends { slug: string }>(kind: string): T[] {
+  return mergedStable<T>(kind, useContext(Ctx));
 }
 export function useGuideItem<T extends { slug: string }>(kind: string, slug: string): T | undefined {
   return merged<T>(kind, useContext(Ctx)).find((x) => x.slug === slug);

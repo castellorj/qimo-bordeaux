@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { PageHero } from "@/components/PageHero";
+import { TripHero } from "@/components/TripHero";
 import { DayCard } from "./DayCard";
 import { itinerary, cities, wineries } from "@/content";
 import type { Day } from "@/lib/types";
@@ -25,7 +25,7 @@ function dayImage(day: Day, idx: number): string {
 export default function ProgramacaoPage() {
   return (
     <>
-      <PageHero section="programacao" small bgImage="/photos/hero-dordogne-sunset.jpg" />
+      <TripHero imageKey="img.hero.viagem" defaultImage="/photos/hero-dordogne-sunset.jpg" title="Sua viagem" />
 
       {/* Índice de dias */}
       <nav className="sticky top-16 z-30 border-b backdrop-blur-md" style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--bg) 85%, transparent)" }}>

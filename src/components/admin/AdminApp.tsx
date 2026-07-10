@@ -13,12 +13,13 @@ import { ContentCMS } from "./ContentCMS";
 import { TextosEditor } from "./TextosEditor";
 import { BotoesEditor } from "./BotoesEditor";
 import { PagesBuilder } from "./PagesBuilder";
+import { TelasConcierge } from "./TelasConcierge";
 import { OperationsCenter } from "./OperationsCenter";
 import { PreviewPane } from "./PreviewPane";
 import { PublishModal } from "./PublishModal";
 import clsx from "clsx";
 
-type Tab = "inicio" | "passeios" | "participantes" | "reservas" | "conteudo" | "paginas" | "textos" | "preview";
+type Tab = "inicio" | "passeios" | "participantes" | "reservas" | "conteudo" | "telas" | "paginas" | "textos" | "preview";
 
 export function AdminApp() {
   const [ready, setReady] = useState(false);
@@ -100,6 +101,7 @@ function Shell({ email }: { email?: string }) {
     { key: "participantes", label: "Participantes", icon: "Users" },
     { key: "reservas", label: "Reservas", icon: "Check" },
     { key: "conteudo", label: "Conteúdo", icon: "LayoutGrid" },
+    { key: "telas", label: "Telas & Concierge", icon: "Smartphone" },
     { key: "paginas", label: "Páginas", icon: "BookOpen" },
     { key: "textos", label: "Textos & botões", icon: "Languages" },
     { key: "preview", label: "Editar no site", icon: "Pencil" },
@@ -137,6 +139,7 @@ function Shell({ email }: { email?: string }) {
           participantes: "Cadastre e gerencie quem está na viagem.",
           reservas: "Faça e cancele reservas dos passeios com vagas limitadas.",
           conteudo: "Edite as fichas, troque fotos e arraste os cards (⠿) para mudar a ordem no guia.",
+          telas: "Troque as fotos das telas principais e edite os contatos do concierge (nome, descrição, telefone).",
           paginas: "Crie páginas novas montando blocos. Publique e elas aparecem no guia na hora.",
           textos: "Renomeie botões, troque ícones, mostre/oculte e reordene (↑/↓) os itens de menu.",
           preview: "Clique nos textos para editar e use ↑/↓ para reordenar seções — tudo salva na hora.",
@@ -149,7 +152,7 @@ function Shell({ email }: { email?: string }) {
       })()}
 
       <div className="py-8">
-        {loading && tab !== "preview" && tab !== "conteudo" && tab !== "textos" ? (
+        {loading && tab !== "preview" && tab !== "conteudo" && tab !== "textos" && tab !== "telas" ? (
           <p className="text-center text-muted">Carregando dados…</p>
         ) : tab === "inicio" ? (
           <OperationsCenter acts={acts} parts={parts} res={res} publishing={false}
@@ -161,6 +164,8 @@ function Shell({ email }: { email?: string }) {
           <Participantes parts={parts} onChange={reload} />
         ) : tab === "conteudo" ? (
           <ContentCMS />
+        ) : tab === "telas" ? (
+          <TelasConcierge />
         ) : tab === "paginas" ? (
           <PagesBuilder />
         ) : tab === "textos" ? (
