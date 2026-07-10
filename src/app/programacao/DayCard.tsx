@@ -105,14 +105,14 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
           </div>
 
           <button type="button" onClick={() => setOpen(false)}
-            className="btn-ghost mt-4 w-full !rounded-[14px] !border-2 !py-4">
-            <Icon name="ChevronDown" size={16} className="rotate-180" /> {t("prog.hideDay")}
+            className="btn-ghost mt-4 w-full !rounded-[12px] !border-2 !px-4 !py-2.5 !tracking-wide text-[12px]">
+            <Icon name="ChevronDown" size={15} className="rotate-180" /> {t("prog.hideDay")}
           </button>
         </div>
       ) : (
-        <button type="button" onClick={() => setOpen(true)} className="btn-primary mt-3 w-full !rounded-[14px] !py-4 text-[13px]">
+        <button type="button" onClick={() => setOpen(true)} className="btn-primary mt-3 w-full !rounded-[12px] !px-4 !py-2.5 !tracking-wide text-[12px]">
           {t("prog.seeDay")}{countSuffix}
-          <Icon name="ChevronDown" size={16} />
+          <Icon name="ChevronDown" size={15} />
         </button>
       )}
     </section>
