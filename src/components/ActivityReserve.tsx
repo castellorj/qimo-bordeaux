@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 import { Icon } from "./Icon";
 import { useReservations } from "./providers";
 import { type Reservable, type MyReservation } from "@/lib/supabase/reservations";
@@ -45,7 +46,8 @@ export function ActivityReserve({ contentKey }: { contentKey: string }) {
           )}
         </button>
       )}
-      {open && <ReserveSheet rv={rv} my={my} onClose={() => setOpen(false)} />}
+      {open && typeof document !== "undefined" &&
+        createPortal(<ReserveSheet rv={rv} my={my} onClose={() => setOpen(false)} />, document.body)}
     </>
   );
 }
