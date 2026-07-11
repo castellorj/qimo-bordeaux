@@ -5,12 +5,14 @@ import {
   cities as fCities, wineries as fWineries, restaurants as fRestaurants,
   appellations as fWines, gastronomy as fGastro, experiences as fExp, shopping as fShop,
   conciergeContacts as fConcierge, itinerary as fItinerary, chefExperiences as fChef,
+  infoFacts as fInfoFacts, etiquetteTips as fEtiquetteTips,
 } from "@/content";
 
 const FILES: Record<string, any[]> = {
   city: fCities, winery: fWineries, restaurant: fRestaurants,
   wine: fWines, gastronomy: fGastro, experience: fExp, shopping: fShop,
   concierge: fConcierge, chef: fChef,
+  info_fact: fInfoFacts, etiquette_tip: fEtiquetteTips,
   day: fItinerary, // roteiro dia a dia (editável no painel; slug "dia-N")
 };
 

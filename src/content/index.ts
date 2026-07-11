@@ -13,6 +13,7 @@ import { conciergeContacts, frenchPhrases, etiquette } from "./concierge";
 import { chefExperiences } from "./chef";
 import { ship } from "./ship";
 import { restaurants } from "./restaurants";
+import { infoFacts, etiquetteTips } from "./info";
 
 export const content = {
   trip: TRIP,
@@ -29,6 +30,8 @@ export const content = {
   conciergeContacts,
   frenchPhrases,
   etiquette,
+  infoFacts,
+  etiquetteTips,
   chefExperiences,
 };
 
@@ -53,6 +56,8 @@ export {
   conciergeContacts,
   frenchPhrases,
   etiquette,
+  infoFacts,
+  etiquetteTips,
   chefExperiences,
 };
 

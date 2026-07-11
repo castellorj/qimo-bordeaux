@@ -3,6 +3,7 @@
 import { supabase } from "./client";
 import {
   cities, wineries, restaurants, appellations, gastronomy, experiences, shopping, chefExperiences,
+  infoFacts, etiquetteTips,
 } from "@/content";
 
 export const CONTENT_KINDS = [
@@ -14,6 +15,8 @@ export const CONTENT_KINDS = [
   { kind: "experience", label: "Experiências", file: experiences },
   { kind: "shopping", label: "Compras", file: shopping },
   { kind: "chef", label: "Chef (Troisgros)", file: chefExperiences },
+  { kind: "info_fact", label: "Info úteis", file: infoFacts },
+  { kind: "etiquette_tip", label: "Etiqueta", file: etiquetteTips },
 ] as const;
 
 export interface ContentRow {

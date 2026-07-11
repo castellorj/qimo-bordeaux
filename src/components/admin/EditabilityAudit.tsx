@@ -58,10 +58,10 @@ const AREAS: Area[] = [
   },
   {
     title: "Informacoes uteis",
-    status: "partial",
-    where: "Menus e textos / codigo",
-    editable: ["titulo da pagina", "foto do topo", "alguns rotulos globais"],
-    gaps: ["cards de moeda/idioma/fuso/tomadas/gorjeta ainda estao no arquivo da pagina", "lista de etiqueta ainda vem de src/content/concierge.ts"],
+    status: "complete",
+    where: "Fichas / Menus e textos",
+    editable: ["cards de moeda/idioma/fuso/tomadas/gorjeta", "dicas de etiqueta", "foto do topo", "rotulos globais"],
+    gaps: [],
   },
   {
     title: "Compras / Tax Free",

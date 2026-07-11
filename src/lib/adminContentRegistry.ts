@@ -118,7 +118,10 @@ const registry: CmsKindConfig[] = [
       { key: "mapsUrl", label: "Link do mapa", type: "url", section: "Links" },
       { key: "highlights", label: "Destaques", type: "list", section: "Destaques" },
       { key: "seals", label: "Selos editoriais", type: "list", section: "Destaques", hint: "Use no maximo tres no guia." },
-      { key: "qimoScores", label: "Notas QIMO", type: "json", section: "Destaques" },
+      { key: "googleRating", label: "Nota Google", type: "number", section: "Destaques", hint: "Media publica do Google Maps, de 1 a 5." },
+      { key: "googleReviewsCount", label: "Quantidade de avaliacoes Google", type: "number", section: "Destaques" },
+      { key: "googleRatingDate", label: "Data da consulta Google", type: "text", section: "Destaques" },
+      { key: "qimoScores", label: "Notas editoriais internas", type: "json", section: "Avancado" },
       { key: "qimoNote", label: "Recomendacao QIMO", type: "textarea", section: "Destaques" },
       { key: "sommelierTip", label: "Dica do Sommelier", type: "textarea", section: "Texto" },
       { key: "practical", label: "Informacoes praticas", type: "json", section: "Reserva" },
@@ -189,6 +192,26 @@ const registry: CmsKindConfig[] = [
       { key: "chef", label: "Chef", type: "text", section: "Principal" },
       { key: "duration", label: "Duracao", type: "text", section: "Principal" },
       { key: "price", label: "Preco", type: "text", section: "Reserva" },
+    ],
+  },
+  {
+    kind: "info_fact",
+    label: "Info uteis",
+    description: "Cards de informacoes praticas da pagina Informacoes uteis.",
+    fields: [
+      { key: "slug", label: "Identificador", type: "text", section: "Sistema" },
+      { key: "icon", label: "Icone", type: "text", section: "Principal" },
+      { key: "label", label: "Titulo", type: "text", section: "Principal" },
+      { key: "value", label: "Texto", type: "textarea", section: "Texto" },
+    ],
+  },
+  {
+    kind: "etiquette_tip",
+    label: "Etiqueta",
+    description: "Dicas de etiqueta e cultura local da pagina Informacoes uteis.",
+    fields: [
+      { key: "slug", label: "Identificador", type: "text", section: "Sistema" },
+      { key: "text", label: "Dica", type: "textarea", section: "Texto" },
     ],
   },
 ];
