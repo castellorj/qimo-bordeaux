@@ -104,6 +104,8 @@ export interface Winery {
   qimoSelect?: boolean;
   visitedOnDays?: number[];
   gallery?: string[];
+  region?: string; // ex.: "Médoc · Margaux" (para os châteaux-ícone)
+  dossier?: string; // dossiê editorial completo em Markdown (châteaux-ícone). Quando presente, a página exibe o dossiê.
 }
 
 export interface Appellation {

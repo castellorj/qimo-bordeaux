@@ -10,6 +10,7 @@ import { wineryActions } from "@/lib/reserve";
 import { useGuideItem } from "@/components/GuideContent";
 import { Editable } from "@/components/Editable";
 import { Section } from "@/components/Section";
+import { Dossier } from "@/components/Dossier";
 import type { Winery } from "@/lib/types";
 
 const WINERY_SECTION_ORDER = ["terroir", "grapes", "production", "family", "icons", "whatToTaste", "whatToBuy", "curiosities"];
@@ -39,25 +40,41 @@ export function WineryView({ slug }: { slug: string }) {
   const w = useGuideItem<Winery>("winery", slug);
   if (!w) return <div className="container-editorial py-20 text-center text-muted">Vinícola não encontrada.</div>;
 
-  return (
-    <article>
-      <section className="relative">
-        <SmartImage src={w.heroImage} alt={w.name} label={w.appellation} ratio="aspect-[16/9] sm:aspect-[21/9]" priority />
-        <div className="absolute inset-0 bg-gradient-to-t from-petrol-950/85 via-petrol-950/25 to-transparent" />
-        <div className="text-on-photo container-editorial absolute inset-x-0 bottom-0 z-10 pb-8">
-          <Crumb href="/vinicolas" label="Vinícolas" />
-          <div className="mt-3 flex items-end justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-3">
-                <Editable as="p" kind="winery" slug={w.slug} field="appellation" value={w.appellation} label="Denominação" className="font-sans text-[11px] uppercase tracking-luxe text-gold-soft">{w.appellation}</Editable>
-                {w.qimoSelect && <QimoSeal />}
-              </div>
-              <Editable as="h1" kind="winery" slug={w.slug} field="name" value={w.name} label="Nome" className="display mt-2 text-4xl text-cream sm:text-6xl">{w.name}</Editable>
-              {w.classification && <Editable as="p" kind="winery" slug={w.slug} field="classification" value={w.classification} label="Classificação" className="mt-2 font-serif text-lg font-light italic text-cream/80">{w.classification}</Editable>}
+  const Hero = (
+    <section className="relative">
+      <SmartImage src={w.heroImage} alt={w.name} label={w.appellation} ratio="aspect-[16/9] sm:aspect-[21/9]" priority />
+      <div className="absolute inset-0 bg-gradient-to-t from-petrol-950/85 via-petrol-950/25 to-transparent" />
+      <div className="text-on-photo container-editorial absolute inset-x-0 bottom-0 z-10 pb-8">
+        <Crumb href="/vinicolas" label="Vinícolas" />
+        <div className="mt-3 flex items-end justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-3">
+              <Editable as="p" kind="winery" slug={w.slug} field="appellation" value={w.appellation} label="Denominação" className="font-sans text-[11px] uppercase tracking-luxe text-gold-soft">{w.appellation}</Editable>
+              {w.qimoSelect && <QimoSeal />}
             </div>
+            <Editable as="h1" kind="winery" slug={w.slug} field="name" value={w.name} label="Nome" className="display mt-2 text-4xl text-cream sm:text-6xl">{w.name}</Editable>
+            {w.classification && <Editable as="p" kind="winery" slug={w.slug} field="classification" value={w.classification} label="Classificação" className="mt-2 font-serif text-lg font-light italic text-cream/80">{w.classification}</Editable>}
           </div>
         </div>
-      </section>
+      </div>
+    </section>
+  );
+
+  // Châteaux-ícone: dossiê editorial completo (Markdown).
+  if (w.dossier) {
+    return (
+      <article>
+        {Hero}
+        <div className="container-editorial py-12">
+          <Dossier md={w.dossier} />
+        </div>
+      </article>
+    );
+  }
+
+  return (
+    <article>
+      {Hero}
 
       <div className="container-editorial py-14">
         <div className="grid gap-12 lg:grid-cols-[1fr_300px]">

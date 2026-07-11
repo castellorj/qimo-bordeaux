@@ -1,6 +1,10 @@
 import { TRIP, itinerary } from "./itinerary";
 import { cities } from "./cities";
-import { wineries } from "./wineries";
+import { wineries as tripWineries } from "./wineries";
+import { iconicChateaux } from "./chateaux";
+
+// Vinícolas = paradas do roteiro + châteaux-ícone (dossiês premium).
+const wineries = [...tripWineries, ...iconicChateaux];
 import { appellations } from "./wines";
 import { gastronomy } from "./gastronomy";
 import { experiences } from "./experiences";
