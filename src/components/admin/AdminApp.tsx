@@ -18,9 +18,10 @@ import { TelasConcierge } from "./TelasConcierge";
 import { OperationsCenter } from "./OperationsCenter";
 import { PreviewPane } from "./PreviewPane";
 import { PublishModal } from "./PublishModal";
+import { EditabilityAudit } from "./EditabilityAudit";
 import clsx from "clsx";
 
-type Tab = "inicio" | "roteiro" | "passeios" | "participantes" | "reservas" | "conteudo" | "telas" | "paginas" | "textos" | "preview";
+type Tab = "inicio" | "roteiro" | "passeios" | "participantes" | "reservas" | "conteudo" | "telas" | "paginas" | "textos" | "preview" | "cobertura";
 
 type TabMeta = {
   key: Tab;
@@ -40,11 +41,12 @@ const TAB_META: Record<Tab, TabMeta> = {
   paginas: { key: "paginas", label: "Paginas", icon: "BookOpen", desc: "Crie paginas extras com blocos visuais e publique no guia." },
   textos: { key: "textos", label: "Menus e textos", icon: "Languages", desc: "Renomeie menus, botoes, titulos curtos, icones e itens de navegacao." },
   preview: { key: "preview", label: "Editor visual", icon: "Pencil", desc: "Abra o guia dentro do painel, clique em campos editaveis e veja mobile, tablet e desktop." },
+  cobertura: { key: "cobertura", label: "Cobertura", icon: "CircleCheck", desc: "Veja o que ja e editavel no painel e quais areas ainda precisam virar CMS." },
 };
 
 const NAV_GROUPS: { title: string; items: Tab[] }[] = [
   { title: "Operacao", items: ["inicio", "roteiro", "passeios"] },
-  { title: "CMS visual", items: ["conteudo", "paginas", "telas", "textos", "preview"] },
+  { title: "CMS visual", items: ["conteudo", "paginas", "telas", "textos", "preview", "cobertura"] },
   { title: "Clientes", items: ["reservas", "participantes"] },
 ];
 
@@ -183,7 +185,7 @@ function Shell({ email }: { email?: string }) {
             </div>
           </div>
       {(() => {
-        const hints: Record<Tab, string> = {
+        const hints: Partial<Record<Tab, string>> = {
           inicio: "Visão geral da viagem. Toque nas ações rápidas para ir direto ao ponto.",
           roteiro: "Edite o dia a dia completo: textos, foto, portos, agenda do navio e atividades. Salvar sincroniza as reservas.",
           passeios: "Defina a capacidade (vagas) de cada passeio e mostre ou oculte no guia.",
@@ -229,6 +231,8 @@ function Shell({ email }: { email?: string }) {
           </div>
         ) : tab === "preview" ? (
           <PreviewPane />
+        ) : tab === "cobertura" ? (
+          <EditabilityAudit />
         ) : (
           <Reservas acts={acts} parts={parts} res={res} onChange={reload} />
         )}

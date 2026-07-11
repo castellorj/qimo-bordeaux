@@ -167,10 +167,16 @@ export interface Restaurant {
   name: string;
   city: string;
   heroImage?: string;
+  gallery?: string[];
+  category?: "michelin" | "bistro" | "wine-bar" | "contemporary";
+  neighborhood?: string;
   description: string;
   chef?: string;
   specialty?: string;
   averageTicket?: string;
+  priceBand?: "Até €50" | "€50 a €100" | "Acima de €100";
+  bestFor?: string;
+  duration?: string;
   dressCode?: string;
   website?: string;
   instagram?: string;
@@ -181,9 +187,44 @@ export interface Restaurant {
   menuUrl?: string;
   mapsUrl?: string;
   address?: string;
+  coords?: { lat: number; lng: number };
   days?: string; // dias/horários de funcionamento
+  hours?: string;
   reservationRequired?: boolean;
+  reservationAdvice?: string;
   stars?: string; // ex.: "1 estrela Michelin"
+  michelin?: string;
+  highlights?: string[];
+  seals?: string[];
+  practical?: {
+    accessibility?: string;
+    children?: string;
+    vegetarian?: string;
+    groups?: string;
+    prepayment?: string;
+    status?: string;
+    reservationStatus?: string;
+  };
+  qimoScores?: {
+    gastronomy: number;
+    wine: number;
+    ambience: number;
+    service: number;
+    location: number;
+    exclusivity: number;
+    value: number;
+    bookingEase: number;
+    overall: number;
+  };
+  sommelierTip?: string;
+  qimoNote?: string;
+  sourcePrimary?: string;
+  sourceSecondary?: string[];
+  lastVerified?: string;
+  informationStatus?: "confirmada" | "parcial" | "pendente";
+  adminStatus?: "ativo" | "oculto" | "temporariamente-fechado" | "encerrado";
+  featured?: boolean;
+  sortOrder?: number;
   qimoSelect?: boolean;
 }
 
