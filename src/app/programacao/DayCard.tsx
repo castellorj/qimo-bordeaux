@@ -38,10 +38,10 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
       {/* Banner fotográfico com o botão incorporado (sem margem branca) — clicar abre/fecha */}
       <button type="button" onClick={() => (open ? close() : setOpen(true))} aria-expanded={open}
         className="block w-full overflow-hidden rounded-[20px] text-left shadow-card">
-        <div className="relative">
+        <div className="relative aspect-[4/3] overflow-hidden sm:aspect-[21/9]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={img} alt={day.title} loading={priority ? undefined : "lazy"} decoding="async"
-            className="animate-ken-burns aspect-[16/11] w-full object-cover sm:aspect-[21/9]" />
+            className="animate-ken-burns absolute inset-0 h-full w-full object-cover object-center" />
           <div className="absolute inset-0" style={{ background: "rgba(20,7,11,0.38)" }} />
           <div className="scrim-strong absolute inset-0" />
           {/* Base da foto desbota na cor vinho da barra → sem corte reto */}
