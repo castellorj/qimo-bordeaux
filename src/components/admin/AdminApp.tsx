@@ -22,6 +22,32 @@ import clsx from "clsx";
 
 type Tab = "inicio" | "roteiro" | "passeios" | "participantes" | "reservas" | "conteudo" | "telas" | "paginas" | "textos" | "preview";
 
+type TabMeta = {
+  key: Tab;
+  label: string;
+  icon: string;
+  desc: string;
+};
+
+const TAB_META: Record<Tab, TabMeta> = {
+  inicio: { key: "inicio", label: "Inicio", icon: "Home", desc: "Visao geral da viagem, pendencias e atalhos para as tarefas mais comuns." },
+  roteiro: { key: "roteiro", label: "Programacao", icon: "CalendarDays", desc: "Edite dias, horarios, fotos, portos, agenda do navio e atividades do roteiro." },
+  passeios: { key: "passeios", label: "Passeios", icon: "Ticket", desc: "Controle vagas, disponibilidade e visibilidade dos passeios reservaveis." },
+  reservas: { key: "reservas", label: "Reservas", icon: "Check", desc: "Acompanhe reservas feitas no app e inclua reservas manualmente pela equipe." },
+  participantes: { key: "participantes", label: "Clientes", icon: "Users", desc: "Cadastre participantes, familias e contatos ligados a esta viagem." },
+  conteudo: { key: "conteudo", label: "Fichas", icon: "LayoutGrid", desc: "Edite cidades, vinicolas, restaurantes, vinhos, gastronomia, experiencias e compras." },
+  telas: { key: "telas", label: "Fotos e concierge", icon: "Smartphone", desc: "Troque imagens fixas do site e gerencie contatos do concierge." },
+  paginas: { key: "paginas", label: "Paginas", icon: "BookOpen", desc: "Crie paginas extras com blocos visuais e publique no guia." },
+  textos: { key: "textos", label: "Menus e textos", icon: "Languages", desc: "Renomeie menus, botoes, titulos curtos, icones e itens de navegacao." },
+  preview: { key: "preview", label: "Editor visual", icon: "Pencil", desc: "Abra o guia dentro do painel, clique em campos editaveis e veja mobile, tablet e desktop." },
+};
+
+const NAV_GROUPS: { title: string; items: Tab[] }[] = [
+  { title: "Operacao", items: ["inicio", "roteiro", "passeios"] },
+  { title: "CMS visual", items: ["conteudo", "paginas", "telas", "textos", "preview"] },
+  { title: "Clientes", items: ["reservas", "participantes"] },
+];
+
 export function AdminApp() {
   const [ready, setReady] = useState(false);
   const [session, setSession] = useState<any>(null);
@@ -96,21 +122,10 @@ function Shell({ email }: { email?: string }) {
   }, []);
   useEffect(() => { reload(); }, [reload]);
 
-  const tabs: { key: Tab; label: string; icon: string }[] = [
-    { key: "inicio", label: "Início", icon: "Home" },
-    { key: "roteiro", label: "Roteiro", icon: "CalendarDays" },
-    { key: "passeios", label: "Passeios", icon: "Ticket" },
-    { key: "participantes", label: "Participantes", icon: "Users" },
-    { key: "reservas", label: "Reservas", icon: "Check" },
-    { key: "conteudo", label: "Conteúdo", icon: "LayoutGrid" },
-    { key: "telas", label: "Telas & Concierge", icon: "Smartphone" },
-    { key: "paginas", label: "Páginas", icon: "BookOpen" },
-    { key: "textos", label: "Textos & botões", icon: "Languages" },
-    { key: "preview", label: "Editar no site", icon: "Pencil" },
-  ];
+  const active = TAB_META[tab];
 
   return (
-    <div className="container-editorial py-8">
+    <div className="mx-auto w-full max-w-[1440px] px-4 py-6 sm:px-6 lg:px-8">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <p className="kicker">QIMO Bordeaux</p>
@@ -123,17 +138,50 @@ function Shell({ email }: { email?: string }) {
         </div>
       </div>
 
-      {/* Tabs */}
-      <div className="no-scrollbar mt-6 flex gap-1 overflow-x-auto border-b" style={{ borderColor: "var(--line)" }}>
-        {tabs.map((t) => (
-          <button key={t.key} onClick={() => setTab(t.key)}
-            className={clsx("flex shrink-0 items-center gap-2 border-b-2 px-4 py-3 font-sans text-[13px] transition-colors",
-              tab === t.key ? "border-petrol-600 text-petrol-600" : "border-transparent text-muted hover:text-petrol-600")}>
-            <Icon name={t.icon} size={15} /> {t.label}
-          </button>
-        ))}
-      </div>
+      <div className="mt-6 grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
+        <aside className="lg:sticky lg:top-5 lg:self-start">
+          <div className="card overflow-hidden p-3">
+            {NAV_GROUPS.map((group) => (
+              <div key={group.title} className="border-b py-3 last:border-b-0" style={{ borderColor: "var(--line)" }}>
+                <p className="px-2 pb-2 font-sans text-[10px] font-semibold uppercase tracking-wide2 text-muted">{group.title}</p>
+                <div className="space-y-1">
+                  {group.items.map((key) => {
+                    const item = TAB_META[key];
+                    const selected = tab === key;
+                    return (
+                      <button
+                        key={key}
+                        onClick={() => setTab(key)}
+                        className={clsx(
+                          "flex w-full items-center gap-3 rounded-[10px] px-3 py-2.5 text-left font-sans text-[13px] transition-colors",
+                          selected ? "bg-petrol-600 text-cream" : "text-muted hover:bg-black/[0.035] hover:text-petrol-600"
+                        )}
+                      >
+                        <Icon name={item.icon} size={16} className="shrink-0" />
+                        <span className="min-w-0 flex-1 truncate">{item.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </aside>
 
+        <section className="min-w-0">
+          <div className="rounded-[14px] border px-5 py-4" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div>
+                <p className="kicker flex items-center gap-2"><Icon name={active.icon} size={14} /> {active.label}</p>
+                <p className="mt-2 max-w-3xl font-sans text-[13px] leading-relaxed text-muted">{active.desc}</p>
+              </div>
+              {tab !== "inicio" && (
+                <button onClick={() => setTab("preview")} className="btn-ghost !px-3 !py-2 text-[12px]">
+                  <Icon name="Eye" size={14} /> Ver no guia
+                </button>
+              )}
+            </div>
+          </div>
       {(() => {
         const hints: Record<Tab, string> = {
           inicio: "Visão geral da viagem. Toque nas ações rápidas para ir direto ao ponto.",
@@ -148,7 +196,7 @@ function Shell({ email }: { email?: string }) {
           preview: "Clique nos textos para editar e use ↑/↓ para reordenar seções — tudo salva na hora.",
         };
         return (
-          <p className="mt-3 flex items-center gap-2 font-sans text-[12px] text-muted">
+          <p className="hidden mt-3 items-center gap-2 font-sans text-[12px] text-muted">
             <Icon name="Info" size={13} className="shrink-0 text-gold-deep" /> {hints[tab]}
           </p>
         );
@@ -184,6 +232,8 @@ function Shell({ email }: { email?: string }) {
         ) : (
           <Reservas acts={acts} parts={parts} res={res} onChange={reload} />
         )}
+      </div>
+        </section>
       </div>
 
       {publishOpen && <PublishModal acts={acts} onClose={() => setPublishOpen(false)} />}

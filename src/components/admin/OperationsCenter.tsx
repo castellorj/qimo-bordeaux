@@ -153,6 +153,22 @@ export function OperationsCenter({
       </div>
 
       {/* O que deseja editar? — hub no estilo do painel da Croácia */}
+      <div className="grid gap-3 md:grid-cols-3">
+        {[
+          { icon: "Pencil", title: "1. Editar", text: "Escolha um modulo e altere conteudo, fotos, roteiro ou reservas." },
+          { icon: "Eye", title: "2. Revisar", text: "Use o editor visual para conferir mobile, tablet e desktop antes da publicacao." },
+          { icon: "Rocket", title: "3. Publicar", text: "A maioria das mudancas aparece em segundos; publique para forcar uma reconstrucao completa." },
+        ].map((step) => (
+          <div key={step.title} className="rounded-[12px] border p-4" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
+            <div className="flex items-center gap-2">
+              <span className="grid h-8 w-8 place-items-center rounded-full bg-petrol-600/10 text-petrol-600"><Icon name={step.icon} size={15} /></span>
+              <p className="font-serif text-[18px] font-light">{step.title}</p>
+            </div>
+            <p className="mt-2 font-sans text-[12px] leading-relaxed text-muted">{step.text}</p>
+          </div>
+        ))}
+      </div>
+
       <div>
         <h2 className="display text-2xl">O que deseja editar?</h2>
         <p className="mt-1 max-w-2xl font-sans text-[13px] leading-relaxed text-muted">

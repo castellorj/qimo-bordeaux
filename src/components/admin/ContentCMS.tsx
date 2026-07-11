@@ -1,12 +1,14 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import type { ReactNode } from "react";
 import { Icon } from "@/components/Icon";
 import {
   CONTENT_KINDS, listContent, upsertContent, setPublished, deleteContent, importAllContent,
   uploadImage, updateSort, listVersions, restoreVersion,
   type ContentRow, type VersionRow,
 } from "@/lib/supabase/content-admin";
+import { getContentKindConfig, getFieldConfig, sortContentFields } from "@/lib/adminContentRegistry";
 import clsx from "clsx";
 
 const LONG = 70;
@@ -111,65 +113,116 @@ function GalleryField({ value, onChange }: { value: string[]; onChange: (v: stri
   );
 }
 
-function FieldEditor({ data, onChange }: { data: any; onChange: (d: any) => void }) {
-  const set = (k: string, v: any) => onChange({ ...data, [k]: v });
+function CoordsField({ label, hint, value, onChange }: { label: string; hint?: string; value: any; onChange: (v: any) => void }) {
+  const lat = typeof value?.lat === "number" ? value.lat : "";
+  const lng = typeof value?.lng === "number" ? value.lng : "";
+  const setCoord = (key: "lat" | "lng", nextValue: string) => {
+    onChange({
+      ...(value && typeof value === "object" ? value : {}),
+      [key]: nextValue === "" ? "" : Number(nextValue),
+    });
+  };
+
   return (
-    <div className="space-y-4">
-      {Object.entries(data).map(([k, v]) => {
-        if (k === "slug") return null;
-        if (k === "gallery" && Array.isArray(v))
-          return <GalleryField key={k} value={v as string[]} onChange={(val) => set(k, val)} />;
-        if (typeof v === "string" && /image|hero|photo|foto/i.test(k))
-          return <ImageField key={k} label={labelFor(k)} hint={FIELD_HINTS[k]} value={v} onChange={(val) => set(k, val)} />;
-        if (typeof v === "boolean")
-          return (
-            <label key={k} className="flex items-center gap-2 font-sans text-[13px]">
-              <input type="checkbox" checked={v} onChange={(e) => set(k, e.target.checked)} /> {labelFor(k)}
-              {FIELD_HINTS[k] && <span className="font-sans text-[11px] text-muted">— {FIELD_HINTS[k]}</span>}
-            </label>
-          );
-        if (typeof v === "number")
-          return (
-            <label key={k} className="block">
-              <span className="kicker-muted">{labelFor(k)}</span>
-              <input type="number" value={v} onChange={(e) => set(k, parseFloat(e.target.value) || 0)}
-                className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
-            </label>
-          );
-        if (Array.isArray(v) && v.every((x) => typeof x === "string"))
-          return (
-            <label key={k} className="block">
-              <span className="kicker-muted">{labelFor(k)} <span className="normal-case tracking-normal">(um por linha)</span></span>
-              {FIELD_HINTS[k] && <span className="mb-1 block font-sans text-[11px] text-muted">{FIELD_HINTS[k]}</span>}
-              <textarea value={(v as string[]).join("\n")} onChange={(e) => set(k, e.target.value.split("\n").filter(Boolean))}
-                rows={Math.min(8, Math.max(2, v.length))}
-                className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
-            </label>
-          );
-        if (typeof v === "string")
-          return (
-            <label key={k} className="block">
-              <span className="kicker-muted">{labelFor(k)}</span>
-              {FIELD_HINTS[k] && <span className="mb-1 block font-sans text-[11px] text-muted">{FIELD_HINTS[k]}</span>}
-              {v.length > LONG ? (
-                <textarea value={v} onChange={(e) => set(k, e.target.value)} rows={Math.min(8, Math.ceil(v.length / 60))}
-                  className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm leading-relaxed outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
-              ) : (
-                <input value={v} onChange={(e) => set(k, e.target.value)}
-                  className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
-              )}
-            </label>
-          );
-        // objetos/arrays complexos → JSON
-        return (
+    <div>
+      <span className="kicker-muted">{label}</span>
+      {hint && <span className="mb-1 block font-sans text-[11px] text-muted">{hint}</span>}
+      <div className="grid gap-2 sm:grid-cols-2">
+        <input type="number" value={lat} onChange={(e) => setCoord("lat", e.target.value)} placeholder="Latitude"
+          className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+        <input type="number" value={lng} onChange={(e) => setCoord("lng", e.target.value)} placeholder="Longitude"
+          className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+      </div>
+    </div>
+  );
+}
+
+function FieldEditor({ kind, data, onChange }: { kind: string; data: any; onChange: (d: any) => void }) {
+  const set = (k: string, v: any) => onChange({ ...data, [k]: v });
+  const fields = sortContentFields(kind, data)
+    .map(([k, v]) => {
+      const field = getFieldConfig(kind, k, v);
+      const fieldLabel = field.label || labelFor(k);
+      const fieldHint = field.hint || FIELD_HINTS[k];
+      let node: ReactNode;
+
+      if (k === "slug") return null;
+      if (k === "gallery" && Array.isArray(v)) {
+        node = <GalleryField key={k} value={v as string[]} onChange={(val) => set(k, val)} />;
+      } else if (field.type === "coords") {
+        node = <CoordsField key={k} label={fieldLabel} hint={fieldHint} value={v} onChange={(val) => set(k, val)} />;
+      } else if (typeof v === "string" && /image|hero|photo|foto/i.test(k)) {
+        node = <ImageField key={k} label={fieldLabel} hint={fieldHint} value={v} onChange={(val) => set(k, val)} />;
+      } else if (typeof v === "boolean") {
+        node = (
+          <label key={k} className="flex items-center gap-2 font-sans text-[13px]">
+            <input type="checkbox" checked={v} onChange={(e) => set(k, e.target.checked)} /> {fieldLabel}
+            {fieldHint && <span className="font-sans text-[11px] text-muted">- {fieldHint}</span>}
+          </label>
+        );
+      } else if (typeof v === "number") {
+        node = (
           <label key={k} className="block">
-            <span className="kicker-muted">{labelFor(k)} <span className="normal-case tracking-normal">(avançado · JSON)</span></span>
+            <span className="kicker-muted">{fieldLabel}</span>
+            {fieldHint && <span className="mb-1 block font-sans text-[11px] text-muted">{fieldHint}</span>}
+            <input type="number" value={v} onChange={(e) => set(k, parseFloat(e.target.value) || 0)}
+              className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+          </label>
+        );
+      } else if (Array.isArray(v) && v.every((x) => typeof x === "string")) {
+        node = (
+          <label key={k} className="block">
+            <span className="kicker-muted">{fieldLabel} <span className="normal-case tracking-normal">(um por linha)</span></span>
+            {fieldHint && <span className="mb-1 block font-sans text-[11px] text-muted">{fieldHint}</span>}
+            <textarea value={(v as string[]).join("\n")} onChange={(e) => set(k, e.target.value.split("\n").filter(Boolean))}
+              rows={Math.min(8, Math.max(2, v.length))}
+              className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+          </label>
+        );
+      } else if (typeof v === "string") {
+        node = (
+          <label key={k} className="block">
+            <span className="kicker-muted">{fieldLabel}</span>
+            {fieldHint && <span className="mb-1 block font-sans text-[11px] text-muted">{fieldHint}</span>}
+            {v.length > LONG ? (
+              <textarea value={v} onChange={(e) => set(k, e.target.value)} rows={Math.min(8, Math.ceil(v.length / 60))}
+                className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm leading-relaxed outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+            ) : (
+              <input value={v} onChange={(e) => set(k, e.target.value)}
+                className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+            )}
+          </label>
+        );
+      } else {
+        node = (
+          <label key={k} className="block">
+            <span className="kicker-muted">{fieldLabel} <span className="normal-case tracking-normal">(avancado · JSON)</span></span>
+            {fieldHint && <span className="mb-1 block font-sans text-[11px] text-muted">{fieldHint}</span>}
             <textarea defaultValue={JSON.stringify(v, null, 2)} rows={5}
               onBlur={(e) => { try { set(k, JSON.parse(e.target.value)); } catch {} }}
               className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-mono text-[12px] outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
           </label>
         );
-      })}
+      }
+
+      return { key: k, section: field.section || "Conteudo", node };
+    })
+    .filter(Boolean) as Array<{ key: string; section: string; node: ReactNode }>;
+  const sections = fields.reduce<Record<string, typeof fields>>((acc, field) => {
+    acc[field.section] = [...(acc[field.section] || []), field];
+    return acc;
+  }, {});
+
+  return (
+    <div className="space-y-4">
+      {Object.entries(sections).map(([section, sectionFields]) => (
+        <section key={section} className="rounded-[10px] border p-4" style={{ borderColor: "var(--line)" }}>
+          <p className="kicker mb-4">{section}</p>
+          <div className="space-y-4">
+            {sectionFields.map((field) => <div key={field.key}>{field.node}</div>)}
+          </div>
+        </section>
+      ))}
     </div>
   );
 }
@@ -186,6 +239,8 @@ export function ContentCMS() {
   const [overIdx, setOverIdx] = useState<number | null>(null);
   const [versions, setVersions] = useState<VersionRow[]>([]);
   const [showHist, setShowHist] = useState(false);
+  const [query, setQuery] = useState("");
+  const kindConfig = getContentKindConfig(kind);
 
   const load = useCallback(async () => {
     setLoading(true); setRows(await listContent(kind)); setLoading(false);
@@ -199,11 +254,43 @@ export function ContentCMS() {
     await load(); setBusy(false);
   };
 
+  const createContent = async () => {
+    setBusy(true); setMsg("");
+    const slug = `nova-ficha-${kind}-${Date.now().toString(36)}`;
+    const data = {
+      slug,
+      name: `Nova ficha de ${kindConfig?.label || "conteúdo"}`,
+      tagline: "",
+      description: "",
+      heroImage: "",
+      gallery: [],
+    };
+    await upsertContent(kind, slug, data, rows.length * 10 + 10, false);
+    const nextRows = await listContent(kind);
+    setRows(nextRows);
+    const created = nextRows.find((row) => row.slug === slug);
+    if (created) await openEditor(created);
+    setMsg("Ficha criada como oculta. Revise o conteúdo antes de publicar.");
+    setBusy(false);
+  };
+
   const save = async () => {
     if (!editing) return;
     setBusy(true);
     await upsertContent(editing.kind, editing.slug, draft, editing.sort, editing.published);
     setBusy(false); setEditing(null); await load();
+  };
+
+  const openEditor = async (row: ContentRow) => {
+    setEditing(row);
+    setDraft(structuredClone(row.data));
+    setShowHist(false);
+    setVersions(await listVersions(row.kind, row.slug));
+  };
+
+  const togglePublished = async (row: ContentRow) => {
+    await setPublished(row.id, !row.published);
+    await load();
   };
 
   const doRestore = async (v: VersionRow) => {
@@ -230,6 +317,22 @@ export function ContentCMS() {
   };
 
   const label = (r: ContentRow) => r.data?.name || r.slug;
+  const rowIndex = (r: ContentRow) => rows.findIndex((row) => row.id === r.id);
+  const normalizedQuery = query.trim().toLowerCase();
+  const publishedCount = rows.filter((row) => row.published).length;
+  const visibleRows = normalizedQuery
+    ? rows.filter((row) => {
+        const haystack = [
+          label(row),
+          row.slug,
+          row.data?.tagline,
+          row.data?.subtitle,
+          row.data?.category,
+          row.data?.city,
+        ].filter(Boolean).join(" ").toLowerCase();
+        return haystack.includes(normalizedQuery);
+      })
+    : rows;
 
   return (
     <div>
@@ -244,20 +347,57 @@ export function ContentCMS() {
             </button>
           ))}
         </div>
-        <button onClick={doImport} disabled={busy} className="btn-ghost !px-4 !py-2">
-          <Icon name="Download" size={14} /> Importar conteúdo do guia
-        </button>
+        <div className="flex flex-wrap gap-2">
+          <button onClick={createContent} disabled={busy} className="btn-primary !px-4 !py-2">
+            <Icon name="Plus" size={14} /> Nova ficha
+          </button>
+          <button onClick={doImport} disabled={busy} className="btn-ghost !px-4 !py-2">
+            <Icon name="Download" size={14} /> Importar conteúdo do guia
+          </button>
+        </div>
       </div>
+      {kindConfig && (
+        <div className="mt-4 rounded-[10px] border px-4 py-3" style={{ borderColor: "var(--line)" }}>
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="kicker-muted">{kindConfig.label}</p>
+              <p className="mt-1 font-sans text-[12px] text-muted">{kindConfig.description}</p>
+            </div>
+            <div className="flex flex-wrap gap-2 font-sans text-[11px]">
+              <span className="rounded-full bg-black/5 px-3 py-1">{rows.length} itens</span>
+              <span className="rounded-full bg-olive/15 px-3 py-1 text-olive-deep">{publishedCount} publicados</span>
+              <span className="rounded-full bg-black/5 px-3 py-1 text-muted">{rows.length - publishedCount} ocultos</span>
+            </div>
+          </div>
+        </div>
+      )}
       {msg && <p className="mt-3 font-sans text-[12px] text-olive-deep">{msg}</p>}
 
       {editing ? (
         <div className="mt-6 card p-6">
-          <div className="flex items-center justify-between">
-            <h3 className="font-serif text-xl font-light">Editar · {label(editing)}</h3>
-            <button onClick={() => setEditing(null)} className="text-muted hover:text-gold-deep"><Icon name="X" size={18} /></button>
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex min-w-0 items-start gap-4">
+              {draft?.heroImage ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={draft.heroImage} alt="" className="h-20 w-28 shrink-0 rounded-[10px] object-cover" />
+              ) : (
+                <div className="grid h-20 w-28 shrink-0 place-items-center rounded-[10px] bg-black/5 text-muted">
+                  <Icon name="Image" size={20} />
+                </div>
+              )}
+              <div className="min-w-0">
+                <p className="kicker-muted">Editando ficha</p>
+                <h3 className="truncate font-serif text-xl font-light">{label(editing)}</h3>
+                <p className="mt-1 truncate font-sans text-[12px] text-muted">{editing.slug}</p>
+                <span className={clsx("mt-2 inline-flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px]", editing.published ? "bg-olive/15 text-olive-deep" : "bg-black/5 text-muted")}>
+                  <Icon name={editing.published ? "Eye" : "EyeOff"} size={12} /> {editing.published ? "Publicado" : "Oculto"}
+                </span>
+              </div>
+            </div>
+            <button onClick={() => setEditing(null)} className="shrink-0 text-muted hover:text-gold-deep"><Icon name="X" size={18} /></button>
           </div>
           <div className="mt-5">
-            <FieldEditor data={draft} onChange={setDraft} />
+            <FieldEditor kind={editing.kind} data={draft} onChange={setDraft} />
           </div>
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <button onClick={save} disabled={busy} className="btn-primary">{busy ? "Salvando…" : "Salvar"}</button>
@@ -301,18 +441,30 @@ export function ContentCMS() {
             </div>
           ) : (
             <>
-              <p className="mb-1 flex items-center gap-1.5 font-sans text-[11px] text-muted"><Icon name="GripVertical" size={12} /> Arraste os cards para reordenar como aparecem no guia.</p>
-              {rows.map((r, i) => (
+              <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                <p className="flex items-center gap-1.5 font-sans text-[11px] text-muted"><Icon name="GripVertical" size={12} /> Arraste os cards para reordenar como aparecem no guia.</p>
+                <label className="flex min-w-[240px] items-center gap-2 rounded-full border px-3 py-2" style={{ borderColor: "var(--line)" }}>
+                  <Icon name="Search" size={14} className="text-muted" />
+                  <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar ficha"
+                    className="w-full bg-transparent font-sans text-[12px] outline-none placeholder:text-muted" />
+                </label>
+              </div>
+              {visibleRows.length === 0 && (
+                <div className="card p-6 text-center font-sans text-[13px] text-muted">
+                  Nenhuma ficha encontrada para esta busca.
+                </div>
+              )}
+              {visibleRows.map((r) => (
                 <div key={r.id}
                   draggable
-                  onDragStart={() => setDragIdx(i)}
-                  onDragEnter={() => setOverIdx(i)}
+                  onDragStart={() => setDragIdx(rowIndex(r))}
+                  onDragEnter={() => setOverIdx(rowIndex(r))}
                   onDragOver={(e) => e.preventDefault()}
                   onDragEnd={() => { if (dragIdx !== null && overIdx !== null) reorder(dragIdx, overIdx); setDragIdx(null); setOverIdx(null); }}
-                  onDrop={(e) => { e.preventDefault(); if (dragIdx !== null) reorder(dragIdx, i); setDragIdx(null); setOverIdx(null); }}
+                  onDrop={(e) => { e.preventDefault(); if (dragIdx !== null) reorder(dragIdx, rowIndex(r)); setDragIdx(null); setOverIdx(null); }}
                   className={clsx("card flex items-center gap-3 p-4 transition-all",
-                    dragIdx === i && "opacity-40",
-                    overIdx === i && dragIdx !== i && "ring-2 ring-gold")}>
+                    dragIdx === rowIndex(r) && "opacity-40",
+                    overIdx === rowIndex(r) && dragIdx !== rowIndex(r) && "ring-2 ring-gold")}>
                   <span className="cursor-grab text-muted active:cursor-grabbing" aria-label="Arrastar"><Icon name="GripVertical" size={16} /></span>
                   {r.data?.heroImage ? (
                     // eslint-disable-next-line @next/next/no-img-element
@@ -324,11 +476,11 @@ export function ContentCMS() {
                     <p className="truncate font-serif text-[17px] font-light">{label(r)}</p>
                     <p className="truncate font-sans text-[12px] text-muted">{r.data?.tagline || r.data?.subtitle || r.slug}</p>
                   </div>
-                  <button onClick={() => setPublished(r.id, !r.published).then(load)}
+                  <button onClick={() => togglePublished(r)}
                     className={clsx("flex items-center gap-1.5 rounded-full px-3 py-1 font-sans text-[11px]", r.published ? "bg-olive/15 text-olive-deep" : "bg-black/5 text-muted")}>
-                    <Icon name={r.published ? "Eye" : "EyeOff"} size={12} /> {r.published ? "Publicado" : "Oculto"}
+                    <Icon name={r.published ? "EyeOff" : "Eye"} size={12} /> {r.published ? "Ocultar" : "Publicar"}
                   </button>
-                  <button onClick={() => { setEditing(r); setDraft(structuredClone(r.data)); setShowHist(false); listVersions(r.kind, r.slug).then(setVersions); }} className="btn-ghost !px-3 !py-1.5"><Icon name="Pencil" size={14} /> Editar</button>
+                  <button onClick={() => openEditor(r)} className="btn-ghost !px-3 !py-1.5"><Icon name="Pencil" size={14} /> Editar</button>
                   <button onClick={() => { if (confirm(`Excluir "${label(r)}"?`)) deleteContent(r.id).then(load); }} aria-label="Excluir" className="text-muted hover:text-[#8f2f2f]"><Icon name="X" size={16} /></button>
                 </div>
               ))}
