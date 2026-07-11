@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { QimoSeal } from "@/components/ui";
@@ -18,7 +18,14 @@ const TYPE_ICON: Record<ActivityType, string> = {
 export function DayCard({ day, img, priority = false }: { day: Day; img: string; priority?: boolean }) {
   const { t, cfg } = useLocale();
   const [open, setOpen] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
   const nAtiv = day.activities.length;
+
+  // Ao ocultar, volta para a tela principal daquele dia (rola até o banner).
+  const close = () => {
+    setOpen(false);
+    requestAnimationFrame(() => sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  };
   // Palavra da contagem: usa cfg() para respeitar um valor VAZIO salvo no painel
   // (deixar em branco remove o "· N ..." do botão). Sem override, usa o padrão.
   const actKey = nAtiv === 1 ? "prog.activity" : "prog.activities";
@@ -27,10 +34,10 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
   const countSuffix = countWord.trim() ? ` · ${nAtiv} ${countWord}` : "";
 
   return (
-    <section id={`dia-${day.n}`} className="scroll-mt-32">
-      {/* Banner fotográfico — clicar abre/fecha */}
-      <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open}
-        className="block w-full overflow-hidden rounded-[20px] text-left">
+    <section ref={sectionRef} id={`dia-${day.n}`} className="scroll-mt-32">
+      {/* Banner fotográfico com o botão incorporado (sem margem branca) — clicar abre/fecha */}
+      <button type="button" onClick={() => (open ? close() : setOpen(true))} aria-expanded={open}
+        className="block w-full overflow-hidden rounded-[20px] text-left shadow-card">
         <div className="relative">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={img} alt={day.title} loading={priority ? undefined : "lazy"} decoding="async"
@@ -38,7 +45,7 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
           <div className="absolute inset-0" style={{ background: "rgba(20,7,11,0.38)" }} />
           <div className="scrim-strong absolute inset-0" />
 
-          <div className="absolute inset-x-0 bottom-0 p-6 sm:p-8" style={{ textShadow: "0 1px 18px rgba(12,4,7,.85), 0 1px 3px rgba(12,4,7,.7)" }}>
+          <div className="absolute inset-x-0 bottom-0 p-6 pb-4 sm:p-8 sm:pb-5" style={{ textShadow: "0 1px 18px rgba(12,4,7,.85), 0 1px 3px rgba(12,4,7,.7)" }}>
             <div className="flex items-end gap-3">
               <span className="font-serif text-5xl font-light leading-none text-gold-soft sm:text-6xl">{String(day.n).padStart(2, "0")}</span>
               <div className="pb-1">
@@ -54,9 +61,14 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
             </div>
           </div>
         </div>
+        {/* Barra vinho colada na foto — é o botão "ver programação / ocultar" */}
+        <div className="flex items-center justify-center gap-2 bg-petrol-600 px-4 py-3.5 font-sans text-[12px] font-medium uppercase tracking-wide text-cream">
+          {open ? t("prog.hideDay") : `${t("prog.seeDay")}${countSuffix}`}
+          <Icon name="ChevronDown" size={15} className={open ? "rotate-180" : ""} />
+        </div>
       </button>
 
-      {open ? (
+      {open && (
         <div className="animate-fade-up">
           {day.note && (
             <p className="mt-6 border-l-2 pl-4 font-serif text-lg font-light italic text-muted" style={{ borderColor: "var(--gold)" }}>{day.note}</p>
@@ -104,16 +116,11 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
             </ul>
           </div>
 
-          <button type="button" onClick={() => setOpen(false)}
+          <button type="button" onClick={close}
             className="btn-ghost mt-4 w-full !rounded-[12px] !border-2 !px-4 !py-2.5 !tracking-wide text-[12px]">
             <Icon name="ChevronDown" size={15} className="rotate-180" /> {t("prog.hideDay")}
           </button>
         </div>
-      ) : (
-        <button type="button" onClick={() => setOpen(true)} className="btn-primary mt-3 w-full !rounded-[12px] !px-4 !py-2.5 !tracking-wide text-[12px]">
-          {t("prog.seeDay")}{countSuffix}
-          <Icon name="ChevronDown" size={15} />
-        </button>
       )}
     </section>
   );
