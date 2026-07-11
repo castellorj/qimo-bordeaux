@@ -18,15 +18,16 @@ const inputCls = "mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font
 const lineStyle = { borderColor: "var(--line)" } as const;
 
 /* Sincroniza os passeios reserváveis (bordeaux_activities) com as atividades do dia.
-   Regra: toda atividade que não é transfer é reservável (content_key = id da atividade).
-   Capacidade já editada no painel é preservada; atividades removidas ficam ocultas. */
+   Reservável = atividade marcada como "precisa reservar" (a.reservable !== false) e que
+   não é transfer. As demais (ex.: shows para todos, palestras) ficam ocultas das reservas.
+   Capacidade já editada no painel é preservada. */
 async function syncActivities(day: Day) {
   const sb = supabase();
   const { data: existing } = await sb.from("bordeaux_activities").select("id,content_key").eq("day_number", day.n);
   const keep = new Set<string>();
   for (let i = 0; i < day.activities.length; i++) {
     const a = day.activities[i];
-    if (a.type === "transfer") continue;
+    if (a.type === "transfer" || a.reservable === false) continue;
     keep.add(a.id);
     const st = a.time ? String(a.time).split(/[–—-]/)[0].trim() : null;
     const patch = { title: a.title, day_number: day.n, date: day.date, start_time: st, qimo_select: !!a.qimoSelect, sort: day.n * 100 + i, status: "available" };
@@ -247,7 +248,12 @@ function DayEditor({ row, onChange }: { row: ContentRow; onChange: () => void })
                   <label className="flex items-center gap-1.5 font-sans text-[12px] text-muted">
                     <input type="checkbox" checked={!!a.qimoSelect} onChange={(e) => setAct(i, { qimoSelect: e.target.checked })} /> Seleção QIMO
                   </label>
-                  <span className="font-sans text-[11px] text-muted">{a.type === "transfer" ? "Transfer não aparece nas reservas" : "Reservável no app"}</span>
+                  <label className={clsx("flex items-center gap-1.5 font-sans text-[12px]", a.type === "transfer" ? "text-muted opacity-50" : "text-muted")}>
+                    <input type="checkbox" disabled={a.type === "transfer"}
+                      checked={a.type !== "transfer" && a.reservable !== false}
+                      onChange={(e) => setAct(i, { reservable: e.target.checked })} /> Precisa reservar
+                  </label>
+                  {a.type === "transfer" && <span className="font-sans text-[11px] text-muted">Transfer não entra nas reservas</span>}
                   <span className="ml-auto flex items-center gap-1">
                     <button onClick={() => moveAct(i, -1)} disabled={i === 0} aria-label="Subir" className="grid h-7 w-7 place-items-center rounded-md text-muted hover:text-petrol-600 disabled:opacity-30"><Icon name="ChevronDown" size={15} className="rotate-180" /></button>
                     <button onClick={() => moveAct(i, 1)} disabled={i === d.activities.length - 1} aria-label="Descer" className="grid h-7 w-7 place-items-center rounded-md text-muted hover:text-petrol-600 disabled:opacity-30"><Icon name="ChevronDown" size={15} /></button>

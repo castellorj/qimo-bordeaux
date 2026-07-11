@@ -19,6 +19,7 @@ export const SITE_IMAGES: SiteImage[] = [
 
   // ---- Topos de seção (foto grande no topo da página) ----
   { key: "img.sec.vinicolas", label: "Vinícolas", group: "Topos de seção", def: "/photos/hero-lafite.jpg" },
+  { key: "img.sec.chef", label: "Chef (Troisgros)", group: "Topos de seção", def: "/photos/ship-dining.jpg" },
   { key: "img.sec.cidades", label: "Cidades", group: "Topos de seção", def: "/photos/hero-saint-emilion.jpg" },
   { key: "img.sec.vinhos", label: "Vinhos", group: "Topos de seção", def: "/photos/hero-margaux.jpg" },
   { key: "img.sec.restaurantes", label: "Restaurantes", group: "Topos de seção", def: "/photos/food-entrecote.jpg" },
@@ -28,6 +29,7 @@ export const SITE_IMAGES: SiteImage[] = [
 
   // ---- Cards do hub "Descobrir" ----
   { key: "img.hub.vinicolas", label: "Card Vinícolas", group: "Cards do Descobrir", def: "/photos/hero-lafite.jpg" },
+  { key: "img.hub.chef", label: "Card Chef", group: "Cards do Descobrir", def: "/photos/ship-dining.jpg" },
   { key: "img.hub.restaurantes", label: "Card Restaurantes", group: "Cards do Descobrir", def: "/photos/food-entrecote.jpg" },
   { key: "img.hub.vinhos", label: "Card Vinhos", group: "Cards do Descobrir", def: "/photos/hero-margaux.jpg" },
   { key: "img.hub.gastronomia", label: "Card Gastronomia", group: "Cards do Descobrir", def: "/photos/food-entrecote.jpg" },

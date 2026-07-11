@@ -27,20 +27,20 @@ export function ActivityReserve({ contentKey }: { contentKey: string }) {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-[12px] border-2 py-3 font-sans text-[13px] font-semibold transition-colors"
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-[10px] border-2 px-3 py-2 font-sans text-[12px] font-semibold transition-colors"
           style={{ borderColor: "var(--olive)", color: "var(--olive-deep)", background: "color-mix(in srgb, var(--olive) 10%, transparent)" }}
         >
-          <Icon name="CircleCheck" size={16} />
+          <Icon name="CircleCheck" size={15} />
           {my.status === "waitlist" ? "Na lista de espera" : "Reservado"} · {my.seats} {my.seats > 1 ? "pessoas" : "pessoa"}
-          <Icon name="Pencil" size={13} className="opacity-70" />
+          <Icon name="Pencil" size={12} className="opacity-70" />
         </button>
       ) : (
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="btn-primary mt-3 w-full !rounded-[12px] !py-3 text-[13px]"
+          className="btn-primary mt-3 w-full !rounded-[10px] !px-4 !py-2 !tracking-wide text-[12px]"
         >
-          <Icon name="CalendarCheck" size={16} /> Reservar
+          <Icon name="CalendarCheck" size={15} /> Reservar
           {rv.available != null && (
             <span className="font-normal opacity-80">· {full ? "lista de espera" : `${rv.available} ${rv.available === 1 ? "vaga" : "vagas"}`}</span>
           )}

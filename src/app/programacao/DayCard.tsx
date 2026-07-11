@@ -44,8 +44,10 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
             className="animate-ken-burns aspect-[16/11] w-full object-cover sm:aspect-[21/9]" />
           <div className="absolute inset-0" style={{ background: "rgba(20,7,11,0.38)" }} />
           <div className="scrim-strong absolute inset-0" />
+          {/* Base da foto desbota na cor vinho da barra → sem corte reto */}
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16" style={{ background: "linear-gradient(to bottom, rgba(139,58,74,0), rgb(139,58,74))" }} />
 
-          <div className="absolute inset-x-0 bottom-0 p-6 pb-4 sm:p-8 sm:pb-5" style={{ textShadow: "0 1px 18px rgba(12,4,7,.85), 0 1px 3px rgba(12,4,7,.7)" }}>
+          <div className="absolute inset-x-0 bottom-0 p-6 pb-7 sm:p-8 sm:pb-8" style={{ textShadow: "0 1px 18px rgba(12,4,7,.85), 0 1px 3px rgba(12,4,7,.7)" }}>
             <div className="flex items-end gap-3">
               <span className="font-serif text-5xl font-light leading-none text-gold-soft sm:text-6xl">{String(day.n).padStart(2, "0")}</span>
               <div className="pb-1">

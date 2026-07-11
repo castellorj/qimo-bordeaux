@@ -20,7 +20,7 @@ function activeSection(pathname: string): string {
   if (pathname === "/" || pathname.startsWith("/hoje")) return "/hoje";
   const p = pathname;
   if (/^\/(viagem|programacao)/.test(p)) return "/programacao";
-  if (/^\/(descobrir|vinicolas|restaurantes|vinhos|gastronomia|experiencias|compras|cidades)/.test(p)) return "/descobrir";
+  if (/^\/(descobrir|vinicolas|chef|restaurantes|vinhos|gastronomia|experiencias|compras|cidades)/.test(p)) return "/descobrir";
   if (p.startsWith("/reservas")) return "/reservas";
   if (/^\/(mais|concierge|informacoes|paginas|barco|mapa|documentos)/.test(p)) return "/mais";
   return "";

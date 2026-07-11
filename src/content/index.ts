@@ -6,6 +6,7 @@ import { gastronomy } from "./gastronomy";
 import { experiences } from "./experiences";
 import { shopping, taxFreeGuide } from "./shopping";
 import { conciergeContacts, frenchPhrases, etiquette } from "./concierge";
+import { chefExperiences } from "./chef";
 import { ship } from "./ship";
 import { restaurants } from "./restaurants";
 
@@ -24,6 +25,7 @@ export const content = {
   conciergeContacts,
   frenchPhrases,
   etiquette,
+  chefExperiences,
 };
 
 // Lookups
@@ -47,6 +49,7 @@ export {
   conciergeContacts,
   frenchPhrases,
   etiquette,
+  chefExperiences,
 };
 
 // Índice de busca unificado

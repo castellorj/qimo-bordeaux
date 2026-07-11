@@ -28,6 +28,7 @@ export interface Activity {
   capacity?: number;
   description?: string;
   dressCode?: string;
+  reservable?: boolean; // false = não precisa reservar (não mostra "Reservar" nem entra nas reservas). Padrão: precisa.
   qimoSelect?: boolean; // Selo "Seleção QIMO"
   linkedWinery?: string; // slug
   linkedCity?: string; // slug
@@ -181,6 +182,19 @@ export interface Restaurant {
   days?: string; // dias/horários de funcionamento
   reservationRequired?: boolean;
   stars?: string; // ex.: "1 estrela Michelin"
+  qimoSelect?: boolean;
+}
+
+// Seção "Chef" — experiências gastronômicas extras (cross-sell), curadoria Thomas Troisgros.
+export interface ChefExperience {
+  slug: string;
+  name: string;
+  heroImage?: string;
+  category: string; // ex.: "Jantar", "Aula", "Degustação"
+  chef?: string; // ex.: "Thomas Troisgros"
+  description: string;
+  duration?: string;
+  price?: string; // texto livre; "sob consulta" quando não divulgado
   qimoSelect?: boolean;
 }
 

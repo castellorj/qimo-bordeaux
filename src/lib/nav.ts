@@ -38,6 +38,7 @@ export const viagemLinks: HubLink[] = [
 
 export const descobrirLinks: HubLink[] = [
   { key: "vinicolas", href: "/vinicolas", icon: "Grape" },
+  { key: "chef", href: "/chef", icon: "Utensils" },
   { key: "restaurantes", href: "/restaurantes", icon: "UtensilsCrossed" },
   { key: "vinhos", href: "/vinhos", icon: "Wine" },
   { key: "gastronomia", href: "/gastronomia", icon: "UtensilsCrossed" },
