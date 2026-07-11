@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { Icon } from "./Icon";
+import { PhotoImg } from "./PhotoImg";
 
 /**
  * Card editorial estilo capa de revista: a fotografia É o card.
@@ -50,12 +51,11 @@ export function EditorialCard({
       }}
     >
       {image && (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
+        <PhotoImg
           src={image}
           alt={title}
-          loading={priority ? undefined : "lazy"}
-          decoding="async"
+          priority={priority}
+          sizes="(min-width:1024px) 33vw, (min-width:640px) 50vw, 100vw"
           className="absolute inset-0 h-full w-full object-cover transition-transform duration-[900ms] ease-luxe group-hover:scale-[1.05]"
         />
       )}

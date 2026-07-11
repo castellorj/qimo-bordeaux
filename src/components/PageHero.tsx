@@ -1,6 +1,7 @@
 "use client";
 
 import { useLocale } from "./providers";
+import { PhotoImg } from "./PhotoImg";
 
 export function PageHero({
   kicker,
@@ -28,8 +29,7 @@ export function PageHero({
     <section className="relative overflow-hidden border-b" style={{ borderColor: "var(--line)" }}>
       {bg ? (
         <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={bg} alt="" aria-hidden className="animate-ken-burns absolute inset-0 h-full w-full object-cover" />
+          <PhotoImg src={bg} alt="" aria-hidden sizes="100vw" priority className="animate-ken-burns absolute inset-0 h-full w-full object-cover" />
           {/* Escurecimento uniforme + reforço na base = texto legível mesmo em foto clara */}
           <div className="absolute inset-0" style={{ background: "rgba(18,6,10,0.5)" }} />
           <div className="absolute inset-0 bg-gradient-to-t from-petrol-950/60 via-transparent to-transparent" />

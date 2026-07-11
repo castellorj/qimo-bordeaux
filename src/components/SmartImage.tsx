@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import clsx from "clsx";
+import { webpSrcSet } from "./PhotoImg";
 
 /**
  * Fotografia real com fallback editorial elegante.
@@ -15,6 +16,7 @@ export function SmartImage({
   label,
   ratio = "aspect-[4/3]",
   priority = false,
+  sizes = "100vw",
 }: {
   src?: string;
   alt: string;
@@ -22,22 +24,27 @@ export function SmartImage({
   label?: string;
   ratio?: string;
   priority?: boolean;
+  sizes?: string;
 }) {
   const [failed, setFailed] = useState(false);
   const show = src && !failed;
+  const srcSet = show ? webpSrcSet(src) : null;
 
   return (
     <div className={clsx("relative overflow-hidden bg-petrol-900", ratio, className)}>
       {show ? (
-        // eslint-disable-next-line @next/next/no-img-element
-        <img
-          src={src}
-          alt={alt}
-          loading={priority ? "eager" : "lazy"}
-          decoding="async"
-          onError={() => setFailed(true)}
-          className={clsx("h-full w-full object-cover transition-transform duration-[1.2s] ease-luxe", priority && "animate-ken-burns")}
-        />
+        <picture className="contents">
+          {srcSet && <source type="image/webp" srcSet={srcSet} sizes={sizes} />}
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={src}
+            alt={alt}
+            loading={priority ? "eager" : "lazy"}
+            decoding="async"
+            onError={() => setFailed(true)}
+            className={clsx("h-full w-full object-cover transition-transform duration-[1.2s] ease-luxe", priority && "animate-ken-burns")}
+          />
+        </picture>
       ) : (
         <div className="photo-placeholder flex h-full w-full items-center justify-center">
           <div className="relative z-10 flex flex-col items-center gap-2 px-6 text-center">

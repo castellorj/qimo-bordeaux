@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { Icon } from "./Icon";
+import { PhotoImg } from "./PhotoImg";
 import { useLocale } from "./providers";
 import { orderByKeys } from "@/lib/nav";
 
@@ -21,11 +22,10 @@ export function HubGridPhotos({ items, orderKey }: { items: HubItem[]; orderKey?
       {visible.map((it) => (
         <Link key={it.href} href={it.href} className="card card-hover group relative overflow-hidden">
           <div className="relative h-44 overflow-hidden sm:h-52">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <PhotoImg
               src={cfg(`img.hub.${it.key}`)?.trim() || it.image}
               alt={t(`nav.${it.key}`)}
-              loading="lazy"
+              sizes="(min-width:640px) 50vw, 100vw"
               className="h-full w-full object-cover transition-transform duration-700 ease-luxe group-hover:scale-105"
             />
             <div className="scrim-bottom absolute inset-0" />

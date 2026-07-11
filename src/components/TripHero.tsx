@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Countdown } from "./Countdown";
 import { Weather } from "./Weather";
+import { PhotoImg } from "./PhotoImg";
 import { useLocale } from "./providers";
 import { TRIP } from "@/content";
 import { fullDate } from "@/lib/format";
@@ -35,8 +36,7 @@ export function TripHero({
 
   return (
     <section className="relative overflow-hidden">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={img} alt="" aria-hidden className="animate-ken-burns absolute inset-0 h-full w-full object-cover" />
+      <PhotoImg src={img} alt="" aria-hidden sizes="100vw" priority className="animate-ken-burns absolute inset-0 h-full w-full object-cover" />
       <div className="absolute inset-0 bg-gradient-to-b from-petrol-950/80 via-petrol-900/70 to-petrol-950/92" />
 
       <div className="text-on-photo container-editorial relative z-10 pb-20 pt-12 text-center sm:pt-16">

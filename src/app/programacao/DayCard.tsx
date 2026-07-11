@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { QimoSeal } from "@/components/ui";
 import { ActivityReserve } from "@/components/ActivityReserve";
+import { PhotoImg } from "@/components/PhotoImg";
 import { useLocale } from "@/components/providers";
 import { weekday, dayMonth } from "@/lib/format";
 import type { ActivityType, Day } from "@/lib/types";
@@ -39,8 +40,7 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
       <button type="button" onClick={() => (open ? close() : setOpen(true))} aria-expanded={open}
         className="block w-full overflow-hidden rounded-[20px] text-left shadow-card">
         <div className="relative aspect-[4/3] overflow-hidden sm:aspect-[21/9]">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={img} alt={day.title} loading={priority ? undefined : "lazy"} decoding="async"
+          <PhotoImg src={img} alt={day.title} priority={priority} sizes="(min-width:768px) 720px, 100vw"
             className="animate-ken-burns absolute inset-0 h-full w-full object-cover object-center" />
           <div className="absolute inset-0" style={{ background: "rgba(20,7,11,0.38)" }} />
           <div className="scrim-strong absolute inset-0" />
