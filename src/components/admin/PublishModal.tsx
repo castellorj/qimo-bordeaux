@@ -12,6 +12,7 @@ export function PublishModal({ acts, onClose }: { acts: BxActivityFull[]; onClos
   const [checks, setChecks] = useState<Check[] | null>(null);
   const [hook, setHook] = useState("");
   const [editingHook, setEditingHook] = useState(false);
+  const [hookMsg, setHookMsg] = useState("");
   const [state, setState] = useState<"idle" | "sending" | "done" | "error">("idle");
 
   useEffect(() => {
@@ -31,19 +32,32 @@ export function PublishModal({ acts, onClose }: { acts: BxActivityFull[]; onClos
   }, [acts]);
 
   const publish = async () => {
+    if (!hook.trim()) {
+      setHookMsg("Configure o Build Hook antes de publicar.");
+      setEditingHook(true);
+      return;
+    }
     setState("sending");
     const r = await triggerPublish();
     if (r.ok) setState("done");
-    else if (r.error === "no-hook") { setEditingHook(true); setState("idle"); }
+    else if (r.error === "no-hook") { setHookMsg("Configure o Build Hook antes de publicar."); setEditingHook(true); setState("idle"); }
     else setState("error");
   };
 
   const saveHook = async () => {
-    await setBuildHookUrl(hook.trim());
+    const clean = hook.trim();
+    if (!/^https:\/\/api\.netlify\.com\/build_hooks\/.+/.test(clean)) {
+      setHookMsg("Cole um Build Hook valido do Netlify.");
+      return;
+    }
+    await setBuildHookUrl(clean);
+    setHook(clean);
+    setHookMsg("Build Hook salvo.");
     setEditingHook(false);
   };
 
   const warnings = (checks || []).filter((c) => !c.ok).length;
+  const canPublish = state !== "sending" && Boolean(hook.trim());
 
   return (
     <div className="fixed inset-0 z-[60] grid place-items-center bg-black/40 p-4" onClick={onClose}>
@@ -78,6 +92,7 @@ export function PublishModal({ acts, onClose }: { acts: BxActivityFull[]; onClos
             <p className="font-sans text-[12px] text-muted">Cole o <strong>Build Hook</strong> do Netlify (Site settings → Build & deploy → Build hooks):</p>
             <input value={hook} onChange={(e) => setHook(e.target.value)} placeholder="https://api.netlify.com/build_hooks/…"
               className="mt-2 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-[12px] outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+            {hookMsg && <p className="mt-2 font-sans text-[11px] text-muted">{hookMsg}</p>}
             <button onClick={saveHook} className="btn-primary mt-3 !px-4 !py-2">Salvar hook</button>
           </div>
         ) : (
@@ -90,7 +105,7 @@ export function PublishModal({ acts, onClose }: { acts: BxActivityFull[]; onClos
             ) : state === "error" ? (
               <span className="font-sans text-[13px] text-[#8f2f2f]">Erro ao publicar. Tente de novo.</span>
             ) : (
-              <button onClick={publish} disabled={state === "sending"} className={clsx("btn-primary", state === "sending" && "opacity-60")}>
+              <button onClick={publish} disabled={!canPublish} className={clsx("btn-primary", !canPublish && "opacity-60")}>
                 <Icon name="Rocket" size={15} /> {state === "sending" ? "Publicando…" : "Publicar agora"}
               </button>
             )}
