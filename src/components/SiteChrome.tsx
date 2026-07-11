@@ -20,7 +20,8 @@ function activeSection(pathname: string): string {
   if (pathname === "/" || pathname.startsWith("/hoje")) return "/hoje";
   const p = pathname;
   if (/^\/(viagem|programacao)/.test(p)) return "/programacao";
-  if (/^\/(descobrir|vinicolas|chef|restaurantes|vinhos|gastronomia|experiencias|compras|cidades)/.test(p)) return "/descobrir";
+  if (p.startsWith("/chef")) return "/chef";
+  if (/^\/(descobrir|vinicolas|restaurantes|vinhos|gastronomia|experiencias|compras|cidades)/.test(p)) return "/descobrir";
   if (p.startsWith("/reservas")) return "/reservas";
   if (/^\/(mais|concierge|informacoes|paginas|barco|mapa|documentos)/.test(p)) return "/mais";
   return "";
@@ -39,7 +40,7 @@ export function SiteChrome({ searchIndex }: { searchIndex: SearchDoc[] }) {
   // Botões configuráveis no painel: ordem (navorder.principal), ícone (navicon.<key>) e visibilidade (navhide.<key>)
   const navVisible = orderByKeys(primaryNav, cfg("navorder.principal")).filter((item) => cfg(`navhide.${item.key}`) !== "1");
   const iconFor = (item: { key: string; icon: string }) => cfg(`navicon.${item.key}`) || item.icon;
-  const gridColsClass = navVisible.length === 5 ? "grid-cols-5" : navVisible.length === 4 ? "grid-cols-4" : navVisible.length === 3 ? "grid-cols-3" : "grid-cols-2";
+  const gridColsClass = navVisible.length >= 6 ? "grid-cols-6" : navVisible.length === 5 ? "grid-cols-5" : navVisible.length === 4 ? "grid-cols-4" : navVisible.length === 3 ? "grid-cols-3" : "grid-cols-2";
 
   return (
     <>

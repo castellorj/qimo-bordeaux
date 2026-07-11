@@ -19,6 +19,7 @@ export const primaryNav: NavItem[] = [
   { key: "hoje", href: "/hoje", icon: "Home" },
   { key: "viagem", href: "/programacao", icon: "CalendarDays" },
   { key: "descobrir", href: "/descobrir", icon: "Grape" },
+  { key: "chef", href: "/chef", icon: "Utensils" },
   { key: "reservas", href: "/reservas", icon: "CalendarCheck" },
   { key: "mais", href: "/mais", icon: "Menu" },
 ];
@@ -38,7 +39,6 @@ export const viagemLinks: HubLink[] = [
 
 export const descobrirLinks: HubLink[] = [
   { key: "vinicolas", href: "/vinicolas", icon: "Grape" },
-  { key: "chef", href: "/chef", icon: "Utensils" },
   { key: "restaurantes", href: "/restaurantes", icon: "UtensilsCrossed" },
   { key: "vinhos", href: "/vinhos", icon: "Wine" },
   { key: "gastronomia", href: "/gastronomia", icon: "UtensilsCrossed" },
