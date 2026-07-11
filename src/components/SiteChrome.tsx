@@ -1,14 +1,18 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { Icon } from "./Icon";
 import { useLocale, useReservations } from "./providers";
 import { SearchOverlay } from "./Search";
-import { WelcomeSheet } from "./WelcomeSheet";
 import { ConciergeFab } from "./ConciergeFab";
+
+// Gate de entrada (react-phone-number-input + libphonenumber-js são pesados).
+// Carregado sob demanda e SÓ na 1ª visita (sem convidado salvo) — fora do bundle global.
+const WelcomeSheet = dynamic(() => import("./WelcomeSheet").then((m) => m.WelcomeSheet), { ssr: false });
 import { LangDropdown } from "./LangSwitch";
 import { primaryNav, orderByKeys } from "@/lib/nav";
 import type { SearchDoc } from "@/content";
@@ -29,10 +33,16 @@ function activeSection(pathname: string): string {
 
 export function SiteChrome({ searchIndex }: { searchIndex: SearchDoc[] }) {
   const [search, setSearch] = useState(false);
+  const [maybeGate, setMaybeGate] = useState(false);
   const { t, cfg } = useLocale();
   const { count } = useReservations();
   const pathname = usePathname();
   const section = activeSection(pathname);
+
+  // Só carrega o gate (e suas libs) se não houver convidado salvo neste device.
+  useEffect(() => {
+    try { if (!localStorage.getItem("qimo:guest")) setMaybeGate(true); } catch { setMaybeGate(true); }
+  }, []);
 
   // O painel administrativo tem seu próprio layout (sem o chrome do guia)
   if (pathname.startsWith("/admin")) return null;
@@ -44,7 +54,7 @@ export function SiteChrome({ searchIndex }: { searchIndex: SearchDoc[] }) {
 
   return (
     <>
-      <WelcomeSheet />
+      {maybeGate && <WelcomeSheet />}
       <ConciergeFab />
       {/* -------- Top bar -------- */}
       <header
