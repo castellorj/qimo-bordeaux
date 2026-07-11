@@ -11,6 +11,7 @@ import { useGuideItem } from "@/components/GuideContent";
 import { Editable } from "@/components/Editable";
 import { Section } from "@/components/Section";
 import { Dossier } from "@/components/Dossier";
+import { chateauDossiers } from "@/content/chateaux-dossiers";
 import type { Winery } from "@/lib/types";
 
 const WINERY_SECTION_ORDER = ["terroir", "grapes", "production", "family", "icons", "whatToTaste", "whatToBuy", "curiosities"];
@@ -60,13 +61,15 @@ export function WineryView({ slug }: { slug: string }) {
     </section>
   );
 
-  // Châteaux-ícone: dossiê editorial completo (Markdown).
-  if (w.dossier) {
+  // Châteaux-ícone: dossiê editorial completo (Markdown). O texto vem do módulo
+  // separado (chunk desta rota) ou de um override do painel (w.dossier).
+  const dossier = w.dossier || chateauDossiers[w.slug];
+  if (dossier) {
     return (
       <article>
         {Hero}
         <div className="container-editorial py-12">
-          <Dossier md={w.dossier} />
+          <Dossier md={dossier} />
         </div>
       </article>
     );

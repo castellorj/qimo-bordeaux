@@ -140,7 +140,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
       <ReservationsCtx.Provider
         value={{ ready, guest, setGuestPhone, reservableByKey, mine, count: mineArr.length, refresh, reserve, cancel }}
       >
-        <div style={{ visibility: ready ? "visible" : "hidden" }}>{children}</div>
+        {/* Renderiza o HTML já pronto (SSR/estático) na hora — sem esconder até hidratar.
+            Os overrides do painel (labels/fotos) chegam async e trocam suavemente. */}
+        {children}
       </ReservationsCtx.Provider>
     </LocaleCtx.Provider>
   );
