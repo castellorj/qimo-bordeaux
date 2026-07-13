@@ -33,6 +33,17 @@ const KIND_LABEL: Record<string, string> = {
 
 type QuickTab = "roteiro" | "passeios" | "participantes" | "reservas" | "conteudo" | "telas" | "paginas" | "textos" | "preview";
 
+const QUICK_ACTIONS: { icon: string; title: string; hint: string; go: QuickTab; tone?: "primary" }[] = [
+  { icon: "CalendarDays", title: "Editar roteiro", hint: "Dias, horarios, fotos e atividades", go: "roteiro", tone: "primary" },
+  { icon: "LayoutGrid", title: "Editar fichas", hint: "Restaurantes, vinicolas, cidades e documentos", go: "conteudo", tone: "primary" },
+  { icon: "Image", title: "Trocar fotos", hint: "Capas, telas iniciais e imagens fixas", go: "telas" },
+  { icon: "Languages", title: "Editar textos curtos", hint: "Menus, botoes, chamadas e mensagens", go: "textos" },
+  { icon: "Ticket", title: "Vagas dos passeios", hint: "Capacidade, visibilidade e lista de espera", go: "passeios" },
+  { icon: "Check", title: "Ver reservas", hint: "Reservas feitas no app e pela equipe", go: "reservas" },
+  { icon: "Users", title: "Clientes", hint: "Participantes e contatos", go: "participantes" },
+  { icon: "BookOpen", title: "Paginas extras", hint: "Criar paginas por blocos", go: "paginas" },
+];
+
 // Hub "O que deseja editar?" — mesma estrutura do painel do guia da Croácia:
 // seções temáticas com links diretos para o editor certo.
 const HUB: { icon: string; title: string; desc: string; items: { label: string; hint?: string; go: QuickTab }[] }[] = [
@@ -153,7 +164,7 @@ export function OperationsCenter({
       </div>
 
       {/* O que deseja editar? — hub no estilo do painel da Croácia */}
-      <div className="grid gap-3 md:grid-cols-3">
+      <div className="hidden">
         {[
           { icon: "Pencil", title: "1. Editar", text: "Escolha um modulo e altere conteudo, fotos, roteiro ou reservas." },
           { icon: "Eye", title: "2. Revisar", text: "Use o editor visual para conferir mobile, tablet e desktop antes da publicacao." },
@@ -170,6 +181,48 @@ export function OperationsCenter({
       </div>
 
       <div>
+        <div className="flex flex-wrap items-end justify-between gap-3">
+          <div>
+            <h2 className="display text-2xl">O que voce quer editar agora?</h2>
+            <p className="mt-1 max-w-2xl font-sans text-[13px] leading-relaxed text-muted">
+              Escolha uma acao. O painel abre direto no lugar certo.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <button onClick={() => onGo("preview")} className="btn-ghost !px-4 !py-2">
+              <Icon name="Eye" size={14} /> Revisar site
+            </button>
+            <button onClick={onPublish} disabled={publishing} className="btn-primary !px-4 !py-2">
+              <Icon name="Rocket" size={14} /> Publicar
+            </button>
+          </div>
+        </div>
+
+        <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {QUICK_ACTIONS.map((action) => (
+            <button
+              key={action.title}
+              onClick={() => onGo(action.go)}
+              className={clsx(
+                "group min-h-[116px] rounded-[12px] border p-4 text-left transition-colors hover:border-gold",
+                action.tone === "primary" ? "bg-petrol-600 text-cream" : "card"
+              )}
+              style={{ borderColor: action.tone === "primary" ? "transparent" : "var(--line)" }}
+            >
+              <div className="flex items-start justify-between gap-3">
+                <span className={clsx("grid h-10 w-10 place-items-center rounded-full", action.tone === "primary" ? "bg-cream/15" : "bg-gold/12 text-gold-deep")}>
+                  <Icon name={action.icon} size={18} />
+                </span>
+                <Icon name="ArrowRight" size={16} className={clsx("mt-1 transition-transform group-hover:translate-x-0.5", action.tone === "primary" ? "text-cream/70" : "text-gold-deep")} />
+              </div>
+              <span className="mt-4 block font-serif text-xl font-light leading-tight">{action.title}</span>
+              <span className={clsx("mt-1 block font-sans text-[12px] leading-relaxed", action.tone === "primary" ? "text-cream/75" : "text-muted")}>{action.hint}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="hidden">
         <h2 className="display text-2xl">O que deseja editar?</h2>
         <p className="mt-1 max-w-2xl font-sans text-[13px] leading-relaxed text-muted">
           O guia da viagem (telas, programação, conteúdo, concierge…). As mudanças aparecem no app em instantes, sem republicar.
