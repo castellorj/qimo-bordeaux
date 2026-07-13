@@ -25,7 +25,14 @@ const AREAS: Area[] = [
     title: "Fichas do Descobrir",
     status: "complete",
     where: "Fichas",
-    editable: ["cidades", "vinicolas", "restaurantes", "vinhos", "gastronomia", "experiencias", "compras", "chef", "fotos e ordem"],
+    editable: ["cidades", "vinicolas", "restaurantes", "vinhos", "gastronomia", "experiencias", "compras", "chef", "fotos e ordem", "ficha nova ja com todos os campos", "objetos aninhados em formulario"],
+    gaps: [],
+  },
+  {
+    title: "Chateaux (dossies) e Navio",
+    status: "complete",
+    where: "Fichas",
+    editable: ["dossie de cada chateau (Markdown)", "pagina do Navio (nome, intro, numeros, incluido, suites, nota)"],
     gaps: [],
   },
   {
@@ -34,6 +41,13 @@ const AREAS: Area[] = [
     where: "Menus e textos",
     editable: ["abas principais", "menus internos", "hero/titulos de secoes", "textos da home", "botoes de reserva", "rotulos da programacao"],
     gaps: [],
+  },
+  {
+    title: "Textos de estrutura",
+    status: "complete",
+    where: "Menus e textos",
+    editable: ["cabecalho/categorias/ordenacao de Restaurantes", "intro do Chef", "rotulos do Concierge e cambio", "Tax Free", "tela de entrada (PT)", "dados da viagem (navio/datas/noites)"],
+    gaps: ["filtros de restaurante seguem fixos (UI funcional)", "EN/ES da tela de entrada nao sao editaveis (auto-traduzidos)"],
   },
   {
     title: "Fotos fixas do site",
@@ -46,8 +60,8 @@ const AREAS: Area[] = [
     title: "Concierge",
     status: "complete",
     where: "Fotos e concierge",
-    editable: ["contatos", "telefone/link", "tipo de acao", "icone", "ordem", "visibilidade"],
-    gaps: [],
+    editable: ["secoes do acordeao (criar/renomear/reordenar/ocultar)", "secoes de texto livre", "contatos", "balao de contatos rapidos"],
+    gaps: ["frases em frances e etiqueta ainda vem do arquivo (a secao e editavel, o conteudo interno nao)"],
   },
   {
     title: "Paginas extras",
@@ -57,18 +71,11 @@ const AREAS: Area[] = [
     gaps: [],
   },
   {
-    title: "Informacoes uteis",
+    title: "Informacoes uteis / Compras Tax Free",
     status: "complete",
     where: "Fichas / Menus e textos",
-    editable: ["cards de moeda/idioma/fuso/tomadas/gorjeta", "dicas de etiqueta", "foto do topo", "rotulos globais"],
+    editable: ["cards de moeda/idioma/fuso/tomadas/gorjeta", "dicas de etiqueta", "bloco Tax Free (titulo/intro/passos/nota)", "foto do topo"],
     gaps: [],
-  },
-  {
-    title: "Compras / Tax Free",
-    status: "partial",
-    where: "Fichas / codigo",
-    editable: ["fichas de compras", "fotos e ordem dos itens"],
-    gaps: ["bloco Tax Free ainda vem de src/content/shopping.ts"],
   },
   {
     title: "Documentos",
@@ -78,11 +85,11 @@ const AREAS: Area[] = [
     gaps: ["categorias e texto explicativo ainda estao fixos na pagina", "nao ha biblioteca central de documentos para a equipe publicar"],
   },
   {
-    title: "Dados globais da viagem",
+    title: "Mapa",
     status: "partial",
     where: "codigo",
-    editable: ["alguns textos derivados aparecem em Menus e textos"],
-    gaps: ["nome da viagem, navio, datas e contagem ainda aparecem em constants/arquivos"],
+    editable: ["cada ficha abre o endereco no Google Maps"],
+    gaps: ["o mapa de /mapa usa cidades/vinicolas do arquivo — nao reflete edicoes das fichas"],
   },
 ];
 
