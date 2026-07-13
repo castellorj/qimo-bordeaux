@@ -15,6 +15,7 @@ import { chefExperiences } from "./chef";
 import { ship } from "./ship";
 import { restaurants } from "./restaurants";
 import { infoFacts, etiquetteTips } from "./info";
+import { documentCategories } from "./documents";
 
 export const content = {
   trip: TRIP,
@@ -34,6 +35,7 @@ export const content = {
   etiquette,
   infoFacts,
   etiquetteTips,
+  documentCategories,
   chefExperiences,
 };
 
@@ -61,6 +63,7 @@ export {
   etiquette,
   infoFacts,
   etiquetteTips,
+  documentCategories,
   chefExperiences,
 };
 

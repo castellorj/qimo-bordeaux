@@ -214,6 +214,17 @@ const registry: CmsKindConfig[] = [
       { key: "text", label: "Dica", type: "textarea", section: "Texto" },
     ],
   },
+  {
+    kind: "document_category",
+    label: "Documentos",
+    description: "Categorias da tela Documentos.",
+    fields: [
+      { key: "slug", label: "Identificador", type: "text", section: "Sistema", hint: "Usado como chave estavel. Evite alterar depois de publicado." },
+      { key: "key", label: "Nome da categoria", type: "text", section: "Principal" },
+      { key: "icon", label: "Icone", type: "text", section: "Principal", hint: "Nome de icone Lucide, como FileText, ShieldCheck, Ticket ou QrCode." },
+      { key: "description", label: "Descricao", type: "textarea", section: "Texto" },
+    ],
+  },
 ];
 
 const byKind = new Map(registry.map((kind) => [kind.kind, kind]));

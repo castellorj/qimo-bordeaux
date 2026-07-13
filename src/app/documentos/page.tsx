@@ -3,6 +3,9 @@
 import { useEffect, useRef, useState } from "react";
 import { PageHero } from "@/components/PageHero";
 import { Icon } from "@/components/Icon";
+import { useGuideList } from "@/components/GuideContent";
+import { useLocale } from "@/components/providers";
+import type { DocumentCategory } from "@/content/documents";
 
 interface Doc {
   id: string;
@@ -13,17 +16,11 @@ interface Doc {
   note?: string;
 }
 
-const CATEGORIES = [
-  { key: "Passaporte", icon: "FileText" },
-  { key: "Seguro viagem", icon: "ShieldCheck" },
-  { key: "Passagens", icon: "Ticket" },
-  { key: "Vouchers", icon: "QrCode" },
-  { key: "Outros", icon: "FileText" },
-];
-
 const KEY = "qimo:docs";
 
 export default function DocumentosPage() {
+  const { t } = useLocale();
+  const categories = useGuideList<DocumentCategory>("document_category");
   const [docs, setDocs] = useState<Doc[]>([]);
   const [active, setActive] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -67,23 +64,27 @@ export default function DocumentosPage() {
       <div className="container-editorial py-14">
         <div className="mb-8 flex items-start gap-3 rounded-[3px] border p-4" style={{ borderColor: "var(--line)" }}>
           <Icon name="Shield" size={18} className="mt-0.5 shrink-0 text-gold" />
-          <p className="font-sans text-[13px] leading-relaxed text-muted">
+          <p className="font-sans text-[13px] leading-relaxed text-muted">{t("docs.intro")}</p>
+          <p className="hidden">
             Seus documentos ficam armazenados <strong>apenas neste aparelho</strong> (nada é enviado para a
             internet) e continuam disponíveis mesmo sem conexão. Recomendamos manter também as vias oficiais.
           </p>
         </div>
 
         <div className="space-y-6">
-          {CATEGORIES.map((cat) => {
-            const items = docs.filter((d) => d.category === cat.key);
+          {categories.map((cat) => {
+            const items = docs.filter((d) => d.category === cat.key || d.category === cat.slug);
             const openInput = active === cat.key;
             return (
               <section key={cat.key} className="card p-6">
                 <div className="flex items-center justify-between">
-                  <h2 className="flex items-center gap-3 font-serif text-xl font-light">
-                    <Icon name={cat.icon} size={18} className="text-gold" />
-                    {cat.key}
-                  </h2>
+                  <div>
+                    <h2 className="flex items-center gap-3 font-serif text-xl font-light">
+                      <Icon name={cat.icon} size={18} className="text-gold" />
+                      {cat.key}
+                    </h2>
+                    {cat.description && <p className="mt-1 font-sans text-[12px] text-muted">{cat.description}</p>}
+                  </div>
                   <button
                     onClick={() => {
                       setActive(cat.key);
@@ -91,7 +92,7 @@ export default function DocumentosPage() {
                     }}
                     className="btn-ghost !px-4 !py-2"
                   >
-                    <Icon name="Plus" size={14} /> Adicionar
+                    <Icon name="Plus" size={14} /> {t("docs.add")}
                   </button>
                 </div>
 
@@ -115,7 +116,7 @@ export default function DocumentosPage() {
                 )}
 
                 {items.length === 0 && (
-                  <p className="mt-3 font-sans text-[13px] text-muted">Nenhum documento adicionado.</p>
+                  <p className="mt-3 font-sans text-[13px] text-muted">{t("docs.empty")}</p>
                 )}
 
                 {openInput && (

@@ -92,6 +92,13 @@ export const ui: Dict = {
   "navd.informacoes": { pt: "Clima, moeda, etiqueta", en: "Weather, currency, etiquette", es: "Clima, moneda, etiqueta" },
   "navd.documentos": { pt: "Passaporte, vouchers, seguro", en: "Passport, vouchers, insurance", es: "Pasaporte, vouchers, seguro" },
   "navd.reservas": { pt: "Seus passeios reservados", en: "Your booked activities", es: "Tus paseos reservados" },
+  "docs.intro": {
+    pt: "Seus documentos ficam armazenados apenas neste aparelho e continuam disponiveis mesmo sem conexao. Recomendamos manter tambem as vias oficiais.",
+    en: "Your documents stay stored only on this device and remain available offline. We recommend keeping the official copies too.",
+    es: "Tus documentos quedan almacenados solo en este dispositivo y siguen disponibles sin conexion. Recomendamos conservar tambien las copias oficiales.",
+  },
+  "docs.add": { pt: "Adicionar", en: "Add", es: "Agregar" },
+  "docs.empty": { pt: "Nenhum documento adicionado.", en: "No documents added.", es: "Ningun documento agregado." },
   // comum
   menu: { pt: "Menu", en: "Menu", es: "Menú" },
   search: { pt: "Buscar", en: "Search", es: "Buscar" },
@@ -445,6 +452,7 @@ export const EDITABLE_LABELS: { key: string; grp: string }[] = [
   { key: "navd.vinhos", grp: "Descricoes de menu" }, { key: "navd.gastronomia", grp: "Descricoes de menu" }, { key: "navd.experiencias", grp: "Descricoes de menu" },
   { key: "navd.compras", grp: "Descricoes de menu" }, { key: "navd.concierge", grp: "Descricoes de menu" }, { key: "navd.informacoes", grp: "Descricoes de menu" },
   { key: "navd.documentos", grp: "Descricoes de menu" }, { key: "navd.reservas", grp: "Descricoes de menu" }, { key: "navd.paginas", grp: "Descricoes de menu" }, { key: "navd.chef", grp: "Descricoes de menu" },
+  { key: "docs.intro", grp: "Documentos" }, { key: "docs.add", grp: "Documentos" }, { key: "docs.empty", grp: "Documentos" },
   { key: "hero.programacao.k", grp: "Topo das paginas" }, { key: "hero.programacao.i", grp: "Topo das paginas" },
   { key: "hero.cidades.k", grp: "Topo das paginas" }, { key: "hero.cidades.i", grp: "Topo das paginas" },
   { key: "hero.vinicolas.k", grp: "Topo das paginas" }, { key: "hero.vinicolas.i", grp: "Topo das paginas" },

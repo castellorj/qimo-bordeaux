@@ -80,9 +80,9 @@ const AREAS: Area[] = [
   {
     title: "Documentos",
     status: "partial",
-    where: "Tela Documentos",
-    editable: ["upload/remocao pelo proprio cliente no aparelho"],
-    gaps: ["categorias e texto explicativo ainda estao fixos na pagina", "nao ha biblioteca central de documentos para a equipe publicar"],
+    where: "Fichas / Menus e textos / Tela Documentos",
+    editable: ["categorias", "icones", "descricoes", "texto explicativo", "botao de adicionar", "mensagem de vazio", "upload/remocao pelo proprio cliente no aparelho"],
+    gaps: ["nao ha biblioteca central de documentos para a equipe publicar"],
   },
   {
     title: "Mapa",
