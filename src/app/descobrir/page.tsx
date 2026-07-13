@@ -14,8 +14,11 @@ const items: HubItem[] = [
 export default function DescobrirPage() {
   return (
     <>
-      <PageHero section="descobrir" small />
-      <div className="container-editorial py-10">
+      {/* No mobile a tela vai direto aos cards (mais conteúdo à vista); no desktop mantém o topo editorial. */}
+      <div className="hidden sm:block">
+        <PageHero section="descobrir" small />
+      </div>
+      <div className="container-editorial pb-10 pt-5 sm:py-10">
         <HubGridPhotos items={items} orderKey="descobrir" />
       </div>
     </>

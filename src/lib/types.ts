@@ -248,6 +248,7 @@ export interface ConciergeContact {
   value: string;
   hint?: string;
   icon: string; // nome lucide
+  quick?: boolean; // aparece no balão flutuante de contatos rápidos
 }
 
 export interface FrenchPhrase {

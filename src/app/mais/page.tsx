@@ -12,9 +12,15 @@ export default function MaisPage() {
   const { t } = useLocale();
   return (
     <>
-      <PageHero section="mais" small />
-      <div className="container-editorial space-y-10 py-10">
-        <HubGridIcons items={maisLinks} orderKey="mais" />
+      {/* No mobile lidera a grade de seções (estilo Croácia); no desktop mantém o topo editorial. */}
+      <div className="hidden sm:block">
+        <PageHero section="mais" small />
+      </div>
+      <div className="container-editorial space-y-10 pb-10 pt-5 sm:py-10">
+        <section>
+          <p className="kicker mb-3">Seções</p>
+          <HubGridIcons items={maisLinks} orderKey="mais" />
+        </section>
 
         {/* Idioma */}
         <section>

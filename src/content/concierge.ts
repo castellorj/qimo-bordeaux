@@ -9,6 +9,7 @@ export const conciergeContacts: ConciergeContact[] = [
     value: "5521995453817",
     hint: "Equipe QIMO à disposição 24h durante a viagem",
     icon: "MessageCircle",
+    quick: true,
   },
   {
     slug: "qimo-call",
@@ -17,6 +18,7 @@ export const conciergeContacts: ConciergeContact[] = [
     value: "+5521995453817",
     hint: "Concierge de viagem",
     icon: "Phone",
+    quick: true,
   },
   {
     slug: "emergency-eu",
@@ -25,6 +27,7 @@ export const conciergeContacts: ConciergeContact[] = [
     value: "112",
     hint: "Número único europeu — polícia, bombeiros e ambulância",
     icon: "Siren",
+    quick: true,
   },
   {
     slug: "samu",
@@ -33,6 +36,7 @@ export const conciergeContacts: ConciergeContact[] = [
     value: "15",
     hint: "Urgência médica na França",
     icon: "Ambulance",
+    quick: true,
   },
   {
     slug: "police",

@@ -6,8 +6,8 @@ import { Icon } from "./Icon";
 import { useGuideList } from "./GuideContent";
 import type { ConciergeContact } from "@/lib/types";
 
-// Contatos de acesso rápido no botão flutuante (os demais ficam na página Concierge).
-const QUICK = ["qimo-whatsapp", "qimo-call", "emergency-eu", "samu"];
+// Fallback: se nenhum contato estiver marcado como "rápido" no painel, mostra estes.
+const QUICK_FALLBACK = ["qimo-whatsapp", "qimo-call", "emergency-eu", "samu"];
 
 function hrefFor(type: string, value: string): { href: string; external: boolean } {
   if (type === "whatsapp") return { href: `https://wa.me/${value.replace(/\D/g, "")}`, external: true };
@@ -26,7 +26,14 @@ export function ConciergeFab() {
   }, [open]);
 
   const contacts = useGuideList<ConciergeContact>("concierge");
-  const items = QUICK.map((slug) => contacts.find((c) => c.slug === slug)).filter(Boolean) as ConciergeContact[];
+  // Quais contatos aparecem no balão é definido no painel (flag "rápido").
+  // Enquanto ninguém marcou nada, cai nos 4 padrões.
+  const flagged = contacts.filter((c) => c.quick);
+  const items = (
+    flagged.length
+      ? flagged
+      : (QUICK_FALLBACK.map((slug) => contacts.find((c) => c.slug === slug)).filter(Boolean) as ConciergeContact[])
+  ).slice(0, 5);
 
   return (
     <>

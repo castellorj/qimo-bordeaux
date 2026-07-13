@@ -204,15 +204,16 @@ function ContactRow({ row, onChange, canUp, canDown, onMove }: {
   const [value, setValue] = useState(d.value || "");
   const [type, setType] = useState(d.type || "call");
   const [icon, setIcon] = useState(d.icon || "Phone");
+  const [quick, setQuick] = useState(!!d.quick);
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const dirty = label !== (d.label || "") || hint !== (d.hint || "") || value !== (d.value || "") || type !== (d.type || "call") || icon !== (d.icon || "Phone");
+  const dirty = label !== (d.label || "") || hint !== (d.hint || "") || value !== (d.value || "") || type !== (d.type || "call") || icon !== (d.icon || "Phone") || quick !== !!d.quick;
   const valueLabel = type === "maps" ? "Endereço / local" : type === "link" ? "Link (URL)" : "Telefone / valor";
 
   const save = async () => {
     setBusy(true);
-    await upsertContent("concierge", row.slug, { ...d, slug: row.slug, label, hint, value, type, icon }, row.sort, row.published);
+    await upsertContent("concierge", row.slug, { ...d, slug: row.slug, label, hint, value, type, icon, quick }, row.sort, row.published);
     setBusy(false); setSaved(true); setTimeout(() => setSaved(false), 1500);
     onChange();
   };
@@ -228,6 +229,7 @@ function ContactRow({ row, onChange, canUp, canDown, onMove }: {
         <div className="flex items-center gap-2">
           <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-black/[0.04] text-gold-deep"><Icon name={icon} size={15} /></span>
           <span className="font-sans text-[11px] uppercase tracking-wide2 text-muted">{row.slug}</span>
+          {quick && <span className="rounded-full bg-gold/15 px-2 py-0.5 font-sans text-[10px] uppercase tracking-wide2 text-gold-deep">no balão</span>}
           {!row.published && <span className="rounded-full bg-black/[0.06] px-2 py-0.5 font-sans text-[10px] uppercase tracking-wide2 text-muted">oculto</span>}
         </div>
         <div className="flex items-center gap-1">
@@ -269,6 +271,14 @@ function ContactRow({ row, onChange, canUp, canDown, onMove }: {
           </select>
         </label>
       </div>
+
+      <label className="mt-3 flex cursor-pointer items-start gap-2.5 rounded-[10px] border border-dashed p-3" style={{ borderColor: "var(--line)" }}>
+        <input type="checkbox" checked={quick} onChange={(e) => setQuick(e.target.checked)} className="mt-0.5 h-4 w-4 shrink-0 accent-[color:var(--petrol,#3d5a5c)]" />
+        <span className="min-w-0">
+          <span className="block font-sans text-[13px] font-semibold" style={{ color: "var(--text)" }}>Mostrar no balão de contatos rápidos</span>
+          <span className="block font-sans text-[12px] text-muted">O balão flutuante mostra até 5 contatos marcados aqui. Os demais ficam na página Concierge.</span>
+        </span>
+      </label>
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <button onClick={save} disabled={!dirty || busy} className={clsx("btn-primary !px-4 !py-1.5 text-[12px]", (!dirty || busy) && "opacity-50")}>

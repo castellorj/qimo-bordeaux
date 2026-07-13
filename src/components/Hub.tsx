@@ -45,22 +45,20 @@ export function HubGridPhotos({ items, orderKey }: { items: HubItem[]; orderKey?
   );
 }
 
-// Card com ícone (usado em Viagem / Mais)
+// Grade compacta ícone + rótulo (usada em Mais) — 2 colunas inclusive no mobile.
 export function HubGridIcons({ items, orderKey }: { items: HubItem[]; orderKey?: string }) {
   const { t, cfg } = useLocale();
   const visible = orderByKeys(items, orderKey ? cfg(`navorder.${orderKey}`) : undefined).filter((it) => cfg(`navhide.${it.key}`) !== "1");
   return (
-    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+    <div className="grid grid-cols-2 gap-3">
       {visible.map((it) => (
-        <Link key={it.href + it.key} href={it.href} className="card card-hover group flex items-center gap-4 p-5">
-          <span className="grid h-14 w-14 shrink-0 place-items-center rounded-full border text-petrol-600 transition-colors group-hover:border-gold group-hover:text-gold-deep" style={{ borderColor: "var(--line)" }}>
+        <Link key={it.href + it.key} href={it.href} className="card card-hover group flex items-center gap-3 p-4">
+          <span className="shrink-0 text-gold-deep transition-transform group-hover:scale-110">
             <Icon name={cfg(`navicon.${it.key}`) || it.icon} size={22} />
           </span>
-          <span className="flex-1">
-            <span className="block font-serif text-xl font-light leading-tight">{t(`nav.${it.key}`)}</span>
-            <span className="block font-sans text-[12px] text-muted">{t(`navd.${it.key}`)}</span>
+          <span className="min-w-0 font-serif text-[17px] font-light leading-tight" style={{ color: "var(--text)" }}>
+            {t(`nav.${it.key}`)}
           </span>
-          <Icon name="ChevronRight" size={18} className="text-muted transition-colors group-hover:text-gold-deep" />
         </Link>
       ))}
     </div>
