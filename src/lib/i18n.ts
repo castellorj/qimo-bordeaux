@@ -282,6 +282,10 @@ export const ui: Dict = {
     en: "What to bring home from Bordeaux.",
     es: "Qué llevar de Bordeaux.",
   },
+  "trip.ship": { pt: "SS Bon Voyage", en: "SS Bon Voyage", es: "SS Bon Voyage" },
+  "trip.dates": { pt: "25 out — 1 nov 2026", en: "25 Oct — 1 Nov 2026", es: "25 oct — 1 nov 2026" },
+  "trip.nights": { pt: "7 noites", en: "7 nights", es: "7 noches" },
+  "trip.region": { pt: "Bordeaux · Gironde · Dordogne", en: "Bordeaux · Gironde · Dordogne", es: "Bordeaux · Gironde · Dordogne" },
   "hero.concierge.k": { pt: "Concierge QIMO", en: "QIMO Concierge", es: "Concierge QIMO" },
   "hero.concierge.t": { pt: "Tudo ao seu alcance", en: "Everything within reach", es: "Todo a tu alcance" },
   "hero.concierge.i": {
@@ -365,6 +369,7 @@ export const EDITABLE_LABELS: { key: string; grp: string }[] = [
   { key: "hero.compras.k", grp: "Topo das paginas" }, { key: "hero.compras.i", grp: "Topo das paginas" },
   { key: "hero.chef.k", grp: "Topo das paginas" }, { key: "hero.chef.i", grp: "Topo das paginas" },
   { key: "hero.concierge.k", grp: "Topo das paginas" }, { key: "hero.concierge.t", grp: "Topo das paginas" }, { key: "hero.concierge.i", grp: "Topo das paginas" },
+  { key: "trip.ship", grp: "Sua viagem" }, { key: "trip.dates", grp: "Sua viagem" }, { key: "trip.nights", grp: "Sua viagem" }, { key: "trip.region", grp: "Sua viagem" },
   { key: "hero.viagem.k", grp: "Topos dos hubs" }, { key: "hero.viagem.i", grp: "Topos dos hubs" },
   { key: "hero.descobrir.k", grp: "Topos dos hubs" }, { key: "hero.descobrir.i", grp: "Topos dos hubs" },
   { key: "hero.mais.k", grp: "Topos dos hubs" }, { key: "hero.mais.i", grp: "Topos dos hubs" },

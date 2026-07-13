@@ -9,7 +9,7 @@ import { useLocale } from "@/components/providers";
 import { useGuideItem } from "@/components/GuideContent";
 import { ActionBar } from "@/components/ActionBar";
 import { qimoWhatsApp } from "@/lib/reserve";
-import { ship as fileShip, itinerary, TRIP } from "@/content";
+import { ship as fileShip, itinerary } from "@/content";
 
 const onboard = itinerary.flatMap((d) =>
   d.activities
@@ -199,8 +199,8 @@ export default function BarcoPage() {
         <section className="mt-16 rounded-[3px] border p-8 sm:p-10" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
           <div className="flex flex-wrap items-center gap-4">
             <Pill icon="Ship">{ship.name}</Pill>
-            <Pill icon="CalendarDays">{`${TRIP.nights} noites`}</Pill>
-            <Pill icon="Anchor">Bordeaux · Gironde · Dordogne</Pill>
+            <Pill icon="CalendarDays">{t("trip.nights")}</Pill>
+            <Pill icon="Anchor">{t("trip.region")}</Pill>
           </div>
           <p className="mt-5 font-sans text-[13px] italic leading-relaxed text-muted">{ship.note}</p>
           <div className="mt-6 max-w-md">

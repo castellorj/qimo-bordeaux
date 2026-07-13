@@ -12,7 +12,7 @@ import { LangRow } from "@/components/SiteChrome";
 const Dossier = dynamic(() => import("@/components/Dossier").then((m) => m.Dossier), { ssr: false });
 import { useLocale } from "@/components/providers";
 import { useGuideList } from "@/components/GuideContent";
-import { frenchPhrases, etiquette, ship, TRIP } from "@/content";
+import { frenchPhrases, etiquette, ship } from "@/content";
 import type { ConciergeContact, ConciergeSection } from "@/lib/types";
 
 const WHATSAPP = process.env.NEXT_PUBLIC_QIMO_WHATSAPP || "5521995453817";
@@ -214,9 +214,9 @@ function ModuleBody({ section, contacts, t }: { section: ConciergeSection; conta
     case "trip":
       return (
         <div className="space-y-2 font-sans text-[14px]" style={{ color: "var(--text-muted)" }}>
-          <p className="flex items-center gap-2"><Icon name="Ship" size={15} className="text-gold-deep" /> {TRIP.ship}</p>
-          <p className="flex items-center gap-2"><Icon name="CalendarDays" size={15} className="text-gold-deep" /> 25 out — 1 nov 2026 · {TRIP.nights} noites</p>
-          <p className="flex items-center gap-2"><Icon name="Anchor" size={15} className="text-gold-deep" /> Bordeaux · Gironde · Dordogne</p>
+          <p className="flex items-center gap-2"><Icon name="Ship" size={15} className="text-gold-deep" /> {t("trip.ship")}</p>
+          <p className="flex items-center gap-2"><Icon name="CalendarDays" size={15} className="text-gold-deep" /> {t("trip.dates")} · {t("trip.nights")}</p>
+          <p className="flex items-center gap-2"><Icon name="Anchor" size={15} className="text-gold-deep" /> {t("trip.region")}</p>
         </div>
       );
     case "text":
