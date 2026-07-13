@@ -90,7 +90,14 @@ export function WelcomeSheet() {
   }, []);
 
   if (!show) return null;
-  const L = STR[lang] ?? STR.pt;
+  // PT é editável no painel (Menus e textos → Tela de entrada); EN/ES vêm do STR.
+  const L: Record<string, string> = { ...(STR[lang] ?? STR.pt) };
+  if (lang === "pt") {
+    for (const k of Object.keys(L)) {
+      const ov = cfg(`gate.${k}`)?.trim();
+      if (ov) L[k] = ov;
+    }
+  }
 
   const enter = (guestName?: string) => {
     // Guarda nome E telefone (E.164) — o telefone identifica as reservas do convidado.
