@@ -246,8 +246,8 @@ font[style] {
   border: none;
   outline: none;
   color: #fbf8f3;
-  font-size: 15px;
-  padding: 13px 0;
+  font-size: 16px; /* >=16px evita o auto-zoom do iOS Safari ao focar o campo */
+  padding: 12px 0;
   width: 100%;
 }
 .qimo-gate .PhoneInputInput::placeholder {

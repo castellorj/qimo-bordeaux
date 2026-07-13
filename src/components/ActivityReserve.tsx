@@ -126,7 +126,7 @@ function ReserveSheet({ rv, my, onClose }: { rv: Reservable; my?: MyReservation;
                   value={n}
                   onChange={(e) => setName(i, e.target.value)}
                   placeholder={i === 0 ? "Seu nome" : "Nome do acompanhante"}
-                  className="min-w-0 flex-1 rounded-[10px] border bg-transparent px-3 py-2.5 font-sans text-sm outline-none focus:border-gold"
+                  className="min-w-0 flex-1 rounded-[10px] border bg-transparent px-3 py-2.5 font-sans text-base outline-none focus:border-gold"
                   style={{ borderColor: "var(--line)" }}
                 />
                 {names.length > 1 && (
@@ -149,7 +149,7 @@ function ReserveSheet({ rv, my, onClose }: { rv: Reservable; my?: MyReservation;
               onChange={(e) => setPhone(e.target.value)}
               inputMode="tel"
               placeholder="+55 21 99999-9999"
-              className="mt-1 w-full rounded-[10px] border bg-transparent px-3 py-2.5 font-sans text-sm outline-none focus:border-gold"
+              className="mt-1 w-full rounded-[10px] border bg-transparent px-3 py-2.5 font-sans text-base outline-none focus:border-gold"
               style={{ borderColor: "var(--line)" }}
             />
           </label>

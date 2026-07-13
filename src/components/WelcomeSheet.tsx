@@ -181,4 +181,4 @@ export function WelcomeSheet() {
 }
 
 const inputCls =
-  "w-full rounded-full border border-cream/25 bg-white/10 px-5 py-3.5 font-sans text-[15px] text-cream placeholder:text-cream/50 outline-none backdrop-blur-sm focus:border-gold";
+  "w-full rounded-full border border-cream/25 bg-white/10 px-5 py-3.5 font-sans text-base text-cream placeholder:text-cream/50 outline-none backdrop-blur-sm focus:border-gold";
