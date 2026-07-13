@@ -98,6 +98,7 @@ function ContactCard({ c }: { c: ConciergeContact }) {
 }
 
 function CurrencyConverter() {
+  const { t } = useLocale();
   const [rate, setRate] = useState(6.2);
   const [live, setLive] = useState(false);
   const [eur, setEur] = useState("100");
@@ -115,11 +116,11 @@ function CurrencyConverter() {
   return (
     <div>
       <div className="flex items-center justify-end">
-        <span className="font-sans text-[11px] text-muted">{live ? "Cotação ao vivo" : "Cotação aproximada"}</span>
+        <span className="font-sans text-[11px] text-muted">{live ? t("conc.cur.live") : t("conc.cur.approx")}</span>
       </div>
       <div className="mt-2 flex items-center gap-3">
         <div className="flex-1">
-          <label className="font-sans text-[11px] uppercase tracking-wide2 text-muted">Euro (€)</label>
+          <label className="font-sans text-[11px] uppercase tracking-wide2 text-muted">{t("conc.cur.euro")}</label>
           <input
             type="number" inputMode="decimal" value={eur} onChange={(e) => setEur(e.target.value)}
             className="mt-1 w-full rounded-[2px] border bg-transparent px-3 py-2.5 font-serif text-2xl font-light outline-none focus:border-gold"
@@ -128,7 +129,7 @@ function CurrencyConverter() {
         </div>
         <Icon name="ArrowRight" size={18} className="mt-6 text-gold" />
         <div className="flex-1">
-          <label className="font-sans text-[11px] uppercase tracking-wide2 text-muted">Real (R$)</label>
+          <label className="font-sans text-[11px] uppercase tracking-wide2 text-muted">{t("conc.cur.real")}</label>
           <p className="mt-1 rounded-[2px] border px-3 py-2.5 font-serif text-2xl font-light" style={{ borderColor: "var(--line)" }}>{brl}</p>
         </div>
       </div>
@@ -153,9 +154,9 @@ function ModuleBody({ section, contacts, t }: { section: ConciergeSection; conta
         ) : null;
       return (
         <div className="space-y-6">
-          <Group label="Suporte QIMO" list={qimo} />
-          <Group label="Emergências & assistência" list={emergency} />
-          <Group label="Transporte & utilidades" list={utils} />
+          <Group label={t("conc.grp.support")} list={qimo} />
+          <Group label={t("conc.grp.emergency")} list={emergency} />
+          <Group label={t("conc.grp.utils")} list={utils} />
         </div>
       );
     }
@@ -173,7 +174,7 @@ function ModuleBody({ section, contacts, t }: { section: ConciergeSection; conta
               </div>
             ))}
           </div>
-          <Link href="/barco" className="btn-ghost mt-5 !px-4 !py-2 text-[13px]"><Icon name="Ship" size={15} /> Conhecer o navio</Link>
+          <Link href="/barco" className="btn-ghost mt-5 !px-4 !py-2 text-[13px]"><Icon name="Ship" size={15} /> {t("conc.ship.cta")}</Link>
         </>
       );
     case "etiquette":

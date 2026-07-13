@@ -324,6 +324,33 @@ export const ui: Dict = {
   },
   "chef.cta": { pt: "Reservar com a QIMO", en: "Book with QIMO", es: "Reservar con QIMO" },
   "chef.empty": { pt: "Em breve — experiências sendo finalizadas.", en: "Coming soon — experiences being finalized.", es: "Pronto — experiencias en preparación." },
+
+  // Concierge — rótulos internos
+  "conc.grp.support": { pt: "Suporte QIMO", en: "QIMO support", es: "Soporte QIMO" },
+  "conc.grp.emergency": { pt: "Emergências & assistência", en: "Emergencies & assistance", es: "Emergencias y asistencia" },
+  "conc.grp.utils": { pt: "Transporte & utilidades", en: "Transport & utilities", es: "Transporte y utilidades" },
+  "conc.ship.cta": { pt: "Conhecer o navio", en: "Discover the ship", es: "Conocer el barco" },
+  "conc.cur.euro": { pt: "Euro (€)", en: "Euro (€)", es: "Euro (€)" },
+  "conc.cur.real": { pt: "Real (R$)", en: "Real (R$)", es: "Real (R$)" },
+  "conc.cur.live": { pt: "Cotação ao vivo", en: "Live rate", es: "Cotización en vivo" },
+  "conc.cur.approx": { pt: "Cotação aproximada", en: "Approximate rate", es: "Cotización aproximada" },
+
+  // Tax Free (Compras)
+  "taxfree.title": { pt: "Tax Free — como funciona", en: "Tax Free — how it works", es: "Tax Free — cómo funciona" },
+  "taxfree.intro": {
+    pt: "Residentes fora da União Europeia têm direito ao reembolso do IVA (TVA) em compras acima de € 100,01 na mesma loja, no mesmo dia.",
+    en: "Residents outside the European Union are entitled to a VAT (TVA) refund on purchases over € 100.01 in the same store, on the same day.",
+    es: "Los residentes fuera de la Unión Europea tienen derecho al reembolso del IVA (TVA) en compras superiores a € 100,01 en la misma tienda, el mismo día.",
+  },
+  "taxfree.step1": { pt: "Peça o formulário Tax Free (Détaxe) na loja, apresentando o passaporte.", en: "Ask for the Tax Free (Détaxe) form in the store, showing your passport.", es: "Pide el formulario Tax Free (Détaxe) en la tienda, mostrando el pasaporte." },
+  "taxfree.step2": { pt: "Guarde as compras lacradas e as notas fiscais até o embarque.", en: "Keep purchases sealed and receipts until boarding.", es: "Guarda las compras selladas y los recibos hasta el embarque." },
+  "taxfree.step3": { pt: "No aeroporto, valide o formulário nos quiosques PABLO (leitura do código de barras) antes do check-in.", en: "At the airport, validate the form at the PABLO kiosks (barcode scan) before check-in.", es: "En el aeropuerto, valida el formulario en los quioscos PABLO (lectura del código de barras) antes del check-in." },
+  "taxfree.step4": { pt: "Receba o reembolso em cartão ou dinheiro, conforme o operador (Global Blue, Planet).", en: "Receive the refund by card or cash, depending on the operator (Global Blue, Planet).", es: "Recibe el reembolso en tarjeta o efectivo, según el operador (Global Blue, Planet)." },
+  "taxfree.note": {
+    pt: "O reembolso costuma variar de 12% a 15% do valor. Chegue com antecedência ao aeroporto para validar a détaxe.",
+    en: "The refund is usually 12% to 15% of the value. Arrive at the airport early to validate the détaxe.",
+    es: "El reembolso suele ser del 12% al 15% del valor. Llega con antelación al aeropuerto para validar la détaxe.",
+  },
   "hero.concierge.k": { pt: "Concierge QIMO", en: "QIMO Concierge", es: "Concierge QIMO" },
   "hero.concierge.t": { pt: "Tudo ao seu alcance", en: "Everything within reach", es: "Todo a tu alcance" },
   "hero.concierge.i": {
@@ -418,6 +445,10 @@ export const EDITABLE_LABELS: { key: string; grp: string }[] = [
   { key: "rest.cat.michelin.s", grp: "Restaurantes" }, { key: "rest.cat.bistro.s", grp: "Restaurantes" }, { key: "rest.cat.wineBar.s", grp: "Restaurantes" }, { key: "rest.cat.contemporary.s", grp: "Restaurantes" },
   { key: "rest.book", grp: "Restaurantes" }, { key: "rest.contact", grp: "Restaurantes" },
   { key: "chef.curator", grp: "Chef" }, { key: "chef.lead", grp: "Chef" }, { key: "chef.cta", grp: "Chef" }, { key: "chef.empty", grp: "Chef" },
+  { key: "conc.grp.support", grp: "Concierge" }, { key: "conc.grp.emergency", grp: "Concierge" }, { key: "conc.grp.utils", grp: "Concierge" }, { key: "conc.ship.cta", grp: "Concierge" },
+  { key: "conc.cur.euro", grp: "Concierge" }, { key: "conc.cur.real", grp: "Concierge" }, { key: "conc.cur.live", grp: "Concierge" }, { key: "conc.cur.approx", grp: "Concierge" },
+  { key: "taxfree.title", grp: "Tax Free" }, { key: "taxfree.intro", grp: "Tax Free" }, { key: "taxfree.note", grp: "Tax Free" },
+  { key: "taxfree.step1", grp: "Tax Free" }, { key: "taxfree.step2", grp: "Tax Free" }, { key: "taxfree.step3", grp: "Tax Free" }, { key: "taxfree.step4", grp: "Tax Free" },
   { key: "hero.viagem.k", grp: "Topos dos hubs" }, { key: "hero.viagem.i", grp: "Topos dos hubs" },
   { key: "hero.descobrir.k", grp: "Topos dos hubs" }, { key: "hero.descobrir.i", grp: "Topos dos hubs" },
   { key: "hero.mais.k", grp: "Topos dos hubs" }, { key: "hero.mais.i", grp: "Topos dos hubs" },
