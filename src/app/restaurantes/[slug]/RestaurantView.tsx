@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import type { ReactNode } from "react";
 import { SmartImage } from "@/components/SmartImage";
 import { Icon } from "@/components/Icon";
 import { QimoSeal, Crumb, Pill } from "@/components/ui";
@@ -30,36 +29,12 @@ function Spec({ icon, label, value }: { icon: string; label: string; value?: str
   );
 }
 
-function ScoreBar({ label, value }: { label: string; value: number }) {
-  return (
-    <div>
-      <div className="flex items-center justify-between gap-3 font-sans text-[12px]">
-        <span className="text-muted">{label}</span>
-        <span className="font-semibold text-petrol-700">{value.toFixed(1)}</span>
-      </div>
-      <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-black/5">
-        <div className="h-full rounded-full bg-gold" style={{ width: `${Math.min(100, value * 10)}%` }} />
-      </div>
-    </div>
-  );
-}
-
-function DetailBlock({ title, children }: { title: string; children: ReactNode }) {
-  return (
-    <details className="rounded-[8px] border bg-white/55 p-4 open:bg-white/80" style={{ borderColor: "var(--line)" }}>
-      <summary className="cursor-pointer list-none font-sans text-[13px] font-semibold uppercase tracking-wide2 text-petrol-700">
-        {title}
-      </summary>
-      <div className="mt-4">{children}</div>
-    </details>
-  );
-}
-
 export function RestaurantView({ slug }: { slug: string }) {
   const r = useGuideItem<Restaurant>("restaurant", slug);
   const all = useGuideKind<Restaurant>("restaurant");
   if (!r) return <div className="container-editorial py-20 text-center text-muted">Restaurante não encontrado.</div>;
 
+  const hasPublishedChef = r.chef && r.chef !== "Informação não divulgada oficialmente.";
   const nearby = all
     .filter((item) => item.slug !== r.slug && item.category === r.category)
     .slice(0, 3);
@@ -70,24 +45,27 @@ export function RestaurantView({ slug }: { slug: string }) {
     <article>
       <section className="relative">
         <SmartImage src={r.heroImage} alt={r.name} label={r.city} ratio="aspect-[16/9] sm:aspect-[21/9]" priority />
-        <div className="absolute inset-0 bg-gradient-to-t from-petrol-950/85 via-petrol-950/25 to-transparent" />
+        <div className="absolute inset-0 bg-petrol-950/45" />
+        <div className="absolute inset-0 bg-gradient-to-r from-petrol-950/90 via-petrol-950/58 to-petrol-950/25" />
+        <div className="absolute inset-0 bg-gradient-to-t from-petrol-950/92 via-petrol-950/35 to-transparent" />
         <div className="text-on-photo container-editorial absolute inset-x-0 bottom-0 z-10 pb-8">
           <Crumb href="/restaurantes" label="Restaurantes" />
           <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
-            <div>
+            <div className="max-w-5xl">
               <div className="flex flex-wrap items-center gap-3">
                 <p className="font-sans text-[11px] uppercase tracking-luxe text-gold-soft">{r.neighborhood || r.city}</p>
                 {r.category && <Pill icon="Utensils">{categoryLabel[r.category]}</Pill>}
                 {r.michelin && <Pill icon="Star">{r.michelin}</Pill>}
                 {r.qimoSelect && <QimoSeal />}
               </div>
-              <h1 className="display mt-2 text-4xl text-cream sm:text-6xl">{r.name}</h1>
-              {r.chef && <p className="mt-2 font-serif text-lg font-light italic text-cream/80">{r.chef}</p>}
+              <h1 className="display mt-3 text-4xl leading-[0.98] text-cream drop-shadow-[0_3px_20px_rgba(0,0,0,.55)] sm:text-6xl">{r.name}</h1>
+              {hasPublishedChef && <p className="mt-3 max-w-3xl font-serif text-lg font-light italic text-cream/90 drop-shadow-[0_2px_12px_rgba(0,0,0,.7)]">{r.chef}</p>}
             </div>
-            {r.qimoScores?.overall && (
+            {r.googleRating && (
               <div className="rounded-[8px] bg-cream/95 px-5 py-4 text-center text-petrol-800">
-                <p className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Nota QIMO</p>
-                <p className="font-serif text-4xl font-light">{r.qimoScores.overall.toFixed(1)}</p>
+                <p className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Nota Google</p>
+                <p className="font-serif text-4xl font-light">{r.googleRating.toFixed(1)}</p>
+                {r.googleReviewsCount && <p className="mt-1 font-sans text-[10px] text-muted">{r.googleReviewsCount} avaliações</p>}
               </div>
             )}
           </div>
@@ -125,49 +103,10 @@ export function RestaurantView({ slug }: { slug: string }) {
               </section>
             ) : null}
 
-            <section className="grid gap-4 sm:grid-cols-2">
-              <DetailBlock title="Informações práticas">
-                <div className="space-y-1">
-                  <Spec icon="Clock" label="Dias" value={r.days} />
-                  <Spec icon="Clock" label="Horários" value={r.hours} />
-                  <Spec icon="Shirt" label="Dress code" value={r.dressCode} />
-                  <Spec icon="Users" label="Crianças" value={r.practical?.children} />
-                  <Spec icon="Users" label="Grupos" value={r.practical?.groups} />
-                  <Spec icon="Check" label="Menu vegetariano" value={r.practical?.vegetarian} />
-                  <Spec icon="ShieldCheck" label="Acessibilidade" value={r.practical?.accessibility} />
-                </div>
-              </DetailBlock>
-              <DetailBlock title="Validade das informações">
-                <div className="space-y-1">
-                  <Spec icon="CalendarCheck" label="Última verificação" value={r.lastVerified} />
-                  <Spec icon="Info" label="Status" value={r.practical?.status} />
-                  <Spec icon="Ticket" label="Reserva" value={r.practical?.reservationStatus} />
-                  <Spec icon="Globe" label="Fonte principal" value={r.sourcePrimary} />
-                </div>
-              </DetailBlock>
-            </section>
-
             <section className="rounded-[8px] border bg-petrol-600 p-6 text-cream" style={{ borderColor: "var(--line)" }}>
               <p className="kicker text-gold-soft">Dica do Sommelier</p>
               <p className="mt-3 font-serif text-xl font-light leading-relaxed">{r.sommelierTip || "Informação não divulgada oficialmente."}</p>
             </section>
-
-            {r.qimoScores && (
-              <section>
-                <h2 className="display text-3xl">Avaliação editorial QIMO</h2>
-                <p className="mt-2 font-sans text-[13px] text-muted">Notas editoriais de 0 a 10. Não representam avaliações de usuários ou plataformas externas.</p>
-                <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                  <ScoreBar label="Gastronomia" value={r.qimoScores.gastronomy} />
-                  <ScoreBar label="Carta de vinhos" value={r.qimoScores.wine} />
-                  <ScoreBar label="Ambiente" value={r.qimoScores.ambience} />
-                  <ScoreBar label="Atendimento" value={r.qimoScores.service} />
-                  <ScoreBar label="Localização" value={r.qimoScores.location} />
-                  <ScoreBar label="Exclusividade" value={r.qimoScores.exclusivity} />
-                  <ScoreBar label="Custo-benefício" value={r.qimoScores.value} />
-                  <ScoreBar label="Facilidade de reserva" value={r.qimoScores.bookingEase} />
-                </div>
-              </section>
-            )}
 
             <section>
               <h2 className="display text-3xl">Mapa</h2>

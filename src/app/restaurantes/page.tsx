@@ -76,9 +76,10 @@ function RestaurantCard({ r, priority }: { r: Restaurant; priority?: boolean }) 
             </Link>
             <p className="mt-1 font-sans text-[13px] text-muted">{[r.neighborhood, r.priceBand].filter(Boolean).join(" · ")}</p>
           </div>
-          {r.qimoScores?.overall && (
-            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-petrol-600 text-cream">
-              <span className="font-sans text-[14px] font-semibold">{r.qimoScores.overall.toFixed(1)}</span>
+          {r.googleRating && (
+            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-petrol-600 text-center text-cream">
+              <span className="font-sans text-[10px] uppercase leading-none text-cream/70">Google</span>
+              <span className="font-sans text-[14px] font-semibold leading-none">{r.googleRating.toFixed(1)}</span>
             </div>
           )}
         </div>
@@ -171,18 +172,12 @@ export default function RestaurantesPage() {
     <>
       <PageHero section="restaurantes" small bgImage="/photos/food-entrecote.jpg" />
       <main className="container-editorial py-10">
-        <section className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <section>
           <div>
             <p className="kicker">Onde comer em Bordeaux</p>
             <h1 className="display mt-2 text-4xl sm:text-5xl">Curadoria gastronômica QIMO</h1>
             <p className="mt-4 max-w-3xl font-serif text-xl font-light leading-relaxed text-muted">
               Restaurantes, wine bars e experiências validados para consulta rápida no celular, com reserva, mapa e recomendação editorial em cada ficha.
-            </p>
-          </div>
-          <div className="rounded-[8px] border p-4" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
-            <p className="kicker">Validação</p>
-            <p className="mt-2 font-sans text-[13px] leading-relaxed text-muted">
-              Dados revisados em 11/07/2026. Campos sem confirmação pública aparecem como “Informação não divulgada oficialmente.”
             </p>
           </div>
         </section>

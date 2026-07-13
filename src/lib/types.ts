@@ -216,6 +216,9 @@ export interface Restaurant {
     bookingEase: number;
     overall: number;
   };
+  googleRating?: number;
+  googleReviewsCount?: number;
+  googleRatingDate?: string;
   sommelierTip?: string;
   qimoNote?: string;
   sourcePrimary?: string;

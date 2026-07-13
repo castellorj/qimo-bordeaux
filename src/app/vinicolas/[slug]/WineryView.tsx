@@ -10,7 +10,6 @@ import { wineryActions } from "@/lib/reserve";
 import { useGuideItem } from "@/components/GuideContent";
 import { Editable } from "@/components/Editable";
 import { Section } from "@/components/Section";
-import { Dossier } from "@/components/Dossier";
 import { chateauDossiers } from "@/content/chateaux-dossiers";
 import type { Winery } from "@/lib/types";
 
@@ -37,9 +36,66 @@ function BulletList({ items, slug, field, label }: { items?: string[]; slug?: st
   );
 }
 
+function sectionText(md: string, title: string) {
+  const match = md.match(new RegExp(`## ${title}\\s+([\\s\\S]*?)(?=\\n## |$)`, "i"));
+  return match?.[1]
+    ?.replace(/^>\s?/gm, "")
+    .replace(/\|.*\|/g, "")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function overviewValue(md: string, labels: string[]) {
+  const rows = md.split("\n");
+  for (const row of rows) {
+    const cells = row.split("|").map((cell) => cell.trim()).filter(Boolean);
+    if (cells.length < 2) continue;
+    const key = cells[0].toLowerCase();
+    if (labels.some((label) => key.includes(label.toLowerCase()))) return cells[1];
+  }
+  return undefined;
+}
+
+function listFromText(value?: string) {
+  if (!value) return [];
+  return value
+    .replace(/;.*$/g, "")
+    .split(/,|\se\s/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function normalizedWinery(w: Winery, dossier?: string): Winery {
+  if (!dossier) return w;
+
+  const castas = overviewValue(dossier, ["Castas"]);
+  const production = overviewValue(dossier, ["Produção", "Segundo vinho"]);
+  const area = overviewValue(dossier, ["Área"]);
+  const whyVisit = sectionText(dossier, "Por que visitar");
+  const wines = sectionText(dossier, "Vinhos");
+  const sommelier = sectionText(dossier, "Dicas do Sommelier");
+  const reservation = sectionText(dossier, "Reserva, horários e localização");
+  const architecture = sectionText(dossier, "Arquitetura e ambiente");
+
+  return {
+    ...w,
+    history: w.history || sectionText(dossier, "História") || whyVisit || w.history,
+    terroir: w.terroir || wines || whyVisit,
+    grapes: w.grapes?.length ? w.grapes : listFromText(castas),
+    production: w.production || [area, production].filter(Boolean).join(" · "),
+    icons: w.icons?.length ? w.icons : production ? [production] : [],
+    whatToTaste: w.whatToTaste?.length ? w.whatToTaste : wines ? [wines] : [],
+    curiosities: w.curiosities?.length ? w.curiosities : [architecture, whyVisit, sommelier].filter(Boolean) as string[],
+    visitHours: w.visitHours || reservation,
+  };
+}
+
 export function WineryView({ slug }: { slug: string }) {
-  const w = useGuideItem<Winery>("winery", slug);
-  if (!w) return <div className="container-editorial py-20 text-center text-muted">Vinícola não encontrada.</div>;
+  const source = useGuideItem<Winery>("winery", slug);
+  if (!source) return <div className="container-editorial py-20 text-center text-muted">Vinícola não encontrada.</div>;
+
+  const dossier = source.dossier || chateauDossiers[source.slug];
+  const w = normalizedWinery(source, dossier);
 
   const Hero = (
     <section className="relative">
@@ -60,20 +116,6 @@ export function WineryView({ slug }: { slug: string }) {
       </div>
     </section>
   );
-
-  // Châteaux-ícone: dossiê editorial completo (Markdown). O texto vem do módulo
-  // separado (chunk desta rota) ou de um override do painel (w.dossier).
-  const dossier = w.dossier || chateauDossiers[w.slug];
-  if (dossier) {
-    return (
-      <article>
-        {Hero}
-        <div className="container-editorial py-12">
-          <Dossier md={dossier} />
-        </div>
-      </article>
-    );
-  }
 
   return (
     <article>
