@@ -18,6 +18,14 @@ const KIND_GROUPS = [
   { title: "Descobrir", kinds: ["wine", "gastronomy", "experience", "shopping", "chef"] },
   { title: "Utilidades", kinds: ["ship", "info_fact", "etiquette_tip"] },
 ];
+const FEATURED_KINDS: Record<string, { icon: string; title: string; hint: string }> = {
+  restaurant: { icon: "Utensils", title: "Restaurantes", hint: "menus, reservas, fotos e recomendacoes" },
+  winery: { icon: "Grape", title: "Vinicolas", hint: "chateaux, visitas, vinhos e fotos" },
+  city: { icon: "Landmark", title: "Cidades", hint: "portos, dicas, historia e mapa" },
+  document_category: { icon: "FileText", title: "Documentos", hint: "categorias, icones e descricoes" },
+  info_fact: { icon: "Info", title: "Info uteis", hint: "moeda, idioma, fuso, tomadas e etiqueta" },
+  ship: { icon: "Ship", title: "Navio", hint: "pagina do SS Bon Voyage" },
+};
 
 // Rótulos amigáveis (PT) — o usuário nunca vê o nome técnico do campo.
 const FIELD_LABELS: Record<string, string> = {
@@ -432,11 +440,56 @@ export function ContentCMS() {
       .map((groupKind) => CONTENT_KINDS.find((contentKind) => contentKind.kind === groupKind))
       .filter(Boolean) as typeof CONTENT_KINDS[number][],
   })).filter((group) => group.items.length > 0);
+  const featuredKinds = Object.keys(FEATURED_KINDS)
+    .map((featuredKind) => CONTENT_KINDS.find((contentKind) => contentKind.kind === featuredKind))
+    .filter(Boolean) as typeof CONTENT_KINDS[number][];
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
+      <div className="rounded-[14px] border p-4" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="kicker">Fichas do guia</p>
+            <h2 className="font-serif text-2xl font-light">O que voce quer editar?</h2>
+          </div>
+          <label className="flex min-w-[260px] flex-1 items-center gap-2 rounded-full border bg-white/40 px-4 py-2.5 sm:max-w-md" style={{ borderColor: "var(--line)" }}>
+            <Icon name="Search" size={15} className="text-muted" />
+            <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar por nome"
+              className="w-full bg-transparent font-sans text-[13px] outline-none placeholder:text-muted" />
+          </label>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {featuredKinds.map((contentKind) => {
+            const featured = FEATURED_KINDS[contentKind.kind];
+            const selected = kind === contentKind.kind;
+            return (
+              <button
+                key={contentKind.kind}
+                onClick={() => setKind(contentKind.kind)}
+                className={clsx(
+                  "min-h-[96px] rounded-[12px] border p-4 text-left transition-colors hover:border-gold",
+                  selected ? "bg-petrol-600 text-cream" : "bg-white/35"
+                )}
+                style={{ borderColor: selected ? "transparent" : "var(--line)" }}
+              >
+                <div className="flex items-start gap-3">
+                  <span className={clsx("grid h-10 w-10 shrink-0 place-items-center rounded-full", selected ? "bg-cream/15" : "bg-gold/12 text-gold-deep")}>
+                    <Icon name={featured.icon} size={18} />
+                  </span>
+                  <span className="min-w-0">
+                    <span className="block font-serif text-xl font-light leading-tight">{featured.title}</span>
+                    <span className={clsx("mt-1 block font-sans text-[12px] leading-relaxed", selected ? "text-cream/75" : "text-muted")}>{featured.hint}</span>
+                  </span>
+                </div>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div className="mt-5 flex flex-wrap items-start justify-between gap-3">
         <div className="grid flex-1 gap-3">
+          <p className="font-sans text-[11px] font-semibold uppercase tracking-wide2 text-muted">Outros tipos de conteudo</p>
           {groupedKinds.map((group) => (
             <div key={group.title} className="flex flex-wrap items-center gap-2">
               <span className="w-20 shrink-0 font-sans text-[10px] font-semibold uppercase tracking-wide2 text-muted">{group.title}</span>
@@ -549,11 +602,7 @@ export function ContentCMS() {
             <>
               <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
                 <p className="flex items-center gap-1.5 font-sans text-[11px] text-muted"><Icon name="GripVertical" size={12} /> Arraste os cards para reordenar como aparecem no guia.</p>
-                <label className="flex min-w-[240px] items-center gap-2 rounded-full border px-3 py-2" style={{ borderColor: "var(--line)" }}>
-                  <Icon name="Search" size={14} className="text-muted" />
-                  <input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Buscar ficha"
-                    className="w-full bg-transparent font-sans text-[12px] outline-none placeholder:text-muted" />
-                </label>
+                {normalizedQuery && <button onClick={() => setQuery("")} className="font-sans text-[12px] text-muted hover:text-gold-deep">Limpar busca</button>}
               </div>
               {visibleRows.length === 0 && (
                 <div className="card p-6 text-center font-sans text-[13px] text-muted">
