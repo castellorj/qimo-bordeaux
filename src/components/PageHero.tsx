@@ -20,7 +20,8 @@ export function PageHero({
 }) {
   const { t, cfg } = useLocale();
   const k = section ? t(`hero.${section}.k`) : kicker;
-  const ti = section ? t(`nav.${section}`) : title;
+  // título explícito (prop) vence; senão usa o nome da seção
+  const ti = title ?? (section ? t(`nav.${section}`) : undefined);
   const i = section ? t(`hero.${section}.i`) : intro;
   // Foto do topo editável no painel (chave img.sec.<seção>), com fallback ao bgImage local.
   const bg = (section ? cfg(`img.sec.${section}`)?.trim() : undefined) || bgImage;

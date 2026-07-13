@@ -21,7 +21,8 @@ export const primaryNav: NavItem[] = [
   { key: "descobrir", href: "/descobrir", icon: "Grape" },
   { key: "chef", href: "/chef", icon: "Utensils" },
   { key: "reservas", href: "/reservas", icon: "CalendarCheck" },
-  { key: "mais", href: "/mais", icon: "Menu" },
+  // "Mais" abre direto o Concierge (que reúne contatos, navio, etiqueta e utilidades).
+  { key: "mais", href: "/concierge", icon: "Menu" },
 ];
 
 // alias usado pela tab bar inferior
