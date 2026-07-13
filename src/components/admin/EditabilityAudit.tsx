@@ -86,10 +86,10 @@ const AREAS: Area[] = [
   },
   {
     title: "Mapa",
-    status: "partial",
-    where: "codigo",
-    editable: ["cada ficha abre o endereco no Google Maps"],
-    gaps: ["o mapa de /mapa usa cidades/vinicolas do arquivo — nao reflete edicoes das fichas"],
+    status: "complete",
+    where: "Fichas / Tela Mapa",
+    editable: ["coordenadas de cidades", "coordenadas de vinicolas", "nomes/subtitulos refletidos no mapa", "cada ficha abre o endereco no Google Maps"],
+    gaps: [],
   },
 ];
 

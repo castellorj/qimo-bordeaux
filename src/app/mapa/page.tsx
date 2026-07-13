@@ -4,12 +4,15 @@ import { useState } from "react";
 import Link from "next/link";
 import { PageHero } from "@/components/PageHero";
 import { Icon } from "@/components/Icon";
-import { cities, wineries } from "@/content";
+import { useGuideKind } from "@/components/GuideContent";
+import type { City, Winery } from "@/lib/types";
 
 type Filter = "all" | "cities" | "wineries";
 
 export default function MapaPage() {
   const [filter, setFilter] = useState<Filter>("all");
+  const cities = useGuideKind<City>("city");
+  const wineries = useGuideKind<Winery>("winery");
 
   const points = [
     ...cities
