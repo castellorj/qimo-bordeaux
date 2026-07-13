@@ -9,6 +9,7 @@ import {
   type ContentRow, type VersionRow,
 } from "@/lib/supabase/content-admin";
 import { getContentKindConfig, getFieldConfig, sortContentFields } from "@/lib/adminContentRegistry";
+import { chateauDossiers } from "@/content/chateaux-dossiers";
 import clsx from "clsx";
 
 const LONG = 70;
@@ -37,6 +38,10 @@ const FIELD_LABELS: Record<string, string> = {
   duration: "Duração", location: "Local", relatedDay: "Dia relacionado", venueUrl: "Site do local",
   whereToBuy: "Onde comprar", priceRange: "Faixa de preço", taxFree: "Tax Free",
   sectionOrder: "Ordem das seções",
+  dossier: "Dossiê da ficha (Markdown)",
+  intro: "Introdução", note: "Nota de rodapé", stats: "Números", facts: "Ficha rápida",
+  highlights: "Destaques", dining: "Gastronomia", suitesList: "Lista de suítes", suites: "Suítes (bloco)",
+  included: "Tudo incluído",
 };
 // Dicas curtas sob alguns campos.
 const FIELD_HINTS: Record<string, string> = {
@@ -47,6 +52,7 @@ const FIELD_HINTS: Record<string, string> = {
   heroImage: "Foto grande do topo. Horizontal 16:9 · ~1600×900 px.",
   gallery: "Fotos horizontais, largura mínima ~1200 px.",
   sectionOrder: "Avançado — normalmente ajuste arrastando em “Editar no site”.",
+  dossier: "Texto longo da ficha (châteaux). Aceita Markdown: ## títulos, listas, **negrito**, tabelas.",
 };
 function labelFor(k: string): string {
   return FIELD_LABELS[k] ?? k.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase());
@@ -252,7 +258,7 @@ function FieldEditor({ kind, data, onChange }: { kind: string; data: any; onChan
             <span className="kicker-muted">{fieldLabel}</span>
             {fieldHint && <span className="mb-1 block font-sans text-[11px] text-muted">{fieldHint}</span>}
             {v.length > LONG ? (
-              <textarea value={v} onChange={(e) => set(k, e.target.value)} rows={Math.min(8, Math.ceil(v.length / 60))}
+              <textarea value={v} onChange={(e) => set(k, e.target.value)} rows={Math.min(20, Math.max(3, Math.ceil(v.length / 60)))}
                 className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm leading-relaxed outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
             ) : (
               <input value={v} onChange={(e) => set(k, e.target.value)}
@@ -351,7 +357,11 @@ export function ContentCMS() {
   const openEditor = async (row: ContentRow) => {
     setEditing(row);
     // Revela campos faltantes do tipo (o registro pode ter vindo sem campos opcionais).
-    setDraft({ ...kindSkeleton(row.kind), ...structuredClone(row.data) });
+    const base = { ...kindSkeleton(row.kind), ...structuredClone(row.data) };
+    // Châteaux: o dossiê (texto principal) mora em arquivo separado — traz para o
+    // editor pré-preenchido, para virar campo editável salvo no banco.
+    if (row.kind === "winery") base.dossier = base.dossier || chateauDossiers[row.slug] || "";
+    setDraft(base);
     setShowHist(false);
     setVersions(await listVersions(row.kind, row.slug));
   };

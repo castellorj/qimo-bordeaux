@@ -6,9 +6,10 @@ import { SmartImage } from "@/components/SmartImage";
 import { Icon } from "@/components/Icon";
 import { Pill } from "@/components/ui";
 import { useLocale } from "@/components/providers";
+import { useGuideItem } from "@/components/GuideContent";
 import { ActionBar } from "@/components/ActionBar";
 import { qimoWhatsApp } from "@/lib/reserve";
-import { ship, itinerary, TRIP } from "@/content";
+import { ship as fileShip, itinerary, TRIP } from "@/content";
 
 const onboard = itinerary.flatMap((d) =>
   d.activities
@@ -18,6 +19,8 @@ const onboard = itinerary.flatMap((d) =>
 
 export default function BarcoPage() {
   const { t, cfg } = useLocale();
+  // Navio editável no painel (aba Fichas → Navio); cai no arquivo enquanto não editado.
+  const ship = (useGuideItem<any>("ship", "ss-bon-voyage") ?? fileShip) as typeof fileShip;
   const img = (key: string, def: string) => cfg(key)?.trim() || def;
 
   return (
