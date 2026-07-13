@@ -7,27 +7,13 @@ import { PageHero } from "@/components/PageHero";
 import { SmartImage } from "@/components/SmartImage";
 import { Icon } from "@/components/Icon";
 import { useGuideKind } from "@/components/GuideContent";
+import { useLocale } from "@/components/providers";
 import { qimoWhatsApp } from "@/lib/reserve";
 import type { Restaurant } from "@/lib/types";
 
-const categories = {
-  michelin: {
-    title: "Experiências Michelin e alta gastronomia",
-    intro: "Mesas para ocasiões especiais, menus degustação, serviço de alto padrão e cartas de vinho para explorar Bordeaux com profundidade.",
-  },
-  bistro: {
-    title: "Bistrôs e clássicos bordaleses",
-    intro: "Cozinha francesa tradicional, casas históricas e endereços com atmosfera local para almoços e jantares sem excesso de formalidade.",
-  },
-  "wine-bar": {
-    title: "Wine bars e experiências para amantes de vinho",
-    intro: "Taças, caves, degustações e conversas com curadores para descobrir denominações, produtores e estilos de Bordeaux.",
-  },
-  contemporary: {
-    title: "Experiências autênticas e contemporâneas",
-    intro: "Mercados, mesas criativas e restaurantes modernos para alternar a alta gastronomia com uma Bordeaux mais cotidiana e atual.",
-  },
-} satisfies Record<NonNullable<Restaurant["category"]>, { title: string; intro: string }>;
+// Categorias (títulos/intros editáveis no painel via i18n rest.cat.*)
+const CATEGORY_KEYS = ["michelin", "bistro", "wine-bar", "contemporary"] as const;
+const catI18n = (k?: string) => (k === "wine-bar" ? "wineBar" : k || "");
 
 const filters = [
   { label: "Alta gastronomia", match: (r: Restaurant) => r.category === "michelin" },
@@ -56,6 +42,7 @@ function priceRank(price?: Restaurant["priceBand"]) {
 }
 
 function RestaurantCard({ r, priority }: { r: Restaurant; priority?: boolean }) {
+  const { t } = useLocale();
   const reserveHref =
     r.bookingUrl ||
     (r.phone ? `tel:${r.phone}` : qimoWhatsApp(`Olá! Gostaria de reservar uma mesa no ${r.name}.`));
@@ -69,7 +56,7 @@ function RestaurantCard({ r, priority }: { r: Restaurant; priority?: boolean }) 
         <div className="flex items-start justify-between gap-3">
           <div className="min-w-0">
             <p className="font-sans text-[10px] uppercase tracking-wide2 text-gold-deep">
-              {r.category ? categories[r.category].title.split(" e ")[0] : "Restaurante"}
+              {r.category ? t(`rest.cat.${catI18n(r.category)}.s`) : "Restaurante"}
             </p>
             <Link href={`/restaurantes/${r.slug}`} className="mt-1 block font-serif text-[22px] font-light leading-tight hover:text-gold-deep">
               {r.name}
@@ -94,7 +81,7 @@ function RestaurantCard({ r, priority }: { r: Restaurant; priority?: boolean }) 
 
         <div className="mt-4 grid grid-cols-[1fr_auto] gap-2">
           <a href={reserveHref} target={reserveHref.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer" className="btn-primary !px-3 !py-2.5 text-[12px]">
-            <Icon name="Utensils" size={14} /> {r.bookingUrl ? "Reservar mesa" : "Entrar em contato"}
+            <Icon name="Utensils" size={14} /> {r.bookingUrl ? t("rest.book") : t("rest.contact")}
           </a>
           <Link href={`/restaurantes/${r.slug}`} className="btn-ghost !px-3 !py-2.5 text-[12px]" aria-label={`Ver detalhes de ${r.name}`}>
             <Icon name="ArrowRight" size={14} />
@@ -106,6 +93,7 @@ function RestaurantCard({ r, priority }: { r: Restaurant; priority?: boolean }) 
 }
 
 export default function RestaurantesPage() {
+  const { t } = useLocale();
   const restaurants = useGuideKind<Restaurant>("restaurant").filter((r) => r.adminStatus !== "oculto" && r.adminStatus !== "encerrado");
   const [activeFilter, setActiveFilter] = useState("Todos");
   const [sort, setSort] = useState<Sort>("thomas");
@@ -123,12 +111,13 @@ export default function RestaurantesPage() {
   }, [activeFilter, restaurants, sort]);
 
   const grouped = useMemo(() => {
-    return Object.entries(categories).map(([key, meta]) => ({
+    return CATEGORY_KEYS.map((key) => ({
       key: key as Restaurant["category"],
-      ...meta,
+      title: t(`rest.cat.${catI18n(key)}.t`),
+      intro: t(`rest.cat.${catI18n(key)}.i`),
       items: filtered.filter((r) => r.category === key),
     }));
-  }, [filtered]);
+  }, [filtered, t]);
 
   return (
     <>
@@ -136,11 +125,9 @@ export default function RestaurantesPage() {
       <main className="container-editorial py-10">
         <section>
           <div>
-            <p className="kicker">Onde comer em Bordeaux</p>
-            <h1 className="display mt-2 text-4xl sm:text-5xl">Curadoria gastronômica QIMO</h1>
-            <p className="mt-4 max-w-3xl font-serif text-xl font-light leading-relaxed text-muted">
-              Restaurantes, wine bars e experiências validados para consulta rápida no celular, com reserva, mapa e recomendação editorial em cada ficha.
-            </p>
+            <p className="kicker">{t("rest.kicker")}</p>
+            <h1 className="display mt-2 text-4xl sm:text-5xl">{t("rest.title")}</h1>
+            <p className="mt-4 max-w-3xl font-serif text-xl font-light leading-relaxed text-muted">{t("rest.intro")}</p>
           </div>
         </section>
 
@@ -161,11 +148,11 @@ export default function RestaurantesPage() {
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className="rounded-full border bg-white/70 px-4 py-2 font-sans text-[13px]" style={{ borderColor: "var(--line)" }}>
-              <option value="thomas">Recomendados por Thomas Troisgros</option>
-              <option value="sophisticated">Mais sofisticados</option>
-              <option value="value">Melhor custo-benefício</option>
-              <option value="near">Mais próximos</option>
-              <option value="price">Faixa de preço</option>
+              <option value="thomas">{t("rest.sort.thomas")}</option>
+              <option value="sophisticated">{t("rest.sort.sophisticated")}</option>
+              <option value="value">{t("rest.sort.value")}</option>
+              <option value="near">{t("rest.sort.near")}</option>
+              <option value="price">{t("rest.sort.price")}</option>
             </select>
           </div>
         </section>

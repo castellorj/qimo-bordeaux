@@ -4,10 +4,12 @@ import { PageHero } from "@/components/PageHero";
 import { Icon } from "@/components/Icon";
 import { QimoSeal } from "@/components/ui";
 import { useGuideKind } from "@/components/GuideContent";
+import { useLocale } from "@/components/providers";
 import { qimoWhatsApp } from "@/lib/reserve";
 import type { ChefExperience } from "@/lib/types";
 
 export default function ChefPage() {
+  const { t } = useLocale();
   const items = useGuideKind<ChefExperience>("chef");
 
   return (
@@ -16,11 +18,8 @@ export default function ChefPage() {
 
       <div className="container-editorial py-12">
         <div className="mx-auto max-w-2xl text-center">
-          <p className="kicker">Curadoria de Thomas Troisgros</p>
-          <p className="prose-luxe mx-auto mt-4">
-            Experiências gastronômicas exclusivas, criadas para os hóspedes da QIMO e reservadas à parte.
-            Vagas limitadas — fale com a nossa equipe para garantir a sua.
-          </p>
+          <p className="kicker">{t("chef.curator")}</p>
+          <p className="prose-luxe mx-auto mt-4">{t("chef.lead")}</p>
         </div>
 
         <div className="mt-10 grid grid-cols-1 gap-6 sm:grid-cols-2">
@@ -56,13 +55,13 @@ export default function ChefPage() {
                   target="_blank" rel="noopener noreferrer"
                   className="btn-primary mt-4 w-full !rounded-[10px] !px-4 !py-2.5 !tracking-wide text-[12px]"
                 >
-                  <Icon name="MessageCircle" size={15} /> Reservar com a QIMO
+                  <Icon name="MessageCircle" size={15} /> {t("chef.cta")}
                 </a>
               </div>
             </article>
           ))}
           {items.length === 0 && (
-            <p className="col-span-full text-center text-muted">Em breve — experiências sendo finalizadas.</p>
+            <p className="col-span-full text-center text-muted">{t("chef.empty")}</p>
           )}
         </div>
       </div>
