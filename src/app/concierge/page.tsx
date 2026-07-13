@@ -2,19 +2,23 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import clsx from "clsx";
 import { PageHero } from "@/components/PageHero";
 import { Icon } from "@/components/Icon";
 import { LangRow } from "@/components/SiteChrome";
+
+// Markdown só carrega quando há seção de texto livre (fora do bundle base do Concierge).
+const Dossier = dynamic(() => import("@/components/Dossier").then((m) => m.Dossier), { ssr: false });
 import { useLocale } from "@/components/providers";
 import { useGuideList } from "@/components/GuideContent";
 import { frenchPhrases, etiquette, ship, TRIP } from "@/content";
-import type { ConciergeContact } from "@/lib/types";
+import type { ConciergeContact, ConciergeSection } from "@/lib/types";
 
 const WHATSAPP = process.env.NEXT_PUBLIC_QIMO_WHATSAPP || "5521995453817";
 const PHONE = process.env.NEXT_PUBLIC_QIMO_PHONE || "+5521995453817";
 
-// Links úteis da viagem (antes na aba "Mais")
+// Links úteis da viagem (seção "links")
 const TRIP_LINKS = [
   { key: "barco", href: "/barco", icon: "Ship" },
   { key: "mapa", href: "/mapa", icon: "Map" },
@@ -133,51 +137,33 @@ function CurrencyConverter() {
   );
 }
 
-export default function ConciergePage() {
-  const { t } = useLocale();
-  const contacts = useGuideList<ConciergeContact>("concierge");
-  const qimo = contacts.filter((c) => c.slug.startsWith("qimo"));
-  const emergency = contacts.filter((c) => c.type === "emergency" || c.slug.includes("hospital") || c.slug.includes("consulado"));
-  const utils = contacts.filter(
-    (c) => !c.slug.startsWith("qimo") && c.type !== "emergency" && !c.slug.includes("hospital") && !c.slug.includes("consulado")
-  );
-
-  return (
-    <>
-      <PageHero section="concierge" title={t("hero.concierge.t")} small />
-
-      <div className="container-editorial space-y-3 py-10">
-        {/* Contatos */}
-        <Section title="Contatos & suporte" hint="Equipe QIMO, emergências e utilidades" count={contacts.length} defaultOpen>
-          <div className="space-y-6">
-            {qimo.length > 0 && (
-              <div>
-                <p className="kicker mb-3">Suporte QIMO</p>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{qimo.map((c) => <ContactCard key={c.slug} c={c} />)}</div>
-              </div>
-            )}
-            {emergency.length > 0 && (
-              <div>
-                <p className="kicker mb-3">Emergências & assistência</p>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{emergency.map((c) => <ContactCard key={c.slug} c={c} />)}</div>
-              </div>
-            )}
-            {utils.length > 0 && (
-              <div>
-                <p className="kicker mb-3">Transporte & utilidades</p>
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{utils.map((c) => <ContactCard key={c.slug} c={c} />)}</div>
-              </div>
-            )}
+/* Conteúdo de cada módulo de seção */
+function ModuleBody({ section, contacts, t }: { section: ConciergeSection; contacts: ConciergeContact[]; t: (k: string) => string }) {
+  switch (section.module) {
+    case "contacts": {
+      const qimo = contacts.filter((c) => c.slug.startsWith("qimo"));
+      const emergency = contacts.filter((c) => c.type === "emergency" || c.slug.includes("hospital") || c.slug.includes("consulado"));
+      const utils = contacts.filter((c) => !c.slug.startsWith("qimo") && c.type !== "emergency" && !c.slug.includes("hospital") && !c.slug.includes("consulado"));
+      const Group = ({ label, list }: { label: string; list: ConciergeContact[] }) =>
+        list.length ? (
+          <div>
+            <p className="kicker mb-3">{label}</p>
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{list.map((c) => <ContactCard key={c.slug} c={c} />)}</div>
           </div>
-        </Section>
-
-        {/* Câmbio */}
-        <Section title="Câmbio" hint="Converta Euro ↔ Real">
-          <CurrencyConverter />
-        </Section>
-
-        {/* Navio */}
-        <Section title={ship.name} hint={ship.tagline}>
+        ) : null;
+      return (
+        <div className="space-y-6">
+          <Group label="Suporte QIMO" list={qimo} />
+          <Group label="Emergências & assistência" list={emergency} />
+          <Group label="Transporte & utilidades" list={utils} />
+        </div>
+      );
+    }
+    case "currency":
+      return <CurrencyConverter />;
+    case "ship":
+      return (
+        <>
           <p className="prose-luxe">{ship.intro}</p>
           <div className="mt-5 grid grid-cols-4 gap-3">
             {ship.stats.map((s) => (
@@ -187,61 +173,81 @@ export default function ConciergePage() {
               </div>
             ))}
           </div>
-          <Link href="/barco" className="btn-ghost mt-5 !px-4 !py-2 text-[13px]">
-            <Icon name="Ship" size={15} /> Conhecer o navio
-          </Link>
-        </Section>
+          <Link href="/barco" className="btn-ghost mt-5 !px-4 !py-2 text-[13px]"><Icon name="Ship" size={15} /> Conhecer o navio</Link>
+        </>
+      );
+    case "etiquette":
+      return (
+        <ul className="space-y-3">
+          {etiquette.map((e, i) => (
+            <li key={i} className="flex items-start gap-3 font-serif text-[15px] font-light leading-relaxed" style={{ color: "var(--text)" }}>
+              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-gold" /><span>{e}</span>
+            </li>
+          ))}
+        </ul>
+      );
+    case "phrases":
+      return (
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {frenchPhrases.map((p, i) => (
+            <div key={i} className="rounded-[10px] border p-4" style={{ borderColor: "var(--line)" }}>
+              <p className="font-sans text-[12px] text-muted">{p.pt}</p>
+              <p className="mt-1 font-serif text-xl font-light" style={{ color: "var(--text)" }}>{p.fr}</p>
+              <p className="mt-0.5 font-sans text-[12px] italic text-gold">/ {p.hint} /</p>
+            </div>
+          ))}
+        </div>
+      );
+    case "links":
+      return (
+        <div className="grid grid-cols-2 gap-3">
+          {TRIP_LINKS.map((l) => (
+            <Link key={l.key} href={l.href} className="card card-hover group flex items-center gap-3 p-4">
+              <span className="shrink-0 text-gold-deep transition-transform group-hover:scale-110"><Icon name={l.icon} size={22} /></span>
+              <span className="min-w-0 font-serif text-[17px] font-light leading-tight" style={{ color: "var(--text)" }}>{t(`nav.${l.key}`)}</span>
+            </Link>
+          ))}
+        </div>
+      );
+    case "language":
+      return <LangRow />;
+    case "trip":
+      return (
+        <div className="space-y-2 font-sans text-[14px]" style={{ color: "var(--text-muted)" }}>
+          <p className="flex items-center gap-2"><Icon name="Ship" size={15} className="text-gold-deep" /> {TRIP.ship}</p>
+          <p className="flex items-center gap-2"><Icon name="CalendarDays" size={15} className="text-gold-deep" /> 25 out — 1 nov 2026 · {TRIP.nights} noites</p>
+          <p className="flex items-center gap-2"><Icon name="Anchor" size={15} className="text-gold-deep" /> Bordeaux · Gironde · Dordogne</p>
+        </div>
+      );
+    case "text":
+    default:
+      return section.body ? <Dossier md={section.body} /> : <p className="font-sans text-[13px] text-muted">Seção sem conteúdo.</p>;
+  }
+}
 
-        {/* Etiqueta */}
-        <Section title="Etiqueta de bordo" hint="Costumes locais para viajar como um bordalês" count={etiquette.length}>
-          <ul className="space-y-3">
-            {etiquette.map((e, i) => (
-              <li key={i} className="flex items-start gap-3 font-serif text-[15px] font-light leading-relaxed" style={{ color: "var(--text)" }}>
-                <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-gold" />
-                <span>{e}</span>
-              </li>
-            ))}
-          </ul>
-        </Section>
+// contagem exibida no cabeçalho de algumas seções
+function sectionCount(section: ConciergeSection, contacts: ConciergeContact[]): number | undefined {
+  if (section.module === "contacts") return contacts.length;
+  if (section.module === "etiquette") return etiquette.length;
+  if (section.module === "phrases") return frenchPhrases.length;
+  return undefined;
+}
 
-        {/* Frases em francês */}
-        <Section title="Frases úteis em francês" count={frenchPhrases.length}>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            {frenchPhrases.map((p, i) => (
-              <div key={i} className="rounded-[10px] border p-4" style={{ borderColor: "var(--line)" }}>
-                <p className="font-sans text-[12px] text-muted">{p.pt}</p>
-                <p className="mt-1 font-serif text-xl font-light" style={{ color: "var(--text)" }}>{p.fr}</p>
-                <p className="mt-0.5 font-sans text-[12px] italic text-gold">/ {p.hint} /</p>
-              </div>
-            ))}
-          </div>
-        </Section>
+export default function ConciergePage() {
+  const { t } = useLocale();
+  const contacts = useGuideList<ConciergeContact>("concierge");
+  const sections = useGuideList<ConciergeSection>("concierge_section");
 
-        {/* Sua viagem — links */}
-        <Section title="Sua viagem" hint="Navio, mapa, documentos e mais">
-          <div className="grid grid-cols-2 gap-3">
-            {TRIP_LINKS.map((l) => (
-              <Link key={l.key} href={l.href} className="card card-hover group flex items-center gap-3 p-4">
-                <span className="shrink-0 text-gold-deep transition-transform group-hover:scale-110"><Icon name={l.icon} size={22} /></span>
-                <span className="min-w-0 font-serif text-[17px] font-light leading-tight" style={{ color: "var(--text)" }}>{t(`nav.${l.key}`)}</span>
-              </Link>
-            ))}
-          </div>
-        </Section>
+  return (
+    <>
+      <PageHero section="concierge" title={t("hero.concierge.t")} small />
 
-        {/* Idioma */}
-        <Section title="Idioma · Language · Idioma">
-          <LangRow />
-        </Section>
-
-        {/* Sobre a viagem */}
-        <Section title="Bordeaux Experience" hint="Sobre a sua viagem">
-          <div className="space-y-2 font-sans text-[14px]" style={{ color: "var(--text-muted)" }}>
-            <p className="flex items-center gap-2"><Icon name="Ship" size={15} className="text-gold-deep" /> {TRIP.ship}</p>
-            <p className="flex items-center gap-2"><Icon name="CalendarDays" size={15} className="text-gold-deep" /> 25 out — 1 nov 2026 · {TRIP.nights} noites</p>
-            <p className="flex items-center gap-2"><Icon name="Anchor" size={15} className="text-gold-deep" /> Bordeaux · Gironde · Dordogne</p>
-          </div>
-        </Section>
+      <div className="container-editorial space-y-3 py-10">
+        {sections.map((s) => (
+          <Section key={s.slug} title={s.title} hint={s.hint} count={sectionCount(s, contacts)} defaultOpen={s.defaultOpen}>
+            <ModuleBody section={s} contacts={contacts} t={t} />
+          </Section>
+        ))}
       </div>
     </>
   );

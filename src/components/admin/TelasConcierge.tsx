@@ -2,13 +2,25 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
-import { conciergeContacts as BASE } from "@/content";
+import { conciergeContacts as BASE, conciergeSections as SECTIONS_BASE } from "@/content";
 import {
   uploadImage, upsertSetting, listSettings,
   upsertContent, listContent, deleteContent, setPublished, updateSort,
   type ContentRow,
 } from "@/lib/supabase/content-admin";
-import type { ConciergeContact } from "@/lib/types";
+import type { ConciergeContact, ConciergeSection, ConciergeModule } from "@/lib/types";
+
+const SECTION_MODULES: { v: ConciergeModule; l: string; auto: boolean }[] = [
+  { v: "text", l: "Texto livre (Markdown)", auto: false },
+  { v: "contacts", l: "Contatos (lista automática)", auto: true },
+  { v: "currency", l: "Câmbio (conversor)", auto: true },
+  { v: "ship", l: "Navio (resumo + link)", auto: true },
+  { v: "etiquette", l: "Etiqueta de bordo", auto: true },
+  { v: "phrases", l: "Frases em francês", auto: true },
+  { v: "links", l: "Atalhos da viagem", auto: true },
+  { v: "language", l: "Idioma", auto: true },
+  { v: "trip", l: "Sobre a viagem", auto: true },
+];
 import { SITE_IMAGES, type SiteImage } from "@/lib/siteImages";
 import clsx from "clsx";
 
@@ -22,6 +34,8 @@ export function TelasConcierge() {
   return (
     <div className="space-y-10">
       <ScreenPhotos />
+      <div className="hairline" />
+      <ConciergeSectionsEditor />
       <div className="hairline" />
       <ConciergeContactsEditor />
     </div>
@@ -279,6 +293,167 @@ function ContactRow({ row, onChange, canUp, canDown, onMove }: {
           <span className="block font-sans text-[12px] text-muted">O balão flutuante mostra até 5 contatos marcados aqui. Os demais ficam na página Concierge.</span>
         </span>
       </label>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <button onClick={save} disabled={!dirty || busy} className={clsx("btn-primary !px-4 !py-1.5 text-[12px]", (!dirty || busy) && "opacity-50")}>
+          {busy ? "…" : "Salvar"}
+        </button>
+        {saved && <span className="font-sans text-[12px] text-olive-deep">✓ Salvo</span>}
+        <button onClick={toggleHide} disabled={busy} className="btn-ghost !px-3 !py-1.5 text-[12px]">
+          <Icon name={row.published ? "EyeOff" : "Eye"} size={13} /> {row.published ? "Ocultar" : "Mostrar"}
+        </button>
+        <button onClick={remove} disabled={busy} className="ml-auto flex items-center gap-1.5 font-sans text-[12px] text-muted hover:text-[#8f2f2f]">
+          <Icon name="X" size={14} /> Excluir
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------- Concierge: seções do acordeão (CRUD completo) -------------------- */
+function ConciergeSectionsEditor() {
+  const [rows, setRows] = useState<ContentRow[] | null>(null);
+  const [seeding, setSeeding] = useState(false);
+
+  const load = useCallback(async () => {
+    let r = await listContent("concierge_section");
+    if (!r.length) {
+      setSeeding(true);
+      for (let i = 0; i < SECTIONS_BASE.length; i++) {
+        await upsertContent("concierge_section", SECTIONS_BASE[i].slug, SECTIONS_BASE[i], i * 10, true);
+      }
+      r = await listContent("concierge_section");
+      setSeeding(false);
+    }
+    setRows(r);
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  const addNew = async () => {
+    const slug = "secao-" + Math.random().toString(36).slice(2, 7);
+    const sort = (rows?.reduce((m, r) => Math.max(m, r.sort), 0) ?? 0) + 10;
+    await upsertContent("concierge_section", slug, { slug, title: "Nova seção", hint: "", module: "text", body: "" }, sort, true);
+    load();
+  };
+
+  const move = async (idx: number, dir: number) => {
+    if (!rows) return;
+    const a = rows[idx], b = rows[idx + dir];
+    if (!a || !b) return;
+    await Promise.all([updateSort(a.id, b.sort), updateSort(b.id, a.sort)]);
+    load();
+  };
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 className="font-serif text-xl font-light">Concierge — seções</h3>
+          <p className="mt-1 max-w-2xl font-sans text-[13px] leading-relaxed text-muted">
+            As seções do acordeão da tela Concierge (aba “Mais”). Renomeie, reordene, oculte, exclua ou
+            <strong> crie novas seções de texto livre</strong>. Salva na hora, <strong>sem republicar</strong>.
+          </p>
+        </div>
+        <button onClick={addNew} className="btn-primary !px-4 !py-2 text-[12px]"><Icon name="Plus" size={14} /> Adicionar seção</button>
+      </div>
+
+      {rows === null ? (
+        <p className="mt-4 text-muted">{seeding ? "Preparando seções…" : "Carregando…"}</p>
+      ) : (
+        <div className="mt-4 space-y-2">
+          {rows.map((row, idx) => (
+            <SectionRow key={row.id} row={row} onChange={load}
+              canUp={idx > 0} canDown={idx < rows.length - 1} onMove={(dir) => move(idx, dir)} />
+          ))}
+          {rows.length === 0 && <p className="text-muted">Nenhuma seção. Use “Adicionar seção”.</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SectionRow({ row, onChange, canUp, canDown, onMove }: {
+  row: ContentRow; onChange: () => void; canUp: boolean; canDown: boolean; onMove: (dir: number) => void;
+}) {
+  const d = (row.data || {}) as ConciergeSection;
+  const [title, setTitle] = useState(d.title || "");
+  const [hint, setHint] = useState(d.hint || "");
+  const [mod, setMod] = useState<ConciergeModule>(d.module || "text");
+  const [body, setBody] = useState(d.body || "");
+  const [defaultOpen, setDefaultOpen] = useState(!!d.defaultOpen);
+  const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const isText = mod === "text";
+  const modInfo = SECTION_MODULES.find((m) => m.v === mod);
+  const dirty = title !== (d.title || "") || hint !== (d.hint || "") || mod !== (d.module || "text") || body !== (d.body || "") || defaultOpen !== !!d.defaultOpen;
+
+  const save = async () => {
+    setBusy(true);
+    await upsertContent("concierge_section", row.slug, { ...d, slug: row.slug, title, hint, module: mod, body, defaultOpen }, row.sort, row.published);
+    setBusy(false); setSaved(true); setTimeout(() => setSaved(false), 1500);
+    onChange();
+  };
+  const toggleHide = async () => { setBusy(true); await setPublished(row.id, !row.published); setBusy(false); onChange(); };
+  const remove = async () => {
+    if (!confirm(`Excluir a seção “${d.title || row.slug}”? Ela some da tela Concierge.`)) return;
+    setBusy(true); await deleteContent(row.id); setBusy(false); onChange();
+  };
+
+  return (
+    <div className={clsx("card p-4", !row.published && "opacity-60")}>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-black/[0.04] text-gold-deep"><Icon name="LayoutGrid" size={15} /></span>
+          <span className="font-sans text-[11px] uppercase tracking-wide2 text-muted">{modInfo?.l || mod}</span>
+          {defaultOpen && <span className="rounded-full bg-gold/15 px-2 py-0.5 font-sans text-[10px] uppercase tracking-wide2 text-gold-deep">aberta</span>}
+          {!row.published && <span className="rounded-full bg-black/[0.06] px-2 py-0.5 font-sans text-[10px] uppercase tracking-wide2 text-muted">oculta</span>}
+        </div>
+        <div className="flex items-center gap-1">
+          <button onClick={() => onMove(-1)} disabled={!canUp} aria-label="Subir" className="grid h-7 w-7 place-items-center rounded-md text-muted hover:text-petrol-600 disabled:opacity-30"><Icon name="ChevronDown" size={15} className="rotate-180" /></button>
+          <button onClick={() => onMove(1)} disabled={!canDown} aria-label="Descer" className="grid h-7 w-7 place-items-center rounded-md text-muted hover:text-petrol-600 disabled:opacity-30"><Icon name="ChevronDown" size={15} /></button>
+        </div>
+      </div>
+
+      <div className="mt-3 grid gap-2 sm:grid-cols-[1fr_1fr]">
+        <label className="block">
+          <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Título</span>
+          <input value={title} onChange={(e) => setTitle(e.target.value)}
+            className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+        </label>
+        <label className="block">
+          <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Subtítulo (opcional)</span>
+          <input value={hint} onChange={(e) => setHint(e.target.value)}
+            className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+        </label>
+      </div>
+
+      <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_auto]">
+        <label className="block">
+          <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Tipo de conteúdo</span>
+          <select value={mod} onChange={(e) => setMod(e.target.value as ConciergeModule)}
+            className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }}>
+            {SECTION_MODULES.map((m) => <option key={m.v} value={m.v}>{m.l}</option>)}
+          </select>
+        </label>
+        <label className="flex items-end gap-2 pb-2">
+          <input type="checkbox" checked={defaultOpen} onChange={(e) => setDefaultOpen(e.target.checked)} className="h-4 w-4 accent-[color:var(--petrol,#3d5a5c)]" />
+          <span className="font-sans text-[12px] text-muted">Já aberta</span>
+        </label>
+      </div>
+
+      {isText ? (
+        <label className="mt-2 block">
+          <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Conteúdo (Markdown — títulos, listas, tabelas, links)</span>
+          <textarea value={body} onChange={(e) => setBody(e.target.value)} rows={6}
+            className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-mono text-[13px] leading-relaxed outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+        </label>
+      ) : (
+        <p className="mt-2 flex items-start gap-1.5 rounded-[8px] border border-dashed p-2.5 font-sans text-[12px] text-muted" style={{ borderColor: "var(--line)" }}>
+          <Icon name="Info" size={13} className="mt-0.5 shrink-0 text-gold-deep" />
+          Conteúdo automático desta seção. {mod === "contacts" ? "Os contatos são editados no bloco abaixo." : "Título, ordem e visibilidade são controlados aqui."}
+        </p>
+      )}
 
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <button onClick={save} disabled={!dirty || busy} className={clsx("btn-primary !px-4 !py-1.5 text-[12px]", (!dirty || busy) && "opacity-50")}>

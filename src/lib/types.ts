@@ -251,6 +251,28 @@ export interface ConciergeContact {
   quick?: boolean; // aparece no balão flutuante de contatos rápidos
 }
 
+// Seções do acordeão da página Concierge — editáveis no painel (título, ordem,
+// visibilidade, e conteúdo livre nas seções de texto).
+export type ConciergeModule =
+  | "text"       // conteúdo livre em Markdown (body)
+  | "contacts"   // lista de contatos (usa o editor de contatos)
+  | "currency"   // conversor de câmbio
+  | "ship"       // resumo do navio + link
+  | "etiquette"  // etiqueta de bordo
+  | "phrases"    // frases em francês
+  | "links"      // atalhos da viagem
+  | "language"   // seletor de idioma
+  | "trip";      // sobre a viagem
+
+export interface ConciergeSection {
+  slug: string;
+  title: string;
+  hint?: string;
+  module: ConciergeModule;
+  body?: string;        // Markdown, quando module = "text"
+  defaultOpen?: boolean;
+}
+
 export interface FrenchPhrase {
   pt: string;
   fr: string;

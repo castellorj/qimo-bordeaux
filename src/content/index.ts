@@ -10,6 +10,7 @@ import { gastronomy } from "./gastronomy";
 import { experiences } from "./experiences";
 import { shopping, taxFreeGuide } from "./shopping";
 import { conciergeContacts, frenchPhrases, etiquette } from "./concierge";
+import { conciergeSections } from "./conciergeSections";
 import { chefExperiences } from "./chef";
 import { ship } from "./ship";
 import { restaurants } from "./restaurants";
@@ -28,6 +29,7 @@ export const content = {
   shopping,
   taxFreeGuide,
   conciergeContacts,
+  conciergeSections,
   frenchPhrases,
   etiquette,
   infoFacts,
@@ -54,6 +56,7 @@ export {
   shopping,
   taxFreeGuide,
   conciergeContacts,
+  conciergeSections,
   frenchPhrases,
   etiquette,
   infoFacts,

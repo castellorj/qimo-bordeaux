@@ -5,7 +5,7 @@ import {
   cities as fCities, wineries as fWineries, restaurants as fRestaurants,
   appellations as fWines, gastronomy as fGastro, experiences as fExp, shopping as fShop,
   conciergeContacts as fConcierge, itinerary as fItinerary, chefExperiences as fChef,
-  infoFacts as fInfoFacts, etiquetteTips as fEtiquetteTips,
+  infoFacts as fInfoFacts, etiquetteTips as fEtiquetteTips, conciergeSections as fConciergeSections,
 } from "@/content";
 
 const FILES: Record<string, any[]> = {
@@ -13,6 +13,7 @@ const FILES: Record<string, any[]> = {
   wine: fWines, gastronomy: fGastro, experience: fExp, shopping: fShop,
   concierge: fConcierge, chef: fChef,
   info_fact: fInfoFacts, etiquette_tip: fEtiquetteTips,
+  concierge_section: fConciergeSections, // seções do acordeão do Concierge
   day: fItinerary, // roteiro dia a dia (editável no painel; slug "dia-N")
 };
 
