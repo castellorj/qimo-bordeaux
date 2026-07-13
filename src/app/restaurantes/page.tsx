@@ -7,7 +7,7 @@ import { PageHero } from "@/components/PageHero";
 import { SmartImage } from "@/components/SmartImage";
 import { Icon } from "@/components/Icon";
 import { useGuideKind } from "@/components/GuideContent";
-import { mapsUrl, qimoWhatsApp } from "@/lib/reserve";
+import { qimoWhatsApp } from "@/lib/reserve";
 import type { Restaurant } from "@/lib/types";
 
 const categories = {
@@ -46,7 +46,7 @@ const filters = [
   { label: "Acima de €100", match: (r: Restaurant) => r.priceBand === "Acima de €100" },
 ];
 
-type Sort = "qimo" | "sophisticated" | "value" | "near" | "price";
+type Sort = "thomas" | "sophisticated" | "value" | "near" | "price";
 
 function priceRank(price?: Restaurant["priceBand"]) {
   if (price === "Até €50") return 1;
@@ -105,48 +105,10 @@ function RestaurantCard({ r, priority }: { r: Restaurant; priority?: boolean }) 
   );
 }
 
-function MiniMap({ restaurants }: { restaurants: Restaurant[] }) {
-  const points = restaurants.filter((r) => r.coords);
-  return (
-    <div className="relative min-h-[420px] overflow-hidden rounded-[8px] border bg-[#ebe5d8]" style={{ borderColor: "var(--line)" }}>
-      <div className="absolute inset-0 opacity-60" style={{
-        backgroundImage:
-          "linear-gradient(90deg, rgba(35,55,58,.12) 1px, transparent 1px), linear-gradient(rgba(35,55,58,.12) 1px, transparent 1px)",
-        backgroundSize: "44px 44px",
-      }} />
-      <div className="absolute left-[12%] top-[14%] h-[72%] w-[76%] rounded-[45%] border border-petrol-600/20" />
-      {points.map((r, i) => {
-        const x = Math.max(8, Math.min(90, 50 + ((r.coords!.lng + 0.574) * 900)));
-        const y = Math.max(8, Math.min(86, 50 - ((r.coords!.lat - 44.842) * 900)));
-        return (
-          <Link
-            key={r.slug}
-            href={`/restaurantes/${r.slug}`}
-            className="absolute -translate-x-1/2 -translate-y-1/2 rounded-full bg-petrol-700 px-2.5 py-1.5 text-cream shadow-soft transition-transform hover:scale-105"
-            style={{ left: `${x}%`, top: `${y}%` }}
-            title={r.name}
-          >
-            <span className="flex items-center gap-1 font-sans text-[11px]">
-              <Icon name="MapPin" size={12} /> {i + 1}
-            </span>
-          </Link>
-        );
-      })}
-      <div className="absolute inset-x-4 bottom-4 rounded-[8px] bg-cream/92 p-4 shadow-soft">
-        <p className="kicker">Mapa editorial</p>
-        <p className="mt-1 font-sans text-[12px] leading-relaxed text-muted">
-          Toque em um marcador para ver detalhes. Cada ficha também abre o endereço no Google Maps.
-        </p>
-      </div>
-    </div>
-  );
-}
-
 export default function RestaurantesPage() {
   const restaurants = useGuideKind<Restaurant>("restaurant").filter((r) => r.adminStatus !== "oculto" && r.adminStatus !== "encerrado");
   const [activeFilter, setActiveFilter] = useState("Todos");
-  const [sort, setSort] = useState<Sort>("qimo");
-  const [view, setView] = useState<"lista" | "mapa">("lista");
+  const [sort, setSort] = useState<Sort>("thomas");
 
   const filtered = useMemo(() => {
     const picked = filters.find((f) => f.label === activeFilter);
@@ -199,43 +161,27 @@ export default function RestaurantesPage() {
           </div>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className="rounded-full border bg-white/70 px-4 py-2 font-sans text-[13px]" style={{ borderColor: "var(--line)" }}>
-              <option value="qimo">Recomendados pela QIMO</option>
+              <option value="thomas">Recomendados por Thomas Troisgros</option>
               <option value="sophisticated">Mais sofisticados</option>
               <option value="value">Melhor custo-benefício</option>
               <option value="near">Mais próximos</option>
               <option value="price">Faixa de preço</option>
             </select>
-            <div className="ml-auto flex rounded-full border p-1 lg:hidden" style={{ borderColor: "var(--line)" }}>
-              {(["lista", "mapa"] as const).map((mode) => (
-                <button key={mode} onClick={() => setView(mode)} className={clsx("rounded-full px-3 py-1.5 font-sans text-[12px]", view === mode && "bg-petrol-600 text-cream")}>
-                  {mode === "lista" ? "Lista" : "Mapa"}
-                </button>
-              ))}
-            </div>
           </div>
         </section>
 
-        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_360px]">
-          <div className={clsx(view === "mapa" && "hidden lg:block")}>
-            {grouped.map((group) => group.items.length > 0 && (
-              <section key={group.key} className="mb-12">
-                <div className="mb-5 max-w-3xl">
-                  <h2 className="display text-3xl">{group.title}</h2>
-                  <p className="mt-2 font-sans text-[14px] leading-relaxed text-muted">{group.intro}</p>
-                </div>
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-                  {group.items.map((r, i) => <RestaurantCard key={r.slug} r={r} priority={i < 2} />)}
-                </div>
-              </section>
-            ))}
-          </div>
-
-          <aside className={clsx("lg:sticky lg:top-28 lg:self-start", view === "lista" && "hidden lg:block")}>
-            <MiniMap restaurants={filtered} />
-            <a href={mapsUrl("Bordeaux, France", "Restaurantes Bordeaux")} target="_blank" rel="noopener noreferrer" className="btn-ghost mt-3 w-full !py-3">
-              <Icon name="Navigation" size={15} /> Abrir Bordeaux no Google Maps
-            </a>
-          </aside>
+        <div className="mt-8">
+          {grouped.map((group) => group.items.length > 0 && (
+            <section key={group.key} className="mb-12">
+              <div className="mb-5 max-w-3xl">
+                <h2 className="display text-3xl">{group.title}</h2>
+                <p className="mt-2 font-sans text-[14px] leading-relaxed text-muted">{group.intro}</p>
+              </div>
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {group.items.map((r, i) => <RestaurantCard key={r.slug} r={r} priority={i < 2} />)}
+              </div>
+            </section>
+          ))}
         </div>
       </main>
     </>
