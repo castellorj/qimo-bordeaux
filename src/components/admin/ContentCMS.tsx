@@ -13,6 +13,11 @@ import { chateauDossiers } from "@/content/chateaux-dossiers";
 import clsx from "clsx";
 
 const LONG = 70;
+const KIND_GROUPS = [
+  { title: "Principais", kinds: ["city", "winery", "restaurant", "document_category"] },
+  { title: "Descobrir", kinds: ["wine", "gastronomy", "experience", "shopping", "chef"] },
+  { title: "Utilidades", kinds: ["ship", "info_fact", "etiquette_tip"] },
+];
 
 // Rótulos amigáveis (PT) — o usuário nunca vê o nome técnico do campo.
 const FIELD_LABELS: Record<string, string> = {
@@ -354,6 +359,16 @@ export function ContentCMS() {
     setBusy(false); setEditing(null); await load();
   };
 
+  const saveAndStay = async () => {
+    if (!editing) return;
+    setBusy(true);
+    await upsertContent(editing.kind, editing.slug, draft, editing.sort, editing.published);
+    setBusy(false);
+    setMsg("Alteracoes salvas.");
+    setVersions(await listVersions(editing.kind, editing.slug));
+    await load();
+  };
+
   const openEditor = async (row: ContentRow) => {
     setEditing(row);
     // Revela campos faltantes do tipo (o registro pode ter vindo sem campos opcionais).
@@ -411,18 +426,29 @@ export function ContentCMS() {
         return haystack.includes(normalizedQuery);
       })
     : rows;
+  const groupedKinds = KIND_GROUPS.map((group) => ({
+    ...group,
+    items: group.kinds
+      .map((groupKind) => CONTENT_KINDS.find((contentKind) => contentKind.kind === groupKind))
+      .filter(Boolean) as typeof CONTENT_KINDS[number][],
+  })).filter((group) => group.items.length > 0);
 
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="no-scrollbar flex gap-2 overflow-x-auto">
-          {CONTENT_KINDS.map((c) => (
-            <button key={c.kind} onClick={() => setKind(c.kind)}
-              className={clsx("shrink-0 rounded-full border px-4 py-1.5 font-sans text-[12px] transition-colors",
-                kind === c.kind ? "border-gold text-gold-deep" : "text-muted hover:text-petrol-600")}
-              style={{ borderColor: kind === c.kind ? undefined : "var(--line)" }}>
-              {c.label}
-            </button>
+        <div className="grid flex-1 gap-3">
+          {groupedKinds.map((group) => (
+            <div key={group.title} className="flex flex-wrap items-center gap-2">
+              <span className="w-20 shrink-0 font-sans text-[10px] font-semibold uppercase tracking-wide2 text-muted">{group.title}</span>
+              {group.items.map((c) => (
+                <button key={c.kind} onClick={() => setKind(c.kind)}
+                  className={clsx("shrink-0 rounded-full border px-4 py-1.5 font-sans text-[12px] transition-colors",
+                    kind === c.kind ? "border-gold text-gold-deep" : "text-muted hover:text-petrol-600")}
+                  style={{ borderColor: kind === c.kind ? undefined : "var(--line)" }}>
+                  {c.label}
+                </button>
+              ))}
+            </div>
           ))}
         </div>
         <div className="flex flex-wrap gap-2">
@@ -430,7 +456,7 @@ export function ContentCMS() {
             <Icon name="Plus" size={14} /> Nova ficha
           </button>
           <button onClick={doImport} disabled={busy} className="btn-ghost !px-4 !py-2">
-            <Icon name="Download" size={14} /> Importar conteúdo do guia
+            <Icon name="Download" size={14} /> Atualizar base
           </button>
         </div>
       </div>
@@ -440,6 +466,7 @@ export function ContentCMS() {
             <div>
               <p className="kicker-muted">{kindConfig.label}</p>
               <p className="mt-1 font-sans text-[12px] text-muted">{kindConfig.description}</p>
+              <p className="mt-2 font-sans text-[12px] text-muted">Escolha uma ficha abaixo, clique em Editar, altere os campos e salve. Para mudar a ordem no guia, arraste os cards.</p>
             </div>
             <div className="flex flex-wrap gap-2 font-sans text-[11px]">
               <span className="rounded-full bg-black/5 px-3 py-1">{rows.length} itens</span>
@@ -477,9 +504,10 @@ export function ContentCMS() {
           <div className="mt-5">
             <FieldEditor kind={editing.kind} data={draft} onChange={setDraft} />
           </div>
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <button onClick={save} disabled={busy} className="btn-primary">{busy ? "Salvando…" : "Salvar"}</button>
-            <button onClick={() => setEditing(null)} className="btn-ghost">Cancelar</button>
+          <div className="sticky bottom-4 mt-6 flex flex-wrap items-center gap-3 rounded-[12px] border p-3 shadow-sm" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
+            <button onClick={save} disabled={busy} className="btn-primary">{busy ? "Salvando..." : "Salvar e voltar"}</button>
+            <button onClick={saveAndStay} disabled={busy} className="btn-ghost">{busy ? "Salvando..." : "Salvar e continuar"}</button>
+            <button onClick={() => setEditing(null)} className="btn-ghost">Voltar sem salvar</button>
             <button onClick={() => setShowHist((v) => !v)} className="ml-auto flex items-center gap-1.5 font-sans text-[12px] text-muted hover:text-gold-deep">
               <Icon name="Clock" size={14} /> Histórico ({versions.length})
             </button>
@@ -515,7 +543,7 @@ export function ContentCMS() {
           ) : rows.length === 0 ? (
             <div className="card p-8 text-center">
               <p className="font-sans text-[14px] text-muted">Nenhum item deste tipo no banco ainda.</p>
-              <button onClick={doImport} disabled={busy} className="btn-primary mt-4">Importar conteúdo do guia</button>
+              <button onClick={doImport} disabled={busy} className="btn-primary mt-4">Atualizar base</button>
             </div>
           ) : (
             <>

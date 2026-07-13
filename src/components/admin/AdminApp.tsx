@@ -31,23 +31,23 @@ type TabMeta = {
 };
 
 const TAB_META: Record<Tab, TabMeta> = {
-  inicio: { key: "inicio", label: "Inicio", icon: "Home", desc: "Visao geral da viagem, pendencias e atalhos para as tarefas mais comuns." },
-  roteiro: { key: "roteiro", label: "Programacao", icon: "CalendarDays", desc: "Edite dias, horarios, fotos, portos, agenda do navio e atividades do roteiro." },
-  passeios: { key: "passeios", label: "Passeios", icon: "Ticket", desc: "Controle vagas, disponibilidade e visibilidade dos passeios reservaveis." },
-  reservas: { key: "reservas", label: "Reservas", icon: "Check", desc: "Acompanhe reservas feitas no app e inclua reservas manualmente pela equipe." },
-  participantes: { key: "participantes", label: "Clientes", icon: "Users", desc: "Cadastre participantes, familias e contatos ligados a esta viagem." },
-  conteudo: { key: "conteudo", label: "Fichas", icon: "LayoutGrid", desc: "Edite cidades, vinicolas, restaurantes, vinhos, gastronomia, experiencias e compras." },
-  telas: { key: "telas", label: "Fotos e concierge", icon: "Smartphone", desc: "Troque imagens fixas do site e gerencie contatos do concierge." },
-  paginas: { key: "paginas", label: "Paginas", icon: "BookOpen", desc: "Crie paginas extras com blocos visuais e publique no guia." },
-  textos: { key: "textos", label: "Menus e textos", icon: "Languages", desc: "Renomeie menus, botoes, titulos curtos, icones e itens de navegacao." },
-  preview: { key: "preview", label: "Editor visual", icon: "Pencil", desc: "Abra o guia dentro do painel, clique em campos editaveis e veja mobile, tablet e desktop." },
-  cobertura: { key: "cobertura", label: "Cobertura", icon: "CircleCheck", desc: "Veja o que ja e editavel no painel e quais areas ainda precisam virar CMS." },
+  inicio: { key: "inicio", label: "Inicio", icon: "Home", desc: "Comece por aqui: atalhos para editar o guia, revisar e publicar." },
+  roteiro: { key: "roteiro", label: "Roteiro", icon: "CalendarDays", desc: "Edite dias, horarios, fotos, portos e atividades da viagem." },
+  passeios: { key: "passeios", label: "Vagas dos passeios", icon: "Ticket", desc: "Ajuste vagas, disponibilidade e o que aparece para o hospede reservar." },
+  reservas: { key: "reservas", label: "Reservas", icon: "Check", desc: "Veja quem reservou cada passeio e inclua reservas feitas pela equipe." },
+  participantes: { key: "participantes", label: "Clientes", icon: "Users", desc: "Cadastre os participantes e os dados de contato da viagem." },
+  conteudo: { key: "conteudo", label: "Fichas do guia", icon: "LayoutGrid", desc: "Edite cidades, vinicolas, restaurantes, vinhos, experiencias, compras e documentos." },
+  telas: { key: "telas", label: "Fotos e concierge", icon: "Smartphone", desc: "Troque fotos fixas do site e edite os contatos do concierge." },
+  paginas: { key: "paginas", label: "Paginas extras", icon: "BookOpen", desc: "Crie paginas novas com blocos prontos e publique no guia." },
+  textos: { key: "textos", label: "Menus e textos", icon: "Languages", desc: "Renomeie menus, botoes e frases curtas das telas." },
+  preview: { key: "preview", label: "Ver e editar no site", icon: "Pencil", desc: "Abra o guia dentro do painel para revisar como o hospede vai ver." },
+  cobertura: { key: "cobertura", label: "Cobertura do CMS", icon: "CircleCheck", desc: "Area tecnica: mostra o que ja esta editavel no painel." },
 };
 
 const NAV_GROUPS: { title: string; items: Tab[] }[] = [
-  { title: "Operacao", items: ["inicio", "roteiro", "passeios"] },
-  { title: "CMS visual", items: ["conteudo", "paginas", "telas", "textos", "preview", "cobertura"] },
-  { title: "Clientes", items: ["reservas", "participantes"] },
+  { title: "Editar o guia", items: ["inicio", "roteiro", "conteudo", "textos", "telas", "paginas", "preview"] },
+  { title: "Reservas", items: ["passeios", "reservas", "participantes"] },
+  { title: "Avancado", items: ["cobertura"] },
 ];
 
 export function AdminApp() {
@@ -134,8 +134,8 @@ function Shell({ email }: { email?: string }) {
           <h1 className="display text-2xl sm:text-3xl">Central de Operações</h1>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={() => setPublishOpen(true)} className="btn-primary !px-5 !py-2.5"><Icon name="Rocket" size={15} /> Publicar</button>
-          <button onClick={reload} className="btn-ghost !px-4 !py-2" aria-label="Atualizar"><Icon name="ArrowRight" size={14} /></button>
+          <button onClick={() => setPublishOpen(true)} className="btn-primary !px-5 !py-2.5"><Icon name="Rocket" size={15} /> Publicar site</button>
+          <button onClick={reload} className="btn-ghost !px-4 !py-2" aria-label="Atualizar"><Icon name="RefreshCw" size={14} /></button>
           <button onClick={() => supabase().auth.signOut()} className="font-sans text-[12px] text-muted hover:text-gold-deep">Sair</button>
         </div>
       </div>
@@ -179,7 +179,7 @@ function Shell({ email }: { email?: string }) {
               </div>
               {tab !== "inicio" && (
                 <button onClick={() => setTab("preview")} className="btn-ghost !px-3 !py-2 text-[12px]">
-                  <Icon name="Eye" size={14} /> Ver no guia
+                  <Icon name="Eye" size={14} /> Revisar no site
                 </button>
               )}
             </div>
@@ -198,7 +198,7 @@ function Shell({ email }: { email?: string }) {
           preview: "Clique nos textos para editar e use ↑/↓ para reordenar seções — tudo salva na hora.",
         };
         return (
-          <p className="hidden mt-3 items-center gap-2 font-sans text-[12px] text-muted">
+          <p className="mt-3 flex items-center gap-2 rounded-[10px] border px-4 py-3 font-sans text-[12px] text-muted" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
             <Icon name="Info" size={13} className="shrink-0 text-gold-deep" /> {hints[tab]}
           </p>
         );
