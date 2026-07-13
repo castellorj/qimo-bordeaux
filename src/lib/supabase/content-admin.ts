@@ -29,6 +29,40 @@ export interface ContentRow {
   updated_at: string;
 }
 
+// Valor "vazio" com o MESMO formato do exemplo (string→"", número→0, lista→[],
+// objeto→sub-campos vazios). Preserva o tipo para o editor desenhar o campo certo.
+function emptyLike(v: any): any {
+  if (Array.isArray(v)) return [];
+  if (v && typeof v === "object") {
+    const o: Record<string, any> = {};
+    for (const k in v) o[k] = emptyLike(v[k]);
+    return o;
+  }
+  if (typeof v === "number") return 0;
+  if (typeof v === "boolean") return false;
+  return "";
+}
+
+// Esqueleto de TODOS os campos possíveis de um tipo (união das chaves de todos os
+// itens do arquivo). Usado para: (1) criar ficha nova já com todos os campos e
+// (2) revelar campos faltantes ao editar uma ficha existente.
+export function kindSkeleton(kind: string): Record<string, any> {
+  const src = (CONTENT_KINDS.find((k) => k.kind === kind)?.file as any[]) || [];
+  const skel: Record<string, any> = {};
+  for (const item of src) {
+    for (const [k, v] of Object.entries(item)) {
+      if (v == null) continue;
+      if (!(k in skel)) {
+        skel[k] = emptyLike(v);
+      } else if (skel[k] && typeof skel[k] === "object" && !Array.isArray(skel[k]) && typeof v === "object" && !Array.isArray(v)) {
+        // une as sub-chaves de objetos aninhados (ex.: practical, scores)
+        for (const sk in v as Record<string, any>) if (!(sk in skel[k])) skel[k][sk] = emptyLike((v as any)[sk]);
+      }
+    }
+  }
+  return skel;
+}
+
 export async function listContent(kind: string): Promise<ContentRow[]> {
   const { data } = await supabase().from("bordeaux_content").select("*").eq("kind", kind).order("sort");
   return (data as ContentRow[]) || [];

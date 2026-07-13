@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { Icon } from "@/components/Icon";
 import {
   CONTENT_KINDS, listContent, upsertContent, setPublished, deleteContent, importAllContent,
-  uploadImage, updateSort, listVersions, restoreVersion,
+  uploadImage, updateSort, listVersions, restoreVersion, kindSkeleton,
   type ContentRow, type VersionRow,
 } from "@/lib/supabase/content-admin";
 import { getContentKindConfig, getFieldConfig, sortContentFields } from "@/lib/adminContentRegistry";
@@ -137,6 +137,73 @@ function CoordsField({ label, hint, value, onChange }: { label: string; hint?: s
   );
 }
 
+// Editor de objeto aninhado (ex.: informações práticas, notas) — um formulário
+// por sub-campo, no lugar de JSON cru. Nesting profundo cai para JSON.
+function ObjectField({ label, hint, value, onChange }: { label: string; hint?: string; value: any; onChange: (v: any) => void }) {
+  const obj = value && typeof value === "object" ? value : {};
+  const set = (k: string, val: any) => onChange({ ...obj, [k]: val });
+  const entries = Object.entries(obj);
+  return (
+    <div className="rounded-[8px] border p-3" style={{ borderColor: "var(--line)" }}>
+      <span className="kicker-muted">{label}</span>
+      {hint && <span className="mb-1 block font-sans text-[11px] text-muted">{hint}</span>}
+      <div className="mt-2 space-y-3">
+        {entries.length === 0 && <p className="font-sans text-[12px] text-muted">Sem sub-campos.</p>}
+        {entries.map(([k, v]) => {
+          const lbl = labelFor(k);
+          if (typeof v === "boolean") {
+            return (
+              <label key={k} className="flex items-center gap-2 font-sans text-[13px]">
+                <input type="checkbox" checked={v} onChange={(e) => set(k, e.target.checked)} /> {lbl}
+              </label>
+            );
+          }
+          if (typeof v === "number") {
+            return (
+              <label key={k} className="block">
+                <span className="font-sans text-[11px] uppercase tracking-wide2 text-muted">{lbl}</span>
+                <input type="number" value={v} onChange={(e) => set(k, parseFloat(e.target.value) || 0)}
+                  className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+              </label>
+            );
+          }
+          if (Array.isArray(v) && v.every((x) => typeof x === "string")) {
+            return (
+              <label key={k} className="block">
+                <span className="font-sans text-[11px] uppercase tracking-wide2 text-muted">{lbl} <span className="normal-case">(um por linha)</span></span>
+                <textarea value={(v as string[]).join("\n")} onChange={(e) => set(k, e.target.value.split("\n").filter(Boolean))} rows={Math.min(6, Math.max(2, v.length))}
+                  className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+              </label>
+            );
+          }
+          if (v && typeof v === "object") {
+            return (
+              <label key={k} className="block">
+                <span className="font-sans text-[11px] uppercase tracking-wide2 text-muted">{lbl} <span className="normal-case">(avançado · JSON)</span></span>
+                <textarea defaultValue={JSON.stringify(v, null, 2)} rows={4} onBlur={(e) => { try { set(k, JSON.parse(e.target.value)); } catch {} }}
+                  className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-mono text-[12px] outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+              </label>
+            );
+          }
+          const long = typeof v === "string" && v.length > LONG;
+          return (
+            <label key={k} className="block">
+              <span className="font-sans text-[11px] uppercase tracking-wide2 text-muted">{lbl}</span>
+              {long ? (
+                <textarea value={v as string} onChange={(e) => set(k, e.target.value)} rows={3}
+                  className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+              ) : (
+                <input value={(v as string) || ""} onChange={(e) => set(k, e.target.value)}
+                  className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+              )}
+            </label>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
 function FieldEditor({ kind, data, onChange }: { kind: string; data: any; onChange: (d: any) => void }) {
   const set = (k: string, v: any) => onChange({ ...data, [k]: v });
   const fields = sortContentFields(kind, data)
@@ -193,6 +260,8 @@ function FieldEditor({ kind, data, onChange }: { kind: string; data: any; onChan
             )}
           </label>
         );
+      } else if (v && typeof v === "object" && !Array.isArray(v)) {
+        node = <ObjectField key={k} label={fieldLabel} hint={fieldHint} value={v} onChange={(val) => set(k, val)} />;
       } else {
         node = (
           <label key={k} className="block">
@@ -257,13 +326,11 @@ export function ContentCMS() {
   const createContent = async () => {
     setBusy(true); setMsg("");
     const slug = `nova-ficha-${kind}-${Date.now().toString(36)}`;
+    // Nasce com TODOS os campos do tipo (esqueleto), não só nome/foto/descrição.
     const data = {
+      ...kindSkeleton(kind),
       slug,
       name: `Nova ficha de ${kindConfig?.label || "conteúdo"}`,
-      tagline: "",
-      description: "",
-      heroImage: "",
-      gallery: [],
     };
     await upsertContent(kind, slug, data, rows.length * 10 + 10, false);
     const nextRows = await listContent(kind);
@@ -283,7 +350,8 @@ export function ContentCMS() {
 
   const openEditor = async (row: ContentRow) => {
     setEditing(row);
-    setDraft(structuredClone(row.data));
+    // Revela campos faltantes do tipo (o registro pode ter vindo sem campos opcionais).
+    setDraft({ ...kindSkeleton(row.kind), ...structuredClone(row.data) });
     setShowHist(false);
     setVersions(await listVersions(row.kind, row.slug));
   };
