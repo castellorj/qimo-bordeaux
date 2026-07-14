@@ -21,20 +21,32 @@ function isOffShipReservable(a: Activity) {
   return a.type !== "transfer" && Boolean(a.location?.trim());
 }
 
+function normalizeReservableActivities(day: Day): Day {
+  return {
+    ...day,
+    activities: day.activities.map((activity) => {
+      if (!isOffShipReservable(activity) || activity.reservable !== false) return activity;
+      const { reservable: _reservable, ...rest } = activity;
+      return rest;
+    }),
+  };
+}
+
 /* Sincroniza os passeios reserváveis (bordeaux_activities) com as atividades do dia.
    Reservável = toda atividade fora do barco, isto é: tem local preenchido e não é transfer.
    As demais (ex.: shows para todos, palestras) ficam ocultas das reservas.
    Capacidade já editada no painel é preservada. */
 async function syncActivities(day: Day) {
   const sb = supabase();
-  const { data: existing } = await sb.from("bordeaux_activities").select("id,content_key").eq("day_number", day.n);
+  const normalizedDay = normalizeReservableActivities(day);
+  const { data: existing } = await sb.from("bordeaux_activities").select("id,content_key").eq("day_number", normalizedDay.n);
   const keep = new Set<string>();
-  for (let i = 0; i < day.activities.length; i++) {
-    const a = day.activities[i];
+  for (let i = 0; i < normalizedDay.activities.length; i++) {
+    const a = normalizedDay.activities[i];
     if (!isOffShipReservable(a)) continue;
     keep.add(a.id);
     const st = a.time ? String(a.time).split(/[–—-]/)[0].trim() : null;
-    const patch = { title: a.title, day_number: day.n, date: day.date, start_time: st, qimo_select: !!a.qimoSelect, sort: day.n * 100 + i, status: "available" };
+    const patch = { title: a.title, day_number: normalizedDay.n, date: normalizedDay.date, start_time: st, qimo_select: !!a.qimoSelect, sort: normalizedDay.n * 100 + i, status: "available" };
     const local = (existing || []).find((e: any) => e.content_key === a.id);
     if (local) {
       await sb.from("bordeaux_activities").update(patch).eq("id", local.id);
@@ -56,6 +68,7 @@ export function RoteiroEditor() {
   const [seeding, setSeeding] = useState(false);
   const [syncingAll, setSyncingAll] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const autoSyncedRef = useRef(false);
 
   const load = useCallback(async () => {
     let r = await listContent("day");
@@ -69,6 +82,16 @@ export function RoteiroEditor() {
     const sorted = r.sort((a, b) => (a.data?.n ?? 0) - (b.data?.n ?? 0));
     setRows(sorted);
     setSelectedId((current) => current && sorted.some((row) => row.id === current) ? current : sorted[0]?.id ?? null);
+    if (!autoSyncedRef.current && sorted.length) {
+      autoSyncedRef.current = true;
+      for (const row of sorted) {
+        const day = normalizeReservableActivities(row.data as Day);
+        if (JSON.stringify(day) !== JSON.stringify(row.data)) {
+          await upsertContent("day", row.slug, day, (day.n ?? 0) * 10, row.published);
+        }
+        await syncActivities(day);
+      }
+    }
   }, []);
   useEffect(() => { load(); }, [load]);
 
@@ -89,7 +112,11 @@ export function RoteiroEditor() {
     setSyncingAll(true);
     try {
       for (const row of rows) {
-        await syncActivities(row.data as Day);
+        const day = normalizeReservableActivities(row.data as Day);
+        if (JSON.stringify(day) !== JSON.stringify(row.data)) {
+          await upsertContent("day", row.slug, day, (day.n ?? 0) * 10, row.published);
+        }
+        await syncActivities(day);
       }
       alert("Reservas sincronizadas. Atividades fora do barco com local preenchido aparecem para reserva.");
     } finally {
@@ -193,9 +220,11 @@ function DayEditor({ row, onChange, initiallyOpen = false }: { row: ContentRow; 
   };
 
   const save = async () => {
+    const normalizedDay = normalizeReservableActivities(d);
     setBusy(true);
-    await upsertContent("day", row.slug, d, (d.n ?? 0) * 10, row.published);
-    await syncActivities(d);
+    await upsertContent("day", row.slug, normalizedDay, (normalizedDay.n ?? 0) * 10, row.published);
+    await syncActivities(normalizedDay);
+    setD(normalizedDay);
     setBusy(false); setSaved(true); setTimeout(() => setSaved(false), 1800);
     onChange();
   };
