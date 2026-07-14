@@ -17,6 +17,10 @@ const TYPES: { v: ActivityType; l: string }[] = [
 const inputCls = "mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold";
 const lineStyle = { borderColor: "var(--line)" } as const;
 
+function isOffShipReservable(a: Activity) {
+  return a.type !== "transfer" && a.reservable !== false && Boolean(a.location?.trim());
+}
+
 /* Sincroniza os passeios reserváveis (bordeaux_activities) com as atividades do dia.
    Reservável = atividade marcada como "precisa reservar" (a.reservable !== false) e que
    não é transfer. As demais (ex.: shows para todos, palestras) ficam ocultas das reservas.
@@ -27,7 +31,7 @@ async function syncActivities(day: Day) {
   const keep = new Set<string>();
   for (let i = 0; i < day.activities.length; i++) {
     const a = day.activities[i];
-    if (a.type === "transfer" || a.reservable === false) continue;
+    if (!isOffShipReservable(a)) continue;
     keep.add(a.id);
     const st = a.time ? String(a.time).split(/[–—-]/)[0].trim() : null;
     const patch = { title: a.title, day_number: day.n, date: day.date, start_time: st, qimo_select: !!a.qimoSelect, sort: day.n * 100 + i, status: "available" };
@@ -50,6 +54,7 @@ async function syncActivities(day: Day) {
 export function RoteiroEditor() {
   const [rows, setRows] = useState<ContentRow[] | null>(null);
   const [seeding, setSeeding] = useState(false);
+  const [syncingAll, setSyncingAll] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
@@ -79,6 +84,19 @@ export function RoteiroEditor() {
     load();
   };
 
+  const syncAllReservations = async () => {
+    if (!rows?.length) return;
+    setSyncingAll(true);
+    try {
+      for (const row of rows) {
+        await syncActivities(row.data as Day);
+      }
+      alert("Reservas sincronizadas. Atividades fora do barco com local preenchido aparecem para reserva.");
+    } finally {
+      setSyncingAll(false);
+    }
+  };
+
   if (rows === null) return <p className="text-muted">{seeding ? "Importando o roteiro para edicao..." : "Carregando..."}</p>;
   const selected = rows.find((row) => row.id === selectedId) || rows[0];
 
@@ -93,7 +111,12 @@ export function RoteiroEditor() {
               Edite titulo, foto, portos, agenda do navio e atividades. Ao salvar, os passeios reservaveis sao sincronizados.
             </p>
           </div>
-          <button onClick={addDay} className="btn-primary !px-4 !py-2 text-[12px]"><Icon name="Plus" size={14} /> Adicionar dia</button>
+          <div className="flex flex-wrap items-center gap-2">
+            <button onClick={syncAllReservations} disabled={syncingAll} className="btn-ghost !px-4 !py-2 text-[12px]">
+              <Icon name="CalendarCheck" size={14} /> {syncingAll ? "Sincronizando..." : "Sincronizar reservas"}
+            </button>
+            <button onClick={addDay} className="btn-primary !px-4 !py-2 text-[12px]"><Icon name="Plus" size={14} /> Adicionar dia</button>
+          </div>
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           {rows.map((row) => {
