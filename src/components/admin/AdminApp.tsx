@@ -367,9 +367,18 @@ function Participantes({ parts, onChange }: { parts: BxParticipant[]; onChange: 
   const [f, setF] = useState({ full_name: "", family: "", phone: "", email: "", companions: 0 });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [edit, setEdit] = useState({ full_name: "", family: "", phone: "", email: "", companions: 0 });
+  const [sort, setSort] = useState<"name" | "phoneAsc">("name");
   const [bulk, setBulk] = useState("");
   const [bulkMsg, setBulkMsg] = useState("");
   const [busy, setBusy] = useState(false);
+  const sortedParts = [...parts].sort((a, b) => {
+    if (sort === "phoneAsc") {
+      const phoneA = Number((a.phone || "").replace(/\D/g, "")) || Number.MAX_SAFE_INTEGER;
+      const phoneB = Number((b.phone || "").replace(/\D/g, "")) || Number.MAX_SAFE_INTEGER;
+      if (phoneA !== phoneB) return phoneA - phoneB;
+    }
+    return a.full_name.localeCompare(b.full_name, "pt-BR", { sensitivity: "base" });
+  });
   const add = async (e: React.FormEvent) => {
     e.preventDefault(); if (!f.full_name) return;
     setBusy(true); await upsertParticipantByPhone(f); setF({ full_name: "", family: "", phone: "", email: "", companions: 0 }); await onChange(); setBusy(false);
@@ -462,9 +471,23 @@ function Participantes({ parts, onChange }: { parts: BxParticipant[]; onChange: 
       </div>
 
       <div>
-        <p className="kicker mb-3">{parts.length} clientes</p>
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+          <p className="kicker">{parts.length} clientes</p>
+          <label className="flex items-center gap-2 font-sans text-[12px] text-muted">
+            Ordenar
+            <select
+              value={sort}
+              onChange={(e) => setSort(e.target.value as "name" | "phoneAsc")}
+              className="rounded-[10px] border bg-transparent px-3 py-2 font-sans text-[12px] outline-none focus:border-gold"
+              style={{ borderColor: "var(--line)" }}
+            >
+              <option value="name">Nome A-Z</option>
+              <option value="phoneAsc">Telefone menor-maior</option>
+            </select>
+          </label>
+        </div>
         <div className="space-y-2">
-          {parts.map((p) => (
+          {sortedParts.map((p) => (
             <div key={p.id} className="card p-4">
               {editingId === p.id ? (
                 <form onSubmit={saveEdit} className="space-y-3">
