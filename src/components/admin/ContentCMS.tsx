@@ -20,12 +20,12 @@ const KIND_GROUPS = [
 ];
 const FEATURED_KINDS: Record<string, { icon: string; title: string; hint: string }> = {
   restaurant: { icon: "Utensils", title: "Restaurantes", hint: "menus, reservas, fotos e recomendacoes" },
+  partner_offer: { icon: "Ticket", title: "Ofertas", hint: "anuncios, cupons e beneficios de parceiros" },
   winery: { icon: "Grape", title: "Vinicolas", hint: "chateaux, visitas, vinhos e fotos" },
   city: { icon: "Landmark", title: "Cidades", hint: "portos, dicas, historia e mapa" },
   document_category: { icon: "FileText", title: "Documentos", hint: "categorias, icones e descricoes" },
   info_fact: { icon: "Info", title: "Info uteis", hint: "moeda, idioma, fuso, tomadas e etiqueta" },
   ship: { icon: "Ship", title: "Navio", hint: "pagina do SS Bon Voyage" },
-  partner_offer: { icon: "Ticket", title: "Ofertas", hint: "anuncios e beneficios de parceiros" },
 };
 
 // Rótulos amigáveis (PT) — o usuário nunca vê o nome técnico do campo.

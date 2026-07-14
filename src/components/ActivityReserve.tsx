@@ -72,11 +72,14 @@ function ReserveSheet({
   conflict?: MyReservation;
   onClose: () => void;
 }) {
-  const { guest, setGuestRoom, reserve, cancel } = useReservations();
-  const [names, setNames] = useState<string[]>(() =>
-    my?.party?.length ? my.party : [guest?.name?.trim() || ""]
-  );
-  const [room, setRoom] = useState(guest?.room || "");
+  const { guest, guestParty, reserve, cancel } = useReservations();
+  const allowedNames = guestParty.length
+    ? guestParty.map((p) => p.fullName).filter(Boolean)
+    : [guest?.name?.trim() || "Convidado"];
+  const [names, setNames] = useState<string[]>(() => {
+    const saved = my?.party?.filter((name) => allowedNames.includes(name)) || [];
+    return saved.length ? saved : [allowedNames[0]].filter(Boolean);
+  });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
 
@@ -85,26 +88,27 @@ function ReserveSheet({
     return () => { document.body.style.overflow = ""; };
   }, []);
 
-  const setName = (i: number, v: string) => setNames((n) => n.map((x, j) => (j === i ? v : x)));
-  const addCompanion = () => setNames((n) => [...n, ""]);
-  const removeName = (i: number) => setNames((n) => n.filter((_, j) => j !== i));
+  const toggleName = (name: string) => {
+    setNames((current) => {
+      if (current.includes(name)) return current.filter((item) => item !== name);
+      return [...current, name];
+    });
+  };
 
   const submit = async () => {
     const party = names.map((n) => n.trim()).filter(Boolean);
-    if (!party.length) { setErr("Informe ao menos um nome."); return; }
+    if (!party.length) { setErr("Selecione ao menos uma pessoa."); return; }
     if (conflict && !my) {
-      setErr(`Este quarto já reservou "${conflict.title}" neste mesmo horário. Cancele ou altere a outra escolha antes de reservar esta opção.`);
+      setErr(`Você já reservou "${conflict.title}" neste mesmo horário. Cancele ou altere a outra escolha antes de reservar esta opção.`);
       return;
     }
-    if (!room.trim()) { setErr("Informe o número do quarto para confirmar."); return; }
 
     setBusy(true);
     setErr("");
-    if (room.trim() !== guest?.room) setGuestRoom(room.trim());
     const res = await reserve(rv.activityId, party);
     setBusy(false);
     if (!res.ok) {
-      setErr(res.error === "room" || res.error === "phone" ? "Informe o número do quarto para confirmar." : "Não foi possível reservar agora. Tente de novo.");
+      setErr(res.error === "phone" ? "Entre no guia com seu telefone pessoal para confirmar." : "Não foi possível reservar agora. Tente de novo.");
       return;
     }
     onClose();
@@ -141,49 +145,26 @@ function ReserveSheet({
         {conflict && !my && (
           <div className="mt-5 rounded-[12px] border p-4 font-sans text-[12px] leading-relaxed" style={{ borderColor: "var(--gold)", background: "color-mix(in srgb, var(--gold) 10%, transparent)", color: "var(--text)" }}>
             <p className="flex items-center gap-1.5 font-semibold"><Icon name="Info" size={14} className="text-gold-deep" /> Escolha uma opção neste horário</p>
-            <p className="mt-1 text-muted">Este quarto já tem reserva para <strong>{conflict.title}</strong>. Para trocar, cancele a reserva anterior primeiro.</p>
+            <p className="mt-1 text-muted">Você já tem reserva para <strong>{conflict.title}</strong>. Para trocar, cancele a reserva anterior primeiro.</p>
           </div>
         )}
 
         <div className="mt-5">
           <p className="font-sans text-[11px] uppercase tracking-wide2 text-muted">Quem vai a este passeio</p>
-          <p className="mt-0.5 font-sans text-[12px] text-muted">Você e seus acompanhantes.</p>
+          <p className="mt-0.5 font-sans text-[12px] text-muted">Você só pode reservar para você e para o par cadastrado na mesma cabine.</p>
           <div className="mt-3 space-y-2">
-            {names.map((n, i) => (
-              <div key={i} className="flex items-center gap-2">
+            {allowedNames.map((name, i) => (
+              <label key={`${name}-${i}`} className="flex cursor-pointer items-center gap-2 rounded-[12px] border px-3 py-2.5" style={{ borderColor: names.includes(name) ? "var(--gold)" : "var(--line)", background: names.includes(name) ? "color-mix(in srgb, var(--gold) 8%, transparent)" : "transparent" }}>
+                <input type="checkbox" checked={names.includes(name)} onChange={() => toggleName(name)} />
                 <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-black/[0.04] text-gold-deep">
                   <Icon name={i === 0 ? "User" : "UserPlus"} size={16} />
                 </span>
-                <input
-                  value={n}
-                  onChange={(e) => setName(i, e.target.value)}
-                  placeholder={i === 0 ? "Seu nome" : "Nome do acompanhante"}
-                  className="min-w-0 flex-1 rounded-[10px] border bg-transparent px-3 py-2.5 font-sans text-base outline-none focus:border-gold"
-                  style={{ borderColor: "var(--line)" }}
-                />
-                {names.length > 1 && (
-                  <button onClick={() => removeName(i)} aria-label="Remover" className="shrink-0 text-muted hover:text-[#8f2f2f]"><Icon name="X" size={16} /></button>
-                )}
-              </div>
+                <span className="min-w-0 flex-1 font-sans text-sm">{name}</span>
+                {i === 0 && <span className="rounded-full bg-black/[0.04] px-2 py-0.5 font-sans text-[10px] uppercase tracking-wide2 text-muted">Você</span>}
+              </label>
             ))}
           </div>
-          <button onClick={addCompanion} className="mt-2 flex items-center gap-1.5 font-sans text-[12px] font-semibold text-petrol-600 hover:text-petrol-500">
-            <Icon name="Plus" size={14} /> Adicionar acompanhante
-          </button>
         </div>
-
-        <label className="mt-5 block">
-          <span className="font-sans text-[11px] uppercase tracking-wide2 text-muted">Número do quarto</span>
-          <span className="mb-1 block font-sans text-[12px] text-muted">Confirme seu quarto para evitar duas reservas no mesmo horário.</span>
-          <input
-            value={room}
-            onChange={(e) => setRoom(e.target.value)}
-            inputMode="text"
-            placeholder="Ex: 302"
-            className="mt-1 w-full rounded-[10px] border bg-transparent px-3 py-2.5 font-sans text-base outline-none focus:border-gold"
-            style={{ borderColor: "var(--line)" }}
-          />
-        </label>
 
         {err && <p className="mt-3 font-sans text-[12px] text-[#8f2f2f]">{err}</p>}
 
@@ -200,7 +181,7 @@ function ReserveSheet({
 
         <p className="mt-4 flex items-start gap-1.5 font-sans text-[11px] leading-relaxed text-muted">
           <Icon name="Info" size={13} className="mt-0.5 shrink-0 text-gold-deep" />
-          Sua reserva fica registrada por quarto com a equipe QIMO. Você pode ajustar os acompanhantes ou cancelar a qualquer momento.
+          Sua reserva fica registrada pelo seu telefone pessoal. As vagas disponíveis são atualizadas ao vivo para a equipe QIMO.
         </p>
       </div>
     </div>

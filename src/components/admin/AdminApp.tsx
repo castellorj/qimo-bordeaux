@@ -4,8 +4,8 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase/client";
 import {
   fetchActivities, fetchParticipants, fetchReservations,
-  updateCapacity, setHidden, addParticipant, deleteParticipant,
-  reserve, cancelReservation,
+  updateCapacity, setHidden, deleteParticipant,
+  reserve, cancelReservation, upsertParticipantByPhone,
   type BxActivityFull, type BxParticipant, type BxReservation,
 } from "@/lib/supabase/bordeaux";
 import { Icon } from "@/components/Icon";
@@ -365,20 +365,37 @@ function PasseioRow({ a, onChange }: { a: BxActivityFull; onChange: () => void }
 /* ---------------- Participantes ---------------- */
 function Participantes({ parts, onChange }: { parts: BxParticipant[]; onChange: () => void }) {
   const [f, setF] = useState({ full_name: "", family: "", phone: "", email: "", companions: 0 });
+  const [bulk, setBulk] = useState("");
+  const [bulkMsg, setBulkMsg] = useState("");
   const [busy, setBusy] = useState(false);
   const add = async (e: React.FormEvent) => {
     e.preventDefault(); if (!f.full_name) return;
-    setBusy(true); await addParticipant(f); setF({ full_name: "", family: "", phone: "", email: "", companions: 0 }); await onChange(); setBusy(false);
+    setBusy(true); await upsertParticipantByPhone(f); setF({ full_name: "", family: "", phone: "", email: "", companions: 0 }); await onChange(); setBusy(false);
+  };
+  const importBulk = async () => {
+    const rows = bulk.split(/\r?\n/).map((line) => line.trim()).filter(Boolean);
+    if (!rows.length) return;
+    setBusy(true); setBulkMsg("");
+    let count = 0;
+    for (const row of rows) {
+      const [full_name, phone, family, email] = row.split(/[;\t,]/).map((item) => item.trim());
+      if (!full_name || !phone) continue;
+      await upsertParticipantByPhone({ full_name, phone, family: family || null, email: email || null, companions: 0 });
+      count++;
+    }
+    setBulk(""); setBulkMsg(`${count} cliente(s) importado(s) ou atualizado(s).`);
+    await onChange(); setBusy(false);
   };
   return (
     <div className="grid gap-8 lg:grid-cols-[340px_1fr]">
+      <div className="space-y-4">
       <form onSubmit={add} className="card h-fit p-6">
-        <h3 className="font-serif text-xl font-light">Novo participante</h3>
-        <p className="mt-1 font-sans text-[12px] leading-relaxed text-muted">Quem faz parte da viagem. Depois use “Reservas” para inscrevê-los nos passeios.</p>
+        <h3 className="font-serif text-xl font-light">Novo cliente</h3>
+        <p className="mt-1 font-sans text-[12px] leading-relaxed text-muted">O telefone identifica o acesso ao guia. Use o mesmo grupo/cabine para liberar o par como acompanhante nas reservas.</p>
         <div className="mt-4 space-y-3">
           {[
             { k: "full_name", label: "Nome completo *" },
-            { k: "family", label: "Família / grupo", hint: "Para agrupar casais e famílias." },
+            { k: "family", label: "Cabine / par / familia", hint: "Pessoas com o mesmo valor podem reservar juntas." },
             { k: "phone", label: "Telefone" },
             { k: "email", label: "E-mail" },
           ].map(({ k, label, hint }) => (
@@ -389,7 +406,7 @@ function Participantes({ parts, onChange }: { parts: BxParticipant[]; onChange: 
                 className="mt-1 w-full rounded-[10px] border bg-transparent px-4 py-2.5 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
             </label>
           ))}
-          <label className="block">
+          <label className="hidden">
             <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Acompanhantes</span>
             <span className="mb-1 block font-sans text-[11px] text-muted">Quantas pessoas vêm com este participante.</span>
             <input type="number" min={0} value={f.companions} onChange={(e) => setF({ ...f, companions: parseInt(e.target.value) || 0 })}
@@ -399,8 +416,26 @@ function Participantes({ parts, onChange }: { parts: BxParticipant[]; onChange: 
         </div>
       </form>
 
+      <div className="card h-fit p-6">
+        <h3 className="font-serif text-xl font-light">Importar telefones</h3>
+        <p className="mt-1 font-sans text-[12px] leading-relaxed text-muted">Cole uma pessoa por linha: Nome; Telefone; Cabine/Par; Email.</p>
+        <textarea
+          value={bulk}
+          onChange={(e) => setBulk(e.target.value)}
+          rows={6}
+          placeholder={"Maria Silva; +55 11 99999-0000; Cabine 302; maria@email.com\nJoao Silva; +55 11 98888-0000; Cabine 302; joao@email.com"}
+          className="mt-3 w-full rounded-[10px] border bg-transparent px-4 py-3 font-sans text-sm outline-none focus:border-gold"
+          style={{ borderColor: "var(--line)" }}
+        />
+        {bulkMsg && <p className="mt-2 font-sans text-[12px] text-olive-deep">{bulkMsg}</p>}
+        <button type="button" disabled={busy || !bulk.trim()} onClick={importBulk} className="btn-primary mt-3 w-full disabled:opacity-50">
+          {busy ? "Importando..." : "Importar / atualizar"}
+        </button>
+      </div>
+      </div>
+
       <div>
-        <p className="kicker mb-3">{parts.length} participantes</p>
+        <p className="kicker mb-3">{parts.length} clientes</p>
         <div className="space-y-2">
           {parts.map((p) => (
             <div key={p.id} className="card flex items-center gap-3 p-4">
@@ -504,7 +539,7 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
         r.source === "guest" ? "app" : "equipe",
       ];
     });
-    const header = ["Dia", "Horario", "Passeio", "Responsavel", "Quarto/contato", "Acompanhantes", "Lugares", "Status", "Origem"];
+    const header = ["Dia", "Horario", "Passeio", "Responsavel", "Telefone", "Acompanhantes", "Lugares", "Status", "Origem"];
     const csv = [header, ...rows].map((row) => row.map(csvCell).join(";")).join("\n");
     const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
@@ -605,7 +640,7 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Buscar passeio, quarto ou nome"
+                placeholder="Buscar passeio, telefone ou nome"
                 className="min-w-[220px] rounded-[10px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold"
                 style={{ borderColor: "var(--line)" }}
               />

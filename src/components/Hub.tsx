@@ -5,6 +5,7 @@ import { Icon } from "./Icon";
 import { PhotoImg } from "./PhotoImg";
 import { useLocale } from "./providers";
 import { orderByKeys } from "@/lib/nav";
+import { cleanSiteImage } from "@/lib/siteImages";
 
 export interface HubItem {
   href: string;
@@ -23,7 +24,7 @@ export function HubGridPhotos({ items, orderKey }: { items: HubItem[]; orderKey?
         <Link key={it.href} href={it.href} className="card card-hover group relative overflow-hidden">
           <div className="relative h-44 overflow-hidden sm:h-52">
             <PhotoImg
-              src={cfg(`img.hub.${it.key}`)?.trim() || it.image}
+              src={cleanSiteImage(cfg(`img.hub.${it.key}`)) || cleanSiteImage(it.image)}
               alt={t(`nav.${it.key}`)}
               sizes="(min-width:640px) 50vw, 100vw"
               className="h-full w-full object-cover transition-transform duration-700 ease-luxe group-hover:scale-105"

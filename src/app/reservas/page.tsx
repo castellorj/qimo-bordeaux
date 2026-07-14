@@ -6,6 +6,11 @@ import { Icon } from "@/components/Icon";
 import { ActivityReserve } from "@/components/ActivityReserve";
 import { useReservations } from "@/components/providers";
 
+function shortName(name?: string | null) {
+  const parts = (name || "").trim().split(/\s+/).filter(Boolean);
+  return parts.slice(0, 2).join(" ") || name || "";
+}
+
 export default function ReservasPage() {
   const { mine, guest } = useReservations();
   const items = Array.from(mine.values()).sort(
@@ -48,10 +53,10 @@ export default function ReservasPage() {
                 <div className="min-w-0">
                   <p className="kicker">Minha agenda</p>
                   <h2 className="display mt-2 text-3xl sm:text-4xl">
-                    {guest?.room ? `Quarto ${guest.room}` : "Reservas da viagem"}
+                    {guest?.name ? `Agenda de ${shortName(guest.name)}` : "Reservas da viagem"}
                   </h2>
                   <p className="mt-3 max-w-xl font-sans text-[13px] leading-relaxed text-muted">
-                    Suas escolhas ficam organizadas por dia. Se houver duas atividades no mesmo horário, o guia permite manter apenas uma opção por quarto.
+                    Suas escolhas ficam organizadas por dia. Se houver duas atividades no mesmo horário, o guia permite manter apenas uma opção por telefone.
                   </p>
                 </div>
                 <Link href="/programacao" className="btn-primary !px-4 !py-2.5 text-[12px]">

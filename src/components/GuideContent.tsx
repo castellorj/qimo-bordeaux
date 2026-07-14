@@ -30,19 +30,56 @@ const ANON =
 
 type ByKind = Record<string, { slug: string; data: any; sort: number }[]>;
 const Ctx = createContext<ByKind | null>(null);
+const CONTENT_CACHE_KEY = "qimo:content-cache:v2";
 
 // Contexto de edição inline (ativo quando o guia roda dentro do preview do painel).
 const EditCtx = createContext<{ editMode: boolean }>({ editMode: false });
 export function useEditMode() { return useContext(EditCtx).editMode; }
 
+function isOldLocalPhoto(value: unknown): value is string {
+  return typeof value === "string" && value.trim().startsWith("/photos/");
+}
+
+function removeOldLocalPhotos<T>(value: T): T {
+  if (isOldLocalPhoto(value)) return "" as T;
+  if (Array.isArray(value)) {
+    return value.map((item) => removeOldLocalPhotos(item)).filter((item) => item !== "") as T;
+  }
+  if (value && typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, item]) => [key, removeOldLocalPhotos(item)])
+    ) as T;
+  }
+  return value;
+}
+
+function readContentCache(): ByKind | null {
+  try {
+    if (typeof window === "undefined") return null;
+    const raw = sessionStorage.getItem(CONTENT_CACHE_KEY) || localStorage.getItem(CONTENT_CACHE_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    return parsed && typeof parsed === "object" ? parsed : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeContentCache(db: ByKind) {
+  try {
+    const raw = JSON.stringify(db);
+    sessionStorage.setItem(CONTENT_CACHE_KEY, raw);
+    localStorage.setItem(CONTENT_CACHE_KEY, raw);
+  } catch {}
+}
+
 // Mescla conteúdo do banco (ao vivo) sobre os arquivos (base instantânea/offline).
 function merged<T extends { slug: string }>(kind: string, db: ByKind | null): T[] {
   const file = (FILES[kind] || []) as T[];
   const rows = db?.[kind];
-  if (!rows || !rows.length) return file;
+  if (!rows || !rows.length) return removeOldLocalPhotos(file);
   const bySlug = new Map<string, T>();
   file.forEach((f) => bySlug.set(f.slug, f));
-  rows.forEach((r) => bySlug.set(r.slug, { ...(bySlug.get(r.slug) || {}), ...r.data } as T));
+  rows.forEach((r) => bySlug.set(r.slug, removeOldLocalPhotos({ ...(bySlug.get(r.slug) || {}), ...r.data } as T)));
   const order = new Map(rows.map((r, i) => [r.slug, i]));
   return [...bySlug.values()].sort((a, b) => (order.get(a.slug) ?? 999) - (order.get(b.slug) ?? 999));
 }
@@ -54,16 +91,21 @@ async function fetchContent(): Promise<ByKind> {
   });
   const rows: any[] = r.ok ? await r.json() : [];
   const byKind: ByKind = {};
-  rows.forEach((row) => { (byKind[row.kind] ||= []).push(row); });
+  rows.forEach((row) => {
+    (byKind[row.kind] ||= []).push({ ...row, data: removeOldLocalPhotos(row.data) });
+  });
   return byKind;
 }
 
 export function GuideContentProvider({ children }: { children: React.ReactNode }) {
-  const [db, setDb] = useState<ByKind | null>(null);
+  const [db, setDb] = useState<ByKind | null>(() => readContentCache());
   const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
-    const refresh = () => fetchContent().then(setDb).catch(() => {});
+    const refresh = () => fetchContent().then((next) => {
+      setDb(next);
+      writeContentCache(next);
+    }).catch(() => {});
     refresh();
 
     // Modo edição: ativado via query (?qimoedit=1) quando dentro do preview do painel.
@@ -104,8 +146,8 @@ export function useGuideKind<T extends { slug: string }>(kind: string): T[] {
 // Ideal para listas onde a equipe controla tudo (ex.: Concierge).
 function guideList<T>(kind: string, db: ByKind | null): T[] {
   const rows = db?.[kind];
-  if (rows && rows.length) return rows.map((r) => r.data as T); // banco = fonte da verdade (publicados, ordenados)
-  return (FILES[kind] || []) as T[];
+  if (rows && rows.length) return rows.map((r) => removeOldLocalPhotos(r.data as T)); // banco = fonte da verdade (publicados, ordenados)
+  return removeOldLocalPhotos((FILES[kind] || []) as T[]);
 }
 export function useGuideList<T>(kind: string): T[] {
   return guideList<T>(kind, useContext(Ctx));

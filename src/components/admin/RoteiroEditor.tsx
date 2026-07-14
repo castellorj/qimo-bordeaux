@@ -314,7 +314,7 @@ function DayEditor({ row, onChange, initiallyOpen = false }: { row: ContentRow; 
                     </select>
                   </label>
                 </div>
-                <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_130px]">
+                <div className="mt-2 grid gap-2 sm:grid-cols-[1fr_130px_180px]">
                   <label className="block">
                     <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Local</span>
                     <input value={a.location || ""} onChange={(e) => setAct(i, { location: e.target.value })} className={inputCls} style={lineStyle} />
@@ -324,6 +324,11 @@ function DayEditor({ row, onChange, initiallyOpen = false }: { row: ContentRow; 
                     <input type="number" min={0} value={a.capacity ?? 0}
                       onChange={(e) => setAct(i, { capacity: parseInt(e.target.value) || undefined })} className={inputCls} style={lineStyle} />
                   </label>
+                  <label className="block">
+                    <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Valor por pessoa</span>
+                    <span className="mb-1 block font-sans text-[11px] text-muted">Edite apos validar com a operadora.</span>
+                    <input value={a.price || ""} onChange={(e) => setAct(i, { price: e.target.value })} placeholder="€ 80 por pessoa" className={inputCls} style={lineStyle} />
+                  </label>
                 </div>
                 <label className="mt-2 block">
                   <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Descrição</span>
@@ -332,6 +337,9 @@ function DayEditor({ row, onChange, initiallyOpen = false }: { row: ContentRow; 
                 <div className="mt-2 flex flex-wrap items-center gap-3">
                   <label className="flex items-center gap-1.5 font-sans text-[12px] text-muted">
                     <input type="checkbox" checked={!!a.qimoSelect} onChange={(e) => setAct(i, { qimoSelect: e.target.checked })} /> Seleção QIMO
+                  </label>
+                  <label className="flex items-center gap-1.5 font-sans text-[12px] text-muted">
+                    <input type="checkbox" checked={!!a.paid} onChange={(e) => setAct(i, { paid: e.target.checked })} /> Pago a parte / validar operadora
                   </label>
                   <label className={clsx("flex items-center gap-1.5 font-sans text-[12px]", isOffShipReservable(a) ? "text-muted" : "text-muted opacity-50")}>
                     <input type="checkbox" disabled checked={isOffShipReservable(a)} readOnly /> Entra nas reservas

@@ -37,7 +37,22 @@ function isOnBoardActivity(activity: Activity) {
   return !activity.location || text.includes("a bordo") || text.includes("navio");
 }
 
-export function DayCard({ day, img, priority = false }: { day: Day; img: string; priority?: boolean }) {
+const MASTERPIECE_PRICES: Record<string, string> = {
+  "d4-remy": "€ 80 por pessoa",
+  "d5-cooking": "€ 170 por pessoa",
+  "d5-picnic": "€ 80 por pessoa",
+  "d5-grandcru": "€ 100 por pessoa",
+  "d7-sidecar1": "€ 180 por pessoa",
+  "d7-sidecar2": "€ 250 por pessoa",
+};
+
+function paidPrice(activity: Activity) {
+  if (activity.price) return activity.price;
+  if (MASTERPIECE_PRICES[activity.id]) return MASTERPIECE_PRICES[activity.id];
+  return undefined;
+}
+
+export function DayCard({ day, img, priority = false }: { day: Day; img?: string; priority?: boolean }) {
   const { t, cfg } = useLocale();
   const [open, setOpen] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
@@ -59,8 +74,12 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
       <button type="button" onClick={() => (open ? close() : setOpen(true))} aria-expanded={open}
         className="block w-full overflow-hidden rounded-[20px] text-left shadow-card">
         <div className="relative aspect-[4/3] overflow-hidden sm:aspect-[21/9]">
-          <PhotoImg src={img} alt={day.title} priority={priority} sizes="(min-width:768px) 720px, 100vw"
-            className="animate-ken-burns absolute inset-0 h-full w-full object-cover object-center" />
+          {img ? (
+            <PhotoImg src={img} alt={day.title} priority={priority} sizes="(min-width:768px) 720px, 100vw"
+              className="animate-ken-burns absolute inset-0 h-full w-full object-cover object-center" />
+          ) : (
+            <div className="photo-placeholder absolute inset-0 opacity-[0.3]" />
+          )}
           <div className="absolute inset-0" style={{ background: "rgba(20,7,11,0.38)" }} />
           <div className="scrim-strong absolute inset-0" />
 
@@ -117,6 +136,8 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
                     <div className={isChoice ? "space-y-3" : ""}>
                       {group.items.map((a, index) => {
                         const onBoard = isOnBoardActivity(a);
+                        const price = paidPrice(a);
+                        const paid = a.paid || Boolean(price) || /masterpiece collection/i.test(a.title);
                         return (
                         <div
                           key={a.id}
@@ -136,6 +157,11 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
                           {a.description && <p className="mt-2 font-sans text-[13px] leading-relaxed text-muted">{a.description}</p>}
                           <div className="mt-3 flex flex-wrap items-center gap-2">
                             {onBoard && <span className="chip border-gold/50 bg-gold/10 text-gold-deep"><Icon name="Ship" size={13} /> A bordo</span>}
+                            {paid && (
+                              <span className="chip border-[#9f3650]/35 bg-[#9f3650]/10 font-semibold text-[#9f3650]">
+                                <Icon name="Coins" size={13} /> Pago à parte{price ? ` · ${price}` : ""}
+                              </span>
+                            )}
                             {a.qimoSelect && <QimoSeal />}
                             {a.location && <span className="chip">{a.location}</span>}
                             {a.linkedWinery && <Link href={`/vinicolas/${a.linkedWinery}`} className="chip hover:text-gold"><Icon name="Grape" size={13} /> Ver vinícola</Link>}

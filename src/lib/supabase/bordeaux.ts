@@ -79,6 +79,16 @@ export async function fetchParticipants(): Promise<BxParticipant[]> {
 export async function addParticipant(p: Partial<BxParticipant>) {
   return supabase().from("bordeaux_participants").insert(p).select().single();
 }
+export async function upsertParticipantByPhone(p: Partial<BxParticipant>) {
+  const phone = p.phone?.trim();
+  if (!phone) return addParticipant(p);
+  const sb = supabase();
+  const { data: existing } = await sb.from("bordeaux_participants").select("id").eq("phone", phone).maybeSingle();
+  if (existing?.id) {
+    return sb.from("bordeaux_participants").update(p).eq("id", existing.id).select().single();
+  }
+  return sb.from("bordeaux_participants").insert(p).select().single();
+}
 export async function deleteParticipant(id: string) {
   return supabase().from("bordeaux_participants").delete().eq("id", id);
 }

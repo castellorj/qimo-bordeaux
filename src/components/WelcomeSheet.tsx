@@ -9,10 +9,10 @@ import { supabase } from "@/lib/supabase/client";
 import { getCurrentLang, type Lang } from "./GoogleTranslate";
 import { LangDropdown } from "./LangSwitch";
 import { useLocale } from "./providers";
-import { siteImageDef } from "@/lib/siteImages";
+import { cleanSiteImage, siteImageDef } from "@/lib/siteImages";
 
-const DEVICE_LS = "qimo_device_token";
-const GUEST_LS = "qimo:guest";
+const DEVICE_LS = "qimo_device_token:v2";
+const GUEST_LS = "qimo:guest:v2";
 
 const STR: Record<Lang, Record<string, string>> = {
   pt: {
@@ -69,7 +69,7 @@ export function WelcomeSheet() {
   const restoring = useRef(false);
   const router = useRouter();
   const { cfg } = useLocale();
-  const gateImg = cfg("img.hero.gate")?.trim() || siteImageDef("img.hero.gate");
+  const gateImg = cleanSiteImage(cfg("img.hero.gate")) || siteImageDef("img.hero.gate");
 
   useEffect(() => {
     if (restoring.current) return;
@@ -82,7 +82,7 @@ export function WelcomeSheet() {
         if (dev) {
           const { data } = await supabase().rpc("guest_by_device", { p_device: dev });
           const g = (data as any[])?.[0];
-          if (g) { try { localStorage.setItem(GUEST_LS, JSON.stringify({ name: g.name })); } catch {} return; }
+          if (g) { try { localStorage.setItem(GUEST_LS, JSON.stringify({ name: g.name, phone: g.phone ?? null })); } catch {} return; }
         }
         setShow(true);
       } catch { setShow(true); }

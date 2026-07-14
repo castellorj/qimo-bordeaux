@@ -7,6 +7,7 @@ import { PhotoImg } from "./PhotoImg";
 import { useLocale } from "./providers";
 import { TRIP } from "@/content";
 import { fullDate } from "@/lib/format";
+import { cleanSiteImage } from "@/lib/siteImages";
 
 /**
  * Cabeçalho fotográfico de boas-vindas (saudação + data + clima + contagem).
@@ -32,11 +33,15 @@ export function TripHero({
     setToday(fullDate(new Date().toISOString().slice(0, 10)));
   }, [t]);
 
-  const img = cfg(imageKey)?.trim() || defaultImage;
+  const img = cleanSiteImage(cfg(imageKey)) || cleanSiteImage(defaultImage);
 
   return (
     <section className="relative overflow-hidden">
-      <PhotoImg src={img} alt="" aria-hidden sizes="100vw" priority className="animate-ken-burns absolute inset-0 h-full w-full object-cover" />
+      {img ? (
+        <PhotoImg src={img} alt="" aria-hidden sizes="100vw" priority className="animate-ken-burns absolute inset-0 h-full w-full object-cover" />
+      ) : (
+        <div className="photo-placeholder absolute inset-0 opacity-[0.18]" />
+      )}
       <div className="absolute inset-0 bg-gradient-to-b from-petrol-950/80 via-petrol-900/70 to-petrol-950/92" />
 
       <div className="text-on-photo container-editorial relative z-10 pb-20 pt-12 text-center sm:pt-16">

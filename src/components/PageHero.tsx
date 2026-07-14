@@ -2,6 +2,7 @@
 
 import { useLocale } from "./providers";
 import { PhotoImg } from "./PhotoImg";
+import { cleanSiteImage } from "@/lib/siteImages";
 
 export function PageHero({
   kicker,
@@ -28,7 +29,7 @@ export function PageHero({
   const ti = title ?? (section ? t(`nav.${section}`) : undefined);
   const i = section ? t(`hero.${section}.i`) : intro;
   // Foto do topo editável no painel (chave img.sec.<seção>), com fallback ao bgImage local.
-  const bg = (section ? cfg(`img.sec.${section}`)?.trim() : undefined) || bgImage;
+  const bg = cleanSiteImage(section ? cfg(`img.sec.${section}`) : undefined) || cleanSiteImage(bgImage);
 
   return (
     <section className="relative overflow-hidden border-b" style={{ borderColor: "var(--line)" }}>

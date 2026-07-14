@@ -29,6 +29,13 @@ export interface MyReservation {
   status: string; // confirmed | waitlist
 }
 
+export interface GuestPassenger {
+  id: string;
+  fullName: string;
+  phone: string | null;
+  family: string | null;
+}
+
 export async function fetchReservable(): Promise<Reservable[]> {
   const { data, error } = await supabase().rpc("bordeaux_reservable");
   if (error || !data) return [];
@@ -76,3 +83,36 @@ export async function guestCancel(activityId: string, phone: string) {
   return supabase().rpc("bordeaux_guest_cancel", { p_activity: activityId, p_phone: phone });
 }
 
+export async function fetchGuestParty(phone: string): Promise<GuestPassenger[]> {
+  const clean = phone.trim();
+  if (!clean) return [];
+  const sb = supabase();
+  const { data: owner } = await sb
+    .from("bordeaux_participants")
+    .select("id,full_name,phone,family")
+    .eq("phone", clean)
+    .maybeSingle();
+
+  if (!owner) return [];
+  if (!owner.family) {
+    return [{
+      id: owner.id,
+      fullName: owner.full_name,
+      phone: owner.phone,
+      family: owner.family,
+    }];
+  }
+
+  const { data } = await sb
+    .from("bordeaux_participants")
+    .select("id,full_name,phone,family")
+    .eq("family", owner.family)
+    .order("full_name");
+
+  return ((data?.length ? data : [owner]) as any[]).map((p) => ({
+    id: p.id,
+    fullName: p.full_name,
+    phone: p.phone,
+    family: p.family,
+  }));
+}

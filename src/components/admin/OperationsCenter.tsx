@@ -87,9 +87,11 @@ const HUB: { icon: string; title: string; desc: string; items: { label: string; 
   {
     icon: "Bell",
     title: "Concierge",
-    desc: "Os contatos do balão flutuante e da página Concierge.",
+    desc: "Contatos, seções e ofertas de parceiros exibidas na página Concierge.",
     items: [
       { label: "Contatos (editar, ocultar, excluir, incluir)", hint: "nome, descrição, telefone, tipo e ícone", go: "telas" },
+      { label: "Ofertas de parceiros", hint: "anúncios, benefícios, cupons e links", go: "conteudo" },
+      { label: "Seções do Concierge", hint: "ordem, títulos e módulos do acordeão", go: "telas" },
     ],
   },
   {

@@ -26,6 +26,8 @@ export interface Activity {
   type: ActivityType;
   location?: string;
   capacity?: number;
+  paid?: boolean; // atividade paga a parte
+  price?: string; // valor exibido no guia, ex.: "US$ 90 por pessoa"
   description?: string;
   dressCode?: string;
   reservable?: boolean; // false = não precisa reservar (não mostra "Reservar" nem entra nas reservas). Padrão: precisa.

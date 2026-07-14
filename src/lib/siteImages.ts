@@ -49,5 +49,15 @@ export const SITE_IMAGES: SiteImage[] = [
 
 // Default de uma chave (para os componentes casarem o fallback com o registro).
 export function siteImageDef(key: string): string {
-  return SITE_IMAGES.find((s) => s.key === key)?.def || "";
+  return cleanSiteImage(SITE_IMAGES.find((s) => s.key === key)?.def) || "";
+}
+
+export function isOldLocalSiteImage(src?: string | null): boolean {
+  return !!src?.trim().startsWith("/photos/");
+}
+
+export function cleanSiteImage(src?: string | null): string | undefined {
+  const value = src?.trim();
+  if (!value || isOldLocalSiteImage(value)) return undefined;
+  return value;
 }
