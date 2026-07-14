@@ -38,13 +38,19 @@ function isOnBoardActivity(activity: Activity) {
 }
 
 const MASTERPIECE_PRICES: Record<string, string> = {
-  "d4-remy": "€ 80 por pessoa",
-  "d5-cooking": "€ 170 por pessoa",
-  "d5-picnic": "€ 80 por pessoa",
-  "d5-grandcru": "€ 100 por pessoa",
-  "d7-sidecar1": "€ 180 por pessoa",
-  "d7-sidecar2": "€ 250 por pessoa",
+  "d4-remy": "\u20ac 80 por pessoa",
+  "d5-cooking": "\u20ac 170 por pessoa",
+  "d5-picnic": "\u20ac 80 por pessoa",
+  "d5-grandcru": "\u20ac 100 por pessoa",
+  "d7-sidecar1": "\u20ac 180 por pessoa",
+  "d7-sidecar2": "\u20ac 250 por pessoa",
 };
+
+function cleanPrice(price?: string) {
+  const value = price?.replace(/\s+/g, " ").trim();
+  if (!value) return undefined;
+  return /\d/.test(value) ? value.replace(/^[^\d]+/, "\u20ac ") : value;
+}
 
 function paidPrice(activity: Activity) {
   if (activity.price) return activity.price;
@@ -155,13 +161,20 @@ export function DayCard({ day, img, priority = false }: { day: Day; img?: string
                             <h3 className="font-serif text-xl font-light leading-snug">{a.title}</h3>
                           </div>
                           {a.description && <p className="mt-2 font-sans text-[13px] leading-relaxed text-muted">{a.description}</p>}
+                          {paid && (
+                            <div className="mt-3 rounded-[12px] border px-3 py-2.5" style={{ borderColor: "rgba(159,54,80,.38)", background: "rgba(159,54,80,.08)" }}>
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <span className="inline-flex items-center gap-1.5 font-sans text-[11px] font-semibold uppercase tracking-wide text-[#9f3650]">
+                                  <Icon name="Coins" size={14} /> {"Pago \u00e0 parte"}
+                                </span>
+                                <span className="rounded-full bg-[#9f3650] px-3 py-1 font-sans text-[12px] font-semibold text-cream">
+                                  {cleanPrice(price) || "Valor sob consulta"}
+                                </span>
+                              </div>
+                            </div>
+                          )}
                           <div className="mt-3 flex flex-wrap items-center gap-2">
                             {onBoard && <span className="chip border-gold/50 bg-gold/10 text-gold-deep"><Icon name="Ship" size={13} /> A bordo</span>}
-                            {paid && (
-                              <span className="chip border-[#9f3650]/35 bg-[#9f3650]/10 font-semibold text-[#9f3650]">
-                                <Icon name="Coins" size={13} /> Pago à parte{price ? ` · ${price}` : ""}
-                              </span>
-                            )}
                             {a.qimoSelect && <QimoSeal />}
                             {a.location && <span className="chip">{a.location}</span>}
                             {a.linkedWinery && <Link href={`/vinicolas/${a.linkedWinery}`} className="chip hover:text-gold"><Icon name="Grape" size={13} /> Ver vinícola</Link>}
