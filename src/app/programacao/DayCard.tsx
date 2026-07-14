@@ -64,8 +64,8 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
           </div>
         </div>
         {/* Barra vinho colada na foto — é o botão "ver programação / ocultar" */}
-        <div className="flex items-center justify-center gap-2 bg-petrol-600 px-4 py-2.5 font-sans text-[11px] font-medium uppercase tracking-wide text-cream">
-          {open ? t("prog.hideDay") : `Toque para ver a programação${countSuffix}`}
+        <div className="flex items-center justify-center gap-2 bg-petrol-600 px-4 py-2.5 font-sans text-[11px] font-semibold uppercase tracking-wide text-cream shadow-[inset_0_1px_0_rgba(255,255,255,.16)]">
+          {open ? t("prog.hideDay") : `Programação${countSuffix}`}
           <Icon name="ChevronDown" size={15} className={open ? "rotate-180" : ""} />
         </div>
       </button>
