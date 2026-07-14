@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/Icon";
 import { QimoSeal } from "@/components/ui";
@@ -58,16 +58,32 @@ function paidPrice(activity: Activity) {
   return undefined;
 }
 
-export function DayCard({ day, img, priority = false }: { day: Day; img?: string; priority?: boolean }) {
+export function DayCard({
+  day,
+  img,
+  priority = false,
+  open,
+  onToggle,
+}: {
+  day: Day;
+  img?: string;
+  priority?: boolean;
+  open: boolean;
+  onToggle: () => void;
+}) {
   const { t, cfg } = useLocale();
-  const [open, setOpen] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
   const nAtiv = day.activities.length;
 
   const close = () => {
-    setOpen(false);
+    onToggle();
     requestAnimationFrame(() => sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   };
+
+  useEffect(() => {
+    if (!open) return;
+    requestAnimationFrame(() => sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }, [open]);
 
   const actKey = nAtiv === 1 ? "prog.activity" : "prog.activities";
   const rawWord = cfg(actKey);
@@ -77,7 +93,7 @@ export function DayCard({ day, img, priority = false }: { day: Day; img?: string
 
   return (
     <section ref={sectionRef} id={`dia-${day.n}`} className="scroll-mt-32">
-      <button type="button" onClick={() => (open ? close() : setOpen(true))} aria-expanded={open}
+      <button type="button" onClick={() => (open ? close() : onToggle())} aria-expanded={open}
         className="block w-full overflow-hidden rounded-[20px] text-left shadow-card">
         <div className="relative aspect-[4/3] overflow-hidden sm:aspect-[21/9]">
           {img ? (

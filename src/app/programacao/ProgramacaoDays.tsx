@@ -31,6 +31,7 @@ function dayImage(day: Day): string | undefined {
 export function ProgramacaoDays() {
   const itinerary = [...useGuideList<Day>("day")].sort((a, b) => a.n - b.n);
   const [active, setActive] = useState<number | null>(null);
+  const [openDay, setOpenDay] = useState<number | null>(null);
   const navRef = useRef<HTMLDivElement>(null);
 
   // Ao rolar, destaca o dia visível no índice (scroll-spy).
@@ -84,7 +85,14 @@ export function ProgramacaoDays() {
 
       <div className="container-editorial space-y-10 pb-10 pt-6">
         {itinerary.map((day, idx) => (
-          <DayCard key={day.n} day={day} img={dayImage(day)} priority={idx === 0} />
+          <DayCard
+            key={day.n}
+            day={day}
+            img={dayImage(day)}
+            priority={idx === 0}
+            open={openDay === day.n}
+            onToggle={() => setOpenDay((current) => (current === day.n ? null : day.n))}
+          />
         ))}
       </div>
     </>
