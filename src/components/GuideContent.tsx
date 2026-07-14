@@ -72,6 +72,32 @@ function writeContentCache(db: ByKind) {
   } catch {}
 }
 
+function mergeActivitiesById(fileActivities: any[] = [], dbActivities: any[] = []) {
+  const fileById = new Map<string, any>();
+  fileActivities.forEach((activity) => {
+    if (activity?.id) fileById.set(activity.id, activity);
+  });
+  return dbActivities.map((activity) => {
+    const base = fileById.get(activity?.id) || {};
+    return removeOldLocalPhotos({ ...base, ...activity });
+  });
+}
+
+function mergeDayRows<T>(db: ByKind | null): T[] {
+  const file = (FILES.day || []) as any[];
+  const rows = db?.day;
+  if (!rows || !rows.length) return removeOldLocalPhotos(file) as T[];
+  const fileBySlug = new Map(file.map((day) => [day.slug, day]));
+  return rows.map((row) => {
+    const base = fileBySlug.get(row.slug) || {};
+    const data = { ...base, ...row.data };
+    if (Array.isArray(base.activities) && Array.isArray(row.data?.activities)) {
+      data.activities = mergeActivitiesById(base.activities, row.data.activities);
+    }
+    return removeOldLocalPhotos(data) as T;
+  });
+}
+
 // Mescla conteúdo do banco (ao vivo) sobre os arquivos (base instantânea/offline).
 function merged<T extends { slug: string }>(kind: string, db: ByKind | null): T[] {
   const file = (FILES[kind] || []) as T[];
@@ -145,6 +171,7 @@ export function useGuideKind<T extends { slug: string }>(kind: string): T[] {
 // Enquanto não houver nenhum registro no banco, usa o arquivo como semente.
 // Ideal para listas onde a equipe controla tudo (ex.: Concierge).
 function guideList<T>(kind: string, db: ByKind | null): T[] {
+  if (kind === "day") return mergeDayRows<T>(db);
   const rows = db?.[kind];
   if (rows && rows.length) return rows.map((r) => removeOldLocalPhotos(r.data as T)); // banco = fonte da verdade (publicados, ordenados)
   return removeOldLocalPhotos((FILES[kind] || []) as T[]);
