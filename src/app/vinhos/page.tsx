@@ -35,7 +35,7 @@ export default function VinhosPage() {
                     kicker={a.color}
                     title={a.name}
                     subtitle={a.tagline}
-                    ratio="aspect-[3/4]"
+                    ratio="aspect-[4/3] sm:aspect-[5/4]"
                     priority={i < 3}
                   />
                 ))}

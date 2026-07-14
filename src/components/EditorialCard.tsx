@@ -13,7 +13,7 @@ import { PhotoImg } from "./PhotoImg";
  */
 export function EditorialCard({
   href, image, kicker, title, subtitle, seal = false,
-  ratio = "aspect-[4/5]", priority = false,
+  ratio = "aspect-[4/3] sm:aspect-[5/4]", priority = false,
 }: {
   href: string;
   image?: string;
@@ -43,7 +43,7 @@ export function EditorialCard({
     <Link
       ref={ref}
       href={href}
-      className={`group relative block ${ratio} overflow-hidden rounded-[18px] photo-placeholder`}
+      className={`group relative block ${ratio} overflow-hidden rounded-[16px] photo-placeholder`}
       style={{
         opacity: shown ? 1 : 0,
         transform: shown ? "none" : "translateY(20px)",
@@ -69,9 +69,9 @@ export function EditorialCard({
         </div>
       )}
 
-      <div className="absolute inset-x-0 bottom-0 p-5 sm:p-6" style={{ textShadow: "0 1px 16px rgba(12,4,7,.85), 0 1px 3px rgba(12,4,7,.7)" }}>
+      <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5" style={{ textShadow: "0 1px 16px rgba(12,4,7,.85), 0 1px 3px rgba(12,4,7,.7)" }}>
         {kicker && <p className="font-sans text-[10px] uppercase tracking-luxe text-gold-soft">{kicker}</p>}
-        <h3 className="mt-1.5 font-serif text-2xl font-light leading-[1.1] text-cream sm:text-[28px]">{title}</h3>
+        <h3 className="mt-1.5 font-serif text-[22px] font-light leading-[1.1] text-cream sm:text-2xl">{title}</h3>
         {subtitle && <p className="mt-1.5 line-clamp-1 font-serif text-[14px] font-light italic text-cream/85">{subtitle}</p>}
       </div>
     </Link>
