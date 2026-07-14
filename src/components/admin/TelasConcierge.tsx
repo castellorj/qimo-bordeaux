@@ -29,15 +29,56 @@ const CONTACT_TYPES = [
   { v: "maps", l: "Mapa / endereço" }, { v: "link", l: "Link / site" }, { v: "info", l: "Informação" },
 ];
 const CONTACT_ICONS = ["MessageCircle", "Phone", "Siren", "Ambulance", "Shield", "Cross", "Landmark", "MapPin", "Globe", "Mail", "Info", "Bell", "Navigation", "Coins", "Car"];
+type EditorTab = "photos" | "sections" | "contacts";
+
+const EDITOR_TABS: { id: EditorTab; icon: string; title: string; hint: string }[] = [
+  { id: "photos", icon: "Image", title: "Fotos do site", hint: "capas, cards e imagens fixas" },
+  { id: "sections", icon: "LayoutGrid", title: "Seções do concierge", hint: "acordeao da tela Concierge" },
+  { id: "contacts", icon: "MessageCircle", title: "Contatos do concierge", hint: "balao flutuante e contatos da pagina" },
+];
 
 export function TelasConcierge() {
+  const [tab, setTab] = useState<EditorTab>("photos");
+
   return (
-    <div className="space-y-10">
-      <ScreenPhotos />
-      <div className="hairline" />
-      <ConciergeSectionsEditor />
-      <div className="hairline" />
-      <ConciergeContactsEditor />
+    <div className="space-y-6">
+      <div className="rounded-[14px] border p-4" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
+        <p className="kicker">Fotos e concierge</p>
+        <h2 className="font-serif text-2xl font-light">O que voce quer ajustar?</h2>
+        <p className="mt-1 max-w-2xl font-sans text-[12px] text-muted">
+          Escolha uma area. Todas as alteracoes desta tela salvam no banco e aparecem no guia em instantes.
+        </p>
+        <div className="mt-4 grid gap-3 md:grid-cols-3">
+          {EDITOR_TABS.map((item) => {
+            const selected = tab === item.id;
+            return (
+              <button
+                key={item.id}
+                onClick={() => setTab(item.id)}
+                className={clsx(
+                  "rounded-[12px] border p-4 text-left transition-colors hover:border-gold",
+                  selected ? "bg-petrol-600 text-cream" : "bg-white/35"
+                )}
+                style={{ borderColor: selected ? "transparent" : "var(--line)" }}
+              >
+                <span className={clsx("grid h-10 w-10 place-items-center rounded-full", selected ? "bg-cream/15" : "bg-gold/12 text-gold-deep")}>
+                  <Icon name={item.icon} size={18} />
+                </span>
+                <span className="mt-3 block font-serif text-xl font-light leading-tight">{item.title}</span>
+                <span className={clsx("mt-1 block font-sans text-[12px]", selected ? "text-cream/75" : "text-muted")}>{item.hint}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {tab === "photos" ? (
+        <ScreenPhotos />
+      ) : tab === "sections" ? (
+        <ConciergeSectionsEditor />
+      ) : (
+        <ConciergeContactsEditor />
+      )}
     </div>
   );
 }
@@ -60,7 +101,7 @@ function ScreenPhotos() {
 
   return (
     <div>
-      <h3 className="font-serif text-xl font-light">Fotos do site</h3>
+      <h3 className="font-serif text-xl font-light">Trocar fotos do site</h3>
       <p className="mt-1 max-w-2xl font-sans text-[13px] leading-relaxed text-muted">
         Troque qualquer foto fixa do guia — telas, topos de seção, cards do Descobrir, concierge e o navio.
         A mudança aparece no app em instantes, <strong>sem republicar</strong>.
@@ -186,7 +227,7 @@ function ConciergeContactsEditor() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="font-serif text-xl font-light">Concierge — contatos</h3>
+          <h3 className="font-serif text-xl font-light">Editar contatos do concierge</h3>
           <p className="mt-1 max-w-2xl font-sans text-[13px] leading-relaxed text-muted">
             Edite, oculte, exclua, reordene e adicione contatos do balão e da página Concierge. Salva na hora, <strong>sem republicar</strong>.
           </p>
@@ -348,7 +389,7 @@ function ConciergeSectionsEditor() {
     <div>
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h3 className="font-serif text-xl font-light">Concierge — seções</h3>
+          <h3 className="font-serif text-xl font-light">Editar seções do concierge</h3>
           <p className="mt-1 max-w-2xl font-sans text-[13px] leading-relaxed text-muted">
             As seções do acordeão da tela Concierge (aba “Mais”). Renomeie, reordene, oculte, exclua ou
             <strong> crie novas seções de texto livre</strong>. Salva na hora, <strong>sem republicar</strong>.
