@@ -139,10 +139,13 @@ export function WelcomeSheet() {
   };
 
   return (
-    <div className={`qimo-gate notranslate fixed inset-0 z-[100] flex items-center justify-center overflow-hidden transition-opacity duration-500 ${leaving ? "opacity-0" : "opacity-100"}`} translate="no">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={gateImg} alt="Bordeaux" className="animate-ken-burns absolute inset-0 h-full w-full object-cover" />
-      <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, rgba(42,20,25,.5), rgba(42,20,25,.82) 58%, rgba(42,20,25,.96))" }} />
+    <div className={`qimo-gate notranslate fixed inset-0 z-[100] flex items-center justify-center overflow-hidden bg-[#3f1d25] transition-opacity duration-500 ${leaving ? "opacity-0" : "opacity-100"}`} translate="no">
+      {gateImg && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={gateImg} alt="Bordeaux" className="animate-ken-burns absolute inset-0 h-full w-full object-cover opacity-20" />
+      )}
+      <div className="absolute inset-0 bg-[#3f1d25]" />
+      <div className="absolute inset-0" style={{ background: "linear-gradient(to bottom, #4a252e 0%, #3f1d25 48%, #30141b 100%)" }} />
 
       {/* Seletor de idioma no topo — mesma caixa das outras páginas */}
       <div className="absolute right-4 top-[max(1rem,env(safe-area-inset-top))] z-30">
@@ -190,4 +193,4 @@ export function WelcomeSheet() {
 }
 
 const inputCls =
-  "w-full rounded-full border border-cream/25 bg-white/10 px-5 py-3.5 font-sans text-base text-cream placeholder:text-cream/50 outline-none backdrop-blur-sm focus:border-gold";
+  "w-full rounded-full border border-gold/70 bg-[#4a252e] px-5 py-3.5 font-sans text-base text-cream placeholder:text-cream/55 outline-none focus:border-gold";

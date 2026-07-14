@@ -230,9 +230,8 @@ font[style] {
   display: flex;
   align-items: center;
   gap: 10px;
-  border: 1px solid rgba(251, 248, 243, 0.25);
-  background: rgba(255, 255, 255, 0.1);
-  backdrop-filter: blur(4px);
+  border: 1px solid rgba(207, 177, 116, 0.78);
+  background: #4a252e;
   border-radius: 9999px;
   padding: 2px 18px;
   transition: border-color 0.2s;
