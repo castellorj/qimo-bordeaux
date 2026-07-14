@@ -24,7 +24,7 @@ const sans = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://qimobr.com"),
+  metadataBase: new URL("https://bordeaux.qimobr.com"),
   title: {
     default: "QIMO · Bordeaux Experience",
     template: "%s · QIMO Bordeaux",
@@ -41,8 +41,24 @@ export const metadata: Metadata = {
   openGraph: {
     title: "QIMO · Bordeaux Experience",
     description: "Concierge digital de luxo para o cruzeiro QIMO em Bordeaux.",
+    url: "https://bordeaux.qimobr.com",
+    siteName: "QIMO Bordeaux Experience",
+    images: [
+      {
+        url: "/og-bordeaux.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Bordeaux Experience by QIMO",
+      },
+    ],
     type: "website",
     locale: "pt_BR",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "QIMO · Bordeaux Experience",
+    description: "Concierge digital de luxo para o cruzeiro QIMO em Bordeaux.",
+    images: ["/og-bordeaux.jpg"],
   },
   icons: {
     icon: "/qimo-badge-192.png",
