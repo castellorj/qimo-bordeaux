@@ -2,6 +2,7 @@
 
 import { PageHero } from "@/components/PageHero";
 import { EditorialCard } from "@/components/EditorialCard";
+import { Crumb } from "@/components/ui";
 import { useGuideKind } from "@/components/GuideContent";
 import type { City } from "@/lib/types";
 
@@ -11,7 +12,8 @@ export default function CidadesPage() {
     <>
       <PageHero section="cidades" small bgImage="/photos/hero-saint-emilion.jpg" />
       <div className="container-editorial py-10">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Crumb href="/descobrir" label="Voltar para Descobrir" />
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {cities.map((c, i) => (
             <EditorialCard
               key={c.slug}

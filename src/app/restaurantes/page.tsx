@@ -125,9 +125,7 @@ export default function RestaurantesPage() {
       <main className="container-editorial py-10">
         <section>
           <div>
-            <p className="kicker">{t("rest.kicker")}</p>
-            <h1 className="display mt-2 text-4xl sm:text-5xl">{t("rest.title")}</h1>
-            <p className="mt-4 max-w-3xl font-serif text-xl font-light leading-relaxed text-muted">{t("rest.intro")}</p>
+            <h1 className="kicker text-[13px]">{t("rest.kicker")}</h1>
           </div>
         </section>
 

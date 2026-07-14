@@ -2,6 +2,7 @@
 
 import { PageHero } from "@/components/PageHero";
 import { EditorialCard } from "@/components/EditorialCard";
+import { Crumb } from "@/components/ui";
 import { useGuideKind } from "@/components/GuideContent";
 import type { Winery } from "@/lib/types";
 
@@ -11,7 +12,8 @@ export default function VinicolasPage() {
     <>
       <PageHero section="vinicolas" small bgImage="/photos/hero-lafite.jpg" />
       <div className="container-editorial py-10">
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <Crumb href="/descobrir" label="Voltar para Descobrir" />
+        <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {wineries.map((w, i) => (
             <EditorialCard
               key={w.slug}

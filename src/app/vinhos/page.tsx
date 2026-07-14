@@ -2,6 +2,7 @@
 
 import { PageHero } from "@/components/PageHero";
 import { EditorialCard } from "@/components/EditorialCard";
+import { Crumb } from "@/components/ui";
 import { useGuideKind } from "@/components/GuideContent";
 import type { Appellation } from "@/lib/types";
 
@@ -18,6 +19,7 @@ export default function VinhosPage() {
     <>
       <PageHero section="vinhos" small bgImage="/photos/hero-margaux.jpg" />
       <div className="container-editorial space-y-14 py-10">
+        <Crumb href="/descobrir" label="Voltar para Descobrir" />
         {BANKS.map((bank) => {
           const list = appellations.filter((a) => a.bank === bank.key);
           if (!list.length) return null;
