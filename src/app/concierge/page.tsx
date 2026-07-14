@@ -14,7 +14,7 @@ import { useLocale } from "@/components/providers";
 import { useGuideList } from "@/components/GuideContent";
 import { ship } from "@/content";
 import type { EtiquetteTip } from "@/content/info";
-import type { ConciergeContact, ConciergeSection, FrenchPhrase } from "@/lib/types";
+import type { ConciergeContact, ConciergeSection, FrenchPhrase, PartnerOffer } from "@/lib/types";
 
 // Links úteis da viagem (seção "links")
 const TRIP_LINKS = [
@@ -96,6 +96,39 @@ function ContactCard({ c }: { c: ConciergeContact }) {
   );
 }
 
+function OfferCard({ offer }: { offer: PartnerOffer }) {
+  return (
+    <div className="card overflow-hidden">
+      {offer.image && (
+        <div className="relative aspect-[16/9] bg-black/[0.04]">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={offer.image} alt={offer.title} className="h-full w-full object-cover" loading="lazy" />
+          {offer.qimoSelect && (
+            <span className="chip-on-photo absolute left-3 top-3 !border-gold/50 font-sans text-[10px] font-semibold uppercase tracking-luxe text-gold-soft">
+              <Icon name="Star" size={11} /> Seleção QIMO
+            </span>
+          )}
+        </div>
+      )}
+      <div className="p-4">
+        <p className="font-sans text-[10px] font-semibold uppercase tracking-luxe text-gold-deep">{offer.partner}</p>
+        <h3 className="mt-1 font-serif text-xl font-light leading-tight" style={{ color: "var(--text)" }}>{offer.title}</h3>
+        <p className="mt-2 font-sans text-[13px] leading-relaxed text-muted">{offer.description}</p>
+        <div className="mt-3 flex flex-wrap gap-2">
+          {offer.benefit && <span className="chip"><Icon name="Ticket" size={13} /> {offer.benefit}</span>}
+          {offer.coupon && <span className="chip"><Icon name="Copy" size={13} /> {offer.coupon}</span>}
+          {offer.validUntil && <span className="chip"><Icon name="CalendarDays" size={13} /> {offer.validUntil}</span>}
+        </div>
+        {offer.url && (
+          <a href={offer.url} target="_blank" rel="noopener noreferrer" className="btn-primary mt-4 w-full !rounded-[10px] !px-4 !py-2.5 text-[12px]">
+            <Icon name="ArrowUpRight" size={14} /> {offer.ctaLabel || "Ver oferta"}
+          </a>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function CurrencyConverter() {
   const { t } = useLocale();
   const [rate, setRate] = useState(6.2);
@@ -143,12 +176,14 @@ function ModuleBody({
   contacts,
   etiquetteTips,
   phrases,
+  offers,
   t,
 }: {
   section: ConciergeSection;
   contacts: ConciergeContact[];
   etiquetteTips: EtiquetteTip[];
   phrases: FrenchPhrase[];
+  offers: PartnerOffer[];
   t: (k: string) => string;
 }) {
   switch (section.module) {
@@ -218,6 +253,17 @@ function ModuleBody({
           ))}
         </div>
       );
+    case "offers":
+      return (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {offers.map((offer) => (
+            <OfferCard key={offer.slug} offer={offer} />
+          ))}
+          {offers.length === 0 && (
+            <p className="font-sans text-[13px] text-muted">Nenhuma oferta publicada no momento.</p>
+          )}
+        </div>
+      );
     case "links":
       return (
         <div className="grid grid-cols-2 gap-3">
@@ -246,10 +292,11 @@ function ModuleBody({
 }
 
 // contagem exibida no cabeçalho de algumas seções
-function sectionCount(section: ConciergeSection, contacts: ConciergeContact[], etiquetteTips: EtiquetteTip[], phrases: FrenchPhrase[]): number | undefined {
+function sectionCount(section: ConciergeSection, contacts: ConciergeContact[], etiquetteTips: EtiquetteTip[], phrases: FrenchPhrase[], offers: PartnerOffer[]): number | undefined {
   if (section.module === "contacts") return contacts.length;
   if (section.module === "etiquette") return etiquetteTips.length;
   if (section.module === "phrases") return phrases.length;
+  if (section.module === "offers") return offers.length;
   return undefined;
 }
 
@@ -259,15 +306,23 @@ export default function ConciergePage() {
   const sections = useGuideList<ConciergeSection>("concierge_section");
   const etiquetteTips = useGuideList<EtiquetteTip>("etiquette_tip");
   const phrases = useGuideList<FrenchPhrase>("french_phrase");
+  const offers = useGuideList<PartnerOffer>("partner_offer");
+  const visibleSections = sections.some((section) => section.module === "offers")
+    ? sections
+    : [
+        ...sections.slice(0, 1),
+        { slug: "ofertas", title: "Ofertas", hint: "Benefícios exclusivos dos parceiros QIMO", module: "offers" as const },
+        ...sections.slice(1),
+      ];
 
   return (
     <>
       <PageHero section="concierge" title={t("hero.concierge.t")} small />
 
       <div className="container-editorial space-y-3 py-10">
-        {sections.map((s) => (
-          <Section key={s.slug} title={s.title} hint={s.hint} count={sectionCount(s, contacts, etiquetteTips, phrases)} defaultOpen={s.module === "contacts" ? false : s.defaultOpen}>
-            <ModuleBody section={s} contacts={contacts} etiquetteTips={etiquetteTips} phrases={phrases} t={t} />
+        {visibleSections.map((s) => (
+          <Section key={s.slug} title={s.title} hint={s.hint} count={sectionCount(s, contacts, etiquetteTips, phrases, offers)} defaultOpen={s.module === "contacts" ? false : s.defaultOpen}>
+            <ModuleBody section={s} contacts={contacts} etiquetteTips={etiquetteTips} phrases={phrases} offers={offers} t={t} />
           </Section>
         ))}
       </div>

@@ -17,6 +17,7 @@ const SECTION_MODULES: { v: ConciergeModule; l: string; auto: boolean }[] = [
   { v: "ship", l: "Navio (resumo + link)", auto: true },
   { v: "etiquette", l: "Etiqueta de bordo", auto: true },
   { v: "phrases", l: "Frases em francês", auto: true },
+  { v: "offers", l: "Ofertas de parceiros", auto: true },
   { v: "links", l: "Atalhos da viagem", auto: true },
   { v: "language", l: "Idioma", auto: true },
   { v: "trip", l: "Sobre a viagem", auto: true },
@@ -471,6 +472,16 @@ function ConciergeSectionsEditor() {
       }
       r = await listContent("concierge_section");
       setSeeding(false);
+    }
+    if (r.length && !r.some((row) => row.slug === "ofertas" || row.data?.module === "offers")) {
+      const sort = (r[0]?.sort ?? 0) + 5;
+      await upsertContent("concierge_section", "ofertas", {
+        slug: "ofertas",
+        title: "Ofertas",
+        hint: "Benefícios exclusivos dos parceiros QIMO",
+        module: "offers",
+      }, sort, true);
+      r = await listContent("concierge_section");
     }
     setRows(r);
   }, []);

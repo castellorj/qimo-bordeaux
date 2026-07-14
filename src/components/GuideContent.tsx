@@ -7,6 +7,7 @@ import {
   conciergeContacts as fConcierge, itinerary as fItinerary, chefExperiences as fChef,
   infoFacts as fInfoFacts, etiquetteTips as fEtiquetteTips, conciergeSections as fConciergeSections,
   frenchPhrases as fFrenchPhrases, ship as fShip, documentCategories as fDocumentCategories,
+  partnerOffers as fPartnerOffers,
 } from "@/content";
 
 const FILES: Record<string, any[]> = {
@@ -16,6 +17,7 @@ const FILES: Record<string, any[]> = {
   info_fact: fInfoFacts, etiquette_tip: fEtiquetteTips,
   french_phrase: fFrenchPhrases,
   document_category: fDocumentCategories,
+  partner_offer: fPartnerOffers,
   concierge_section: fConciergeSections, // seções do acordeão do Concierge
   ship: [{ slug: "ss-bon-voyage", ...fShip }], // página do navio (editável no painel)
   day: fItinerary, // roteiro dia a dia (editável no painel; slug "dia-N")

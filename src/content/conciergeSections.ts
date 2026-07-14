@@ -4,6 +4,7 @@ import type { ConciergeSection } from "@/lib/types";
 // no painel, o banco passa a mandar (título, ordem, visibilidade, conteúdo).
 export const conciergeSections: ConciergeSection[] = [
   { slug: "contatos", title: "Contatos & suporte", hint: "Equipe QIMO, emergências e utilidades", module: "contacts", defaultOpen: true },
+  { slug: "ofertas", title: "Ofertas", hint: "Benefícios exclusivos dos parceiros QIMO", module: "offers" },
   { slug: "cambio", title: "Câmbio", hint: "Converta Euro ↔ Real", module: "currency" },
   { slug: "navio", title: "SS Bon Voyage", hint: "Um château flutuante sobre os rios de Bordeaux", module: "ship" },
   { slug: "etiqueta", title: "Etiqueta de bordo", hint: "Costumes locais para viajar como um bordalês", module: "etiquette" },

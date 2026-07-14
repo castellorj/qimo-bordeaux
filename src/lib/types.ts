@@ -263,6 +263,7 @@ export type ConciergeModule =
   | "ship"       // resumo do navio + link
   | "etiquette"  // etiqueta de bordo
   | "phrases"    // frases em francês
+  | "offers"     // ofertas e anúncios de parceiros QIMO
   | "links"      // atalhos da viagem
   | "language"   // seletor de idioma
   | "trip";      // sobre a viagem
@@ -281,4 +282,18 @@ export interface FrenchPhrase {
   pt: string;
   fr: string;
   hint: string; // pronúncia aproximada
+}
+
+export interface PartnerOffer {
+  slug: string;
+  partner: string;
+  title: string;
+  description: string;
+  benefit?: string;
+  coupon?: string;
+  validUntil?: string;
+  image?: string;
+  ctaLabel?: string;
+  url?: string;
+  qimoSelect?: boolean;
 }

@@ -16,6 +16,7 @@ import { ship } from "./ship";
 import { restaurants } from "./restaurants";
 import { infoFacts, etiquetteTips } from "./info";
 import { documentCategories } from "./documents";
+import { partnerOffers } from "./offers";
 
 export const content = {
   trip: TRIP,
@@ -37,6 +38,7 @@ export const content = {
   etiquetteTips,
   documentCategories,
   chefExperiences,
+  partnerOffers,
 };
 
 // Lookups
@@ -65,6 +67,7 @@ export {
   etiquetteTips,
   documentCategories,
   chefExperiences,
+  partnerOffers,
 };
 
 // Índice de busca unificado
