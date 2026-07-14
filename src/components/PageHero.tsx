@@ -10,6 +10,7 @@ export function PageHero({
   small,
   section,
   bgImage,
+  kickerOnly,
 }: {
   kicker?: string;
   title?: string;
@@ -17,6 +18,7 @@ export function PageHero({
   small?: boolean;
   section?: string; // resolve automaticamente: nav.<s> (título), hero.<s>.k, hero.<s>.i
   bgImage?: string;
+  kickerOnly?: boolean;
 }) {
   const { t, cfg } = useLocale();
   const k = section ? t(`hero.${section}.k`) : kicker;
@@ -43,9 +45,13 @@ export function PageHero({
         style={bg ? { textShadow: "0 1px 18px rgba(12,4,7,.9), 0 1px 3px rgba(12,4,7,.7)" } : undefined}
       >
         {k && <p className={`kicker ${bg ? "!text-gold-soft" : ""}`}>{k}</p>}
-        <h1 className={`display mt-4 text-4xl sm:text-5xl md:text-6xl ${bg ? "text-cream" : ""}`}>{ti}</h1>
-        <div className="gold-rule mt-6" />
-        {i && <p className={`prose-luxe mt-6 max-w-2xl ${bg ? "!text-cream/95" : ""}`}>{i}</p>}
+        {!kickerOnly && (
+          <>
+            <h1 className={`display mt-4 text-4xl sm:text-5xl md:text-6xl ${bg ? "text-cream" : ""}`}>{ti}</h1>
+            <div className="gold-rule mt-6" />
+            {i && <p className={`prose-luxe mt-6 max-w-2xl ${bg ? "!text-cream/95" : ""}`}>{i}</p>}
+          </>
+        )}
       </div>
     </section>
   );

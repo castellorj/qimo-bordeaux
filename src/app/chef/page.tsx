@@ -15,9 +15,15 @@ export default function ChefPage() {
 
   return (
     <>
-      <PageHero section="chef" small bgImage="/photos/ship-dining.jpg" />
+      <PageHero section="chef" small bgImage="/photos/ship-dining.jpg" kickerOnly />
 
       <div className="container-editorial py-12">
+        <div className="mb-10">
+          <h1 className="display text-4xl sm:text-5xl">{t("nav.chef")}</h1>
+          <div className="gold-rule mt-5" />
+          <p className="prose-luxe mt-5 max-w-2xl">{t("hero.chef.i")}</p>
+        </div>
+
         <div className="space-y-6">
           {items.map((item, i) => (
             <ChefExperienceCard
