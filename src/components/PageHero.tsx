@@ -41,7 +41,7 @@ export function PageHero({
         <div className="photo-placeholder absolute inset-0 opacity-[0.16]" />
       )}
       <div
-        className={`container-editorial relative z-10 ${small ? "py-14" : "py-20 sm:py-24"}`}
+        className={`container-editorial relative z-10 ${kickerOnly ? "min-h-[360px] py-14 sm:min-h-[420px]" : small ? "py-14" : "py-20 sm:py-24"}`}
         style={bg ? { textShadow: "0 1px 18px rgba(12,4,7,.9), 0 1px 3px rgba(12,4,7,.7)" } : undefined}
       >
         {k && <p className={`kicker ${bg ? "!text-gold-soft" : ""}`}>{k}</p>}
