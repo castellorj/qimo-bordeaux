@@ -6,19 +6,18 @@ import { Icon } from "./Icon";
 import { useReservations } from "./providers";
 import { type Reservable, type MyReservation } from "@/lib/supabase/reservations";
 
-/**
- * Botão de reserva de uma atividade da programação.
- * Só aparece nas atividades que a QIMO marcou como reserváveis (bordeaux_activities).
- * Permite reservar para si e para acompanhantes (esposa, filhos…).
- * `contentKey` é o id estável da atividade no conteúdo (ex.: "d2-oysters").
- */
 export function ActivityReserve({ contentKey }: { contentKey: string }) {
   const { reservableByKey, mine } = useReservations();
   const [open, setOpen] = useState(false);
   const rv = reservableByKey.get(contentKey);
-  if (!rv) return null; // atividade não é reservável
+  if (!rv) return null;
 
   const my = mine.get(rv.activityId);
+  const conflict = Array.from(mine.values()).find((r) =>
+    r.activityId !== rv.activityId &&
+    r.dayNumber === rv.dayNumber &&
+    r.startTime === rv.startTime
+  );
   const full = rv.available != null && rv.available <= 0;
 
   return (
@@ -34,6 +33,16 @@ export function ActivityReserve({ contentKey }: { contentKey: string }) {
           {my.status === "waitlist" ? "Na lista de espera" : "Reservado"} · {my.seats} {my.seats > 1 ? "pessoas" : "pessoa"}
           <Icon name="Pencil" size={12} className="opacity-70" />
         </button>
+      ) : conflict ? (
+        <button
+          type="button"
+          onClick={() => setOpen(true)}
+          className="mt-3 flex w-full items-center justify-center gap-2 rounded-[10px] border px-3 py-2 font-sans text-[12px] font-semibold"
+          style={{ borderColor: "var(--line)", color: "var(--text-muted)", background: "rgba(0,0,0,.025)" }}
+        >
+          <Icon name="CircleCheck" size={15} />
+          Horário já escolhido
+        </button>
       ) : (
         <button
           type="button"
@@ -47,17 +56,27 @@ export function ActivityReserve({ contentKey }: { contentKey: string }) {
         </button>
       )}
       {open && typeof document !== "undefined" &&
-        createPortal(<ReserveSheet rv={rv} my={my} onClose={() => setOpen(false)} />, document.body)}
+        createPortal(<ReserveSheet rv={rv} my={my} conflict={conflict} onClose={() => setOpen(false)} />, document.body)}
     </>
   );
 }
 
-function ReserveSheet({ rv, my, onClose }: { rv: Reservable; my?: MyReservation; onClose: () => void }) {
+function ReserveSheet({
+  rv,
+  my,
+  conflict,
+  onClose,
+}: {
+  rv: Reservable;
+  my?: MyReservation;
+  conflict?: MyReservation;
+  onClose: () => void;
+}) {
   const { guest, setGuestPhone, reserve, cancel } = useReservations();
   const [names, setNames] = useState<string[]>(() =>
     my?.party?.length ? my.party : [guest?.name?.trim() || ""]
   );
-  const [phone, setPhone] = useState(guest?.phone || "");
+  const [room, setRoom] = useState(guest?.phone || "");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
 
@@ -73,13 +92,19 @@ function ReserveSheet({ rv, my, onClose }: { rv: Reservable; my?: MyReservation;
   const submit = async () => {
     const party = names.map((n) => n.trim()).filter(Boolean);
     if (!party.length) { setErr("Informe ao menos um nome."); return; }
-    if (!guest?.phone && !phone.trim()) { setErr("Informe seu telefone para confirmar."); return; }
-    setBusy(true); setErr("");
-    if (!guest?.phone && phone.trim()) setGuestPhone(phone.trim());
+    if (conflict && !my) {
+      setErr(`Este quarto já reservou "${conflict.title}" neste mesmo horário. Cancele ou altere a outra escolha antes de reservar esta opção.`);
+      return;
+    }
+    if (!guest?.phone && !room.trim()) { setErr("Informe o número do quarto para confirmar."); return; }
+
+    setBusy(true);
+    setErr("");
+    if (!guest?.phone && room.trim()) setGuestPhone(room.trim());
     const res = await reserve(rv.activityId, party);
     setBusy(false);
     if (!res.ok) {
-      setErr(res.error === "phone" ? "Informe seu telefone para confirmar." : "Não foi possível reservar agora. Tente de novo.");
+      setErr(res.error === "phone" ? "Informe o número do quarto para confirmar." : "Não foi possível reservar agora. Tente de novo.");
       return;
     }
     onClose();
@@ -113,9 +138,16 @@ function ReserveSheet({ rv, my, onClose }: { rv: Reservable; my?: MyReservation;
           <button onClick={onClose} aria-label="Fechar" className="shrink-0 text-muted hover:text-gold-deep"><Icon name="X" size={20} /></button>
         </div>
 
+        {conflict && !my && (
+          <div className="mt-5 rounded-[12px] border p-4 font-sans text-[12px] leading-relaxed" style={{ borderColor: "var(--gold)", background: "color-mix(in srgb, var(--gold) 10%, transparent)", color: "var(--text)" }}>
+            <p className="flex items-center gap-1.5 font-semibold"><Icon name="Info" size={14} className="text-gold-deep" /> Escolha uma opção neste horário</p>
+            <p className="mt-1 text-muted">Este quarto já tem reserva para <strong>{conflict.title}</strong>. Para trocar, cancele a reserva anterior primeiro.</p>
+          </div>
+        )}
+
         <div className="mt-5">
           <p className="font-sans text-[11px] uppercase tracking-wide2 text-muted">Quem vai a este passeio</p>
-          <p className="mt-0.5 font-sans text-[12px] text-muted">Você e seus acompanhantes (esposa, marido, filhos…).</p>
+          <p className="mt-0.5 font-sans text-[12px] text-muted">Você e seus acompanhantes.</p>
           <div className="mt-3 space-y-2">
             {names.map((n, i) => (
               <div key={i} className="flex items-center gap-2">
@@ -142,13 +174,13 @@ function ReserveSheet({ rv, my, onClose }: { rv: Reservable; my?: MyReservation;
 
         {!guest?.phone && (
           <label className="mt-5 block">
-            <span className="font-sans text-[11px] uppercase tracking-wide2 text-muted">Seu telefone (WhatsApp)</span>
-            <span className="mb-1 block font-sans text-[12px] text-muted">Para a equipe QIMO confirmar sua reserva.</span>
+            <span className="font-sans text-[11px] uppercase tracking-wide2 text-muted">Número do quarto</span>
+            <span className="mb-1 block font-sans text-[12px] text-muted">Usamos o quarto para evitar duas reservas no mesmo horário.</span>
             <input
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              inputMode="tel"
-              placeholder="+55 21 99999-9999"
+              value={room}
+              onChange={(e) => setRoom(e.target.value)}
+              inputMode="text"
+              placeholder="Ex: 302"
               className="mt-1 w-full rounded-[10px] border bg-transparent px-3 py-2.5 font-sans text-base outline-none focus:border-gold"
               style={{ borderColor: "var(--line)" }}
             />
@@ -157,8 +189,8 @@ function ReserveSheet({ rv, my, onClose }: { rv: Reservable; my?: MyReservation;
 
         {err && <p className="mt-3 font-sans text-[12px] text-[#8f2f2f]">{err}</p>}
 
-        <button disabled={busy} onClick={submit} className="btn-primary mt-5 w-full !py-3.5">
-          {busy ? "Salvando…" : my ? `Atualizar reserva · ${total} ${total > 1 ? "pessoas" : "pessoa"}` : `Confirmar · ${total} ${total > 1 ? "pessoas" : "pessoa"}`}
+        <button disabled={busy || (!!conflict && !my)} onClick={submit} className="btn-primary mt-5 w-full !py-3.5 disabled:opacity-50">
+          {busy ? "Salvando..." : my ? `Atualizar reserva · ${total} ${total > 1 ? "pessoas" : "pessoa"}` : `Confirmar · ${total} ${total > 1 ? "pessoas" : "pessoa"}`}
           {!busy && <Icon name="ArrowRight" size={15} />}
         </button>
 
@@ -170,7 +202,7 @@ function ReserveSheet({ rv, my, onClose }: { rv: Reservable; my?: MyReservation;
 
         <p className="mt-4 flex items-start gap-1.5 font-sans text-[11px] leading-relaxed text-muted">
           <Icon name="Info" size={13} className="mt-0.5 shrink-0 text-gold-deep" />
-          Sua reserva fica registrada com a equipe QIMO. Você pode ajustar os acompanhantes ou cancelar a qualquer momento.
+          Sua reserva fica registrada por quarto com a equipe QIMO. Você pode ajustar os acompanhantes ou cancelar a qualquer momento.
         </p>
       </div>
     </div>
