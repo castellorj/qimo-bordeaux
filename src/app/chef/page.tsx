@@ -3,14 +3,14 @@
 import { useRef, useState } from "react";
 import { PageHero } from "@/components/PageHero";
 import { Icon } from "@/components/Icon";
-import { useGuideKind } from "@/components/GuideContent";
+import { useGuideList } from "@/components/GuideContent";
 import { useLocale } from "@/components/providers";
 import { qimoWhatsApp } from "@/lib/reserve";
 import type { ChefExperience } from "@/lib/types";
 
 export default function ChefPage() {
   const { t } = useLocale();
-  const items = useGuideKind<ChefExperience>("chef");
+  const items = useGuideList<ChefExperience>("chef");
   const [openSlug, setOpenSlug] = useState<string | null>(null);
 
   return (

@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Icon } from "./Icon";
 import { useGuideList } from "./GuideContent";
+import { useLocale } from "./providers";
 import type { ConciergeContact } from "@/lib/types";
 
 // Fallback: se nenhum contato estiver marcado como "rápido" no painel, mostra estes.
@@ -17,6 +18,7 @@ function hrefFor(type: string, value: string): { href: string; external: boolean
 }
 
 export function ConciergeFab() {
+  const { cfg } = useLocale();
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -58,8 +60,8 @@ export function ConciergeFab() {
         >
           <div className="flex items-center justify-between">
             <div>
-              <p className="kicker">Concierge QIMO</p>
-              <h3 className="display mt-1 text-2xl">Como posso ajudar?</h3>
+              <p className="kicker">{cfg("concierge.fab.kicker") || "Concierge QIMO"}</p>
+              <h3 className="display mt-1 text-2xl">{cfg("concierge.fab.title") || "Como posso ajudar?"}</h3>
             </div>
             <button onClick={() => setOpen(false)} aria-label="Fechar" className="text-muted hover:text-gold-deep"><Icon name="X" size={20} /></button>
           </div>

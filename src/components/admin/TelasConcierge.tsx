@@ -251,6 +251,8 @@ function ConciergeContactsEditor() {
         </div>
       </div>
 
+      <QuickContactsSettings rows={rows || []} />
+
       {rows === null ? (
         <p className="mt-4 text-muted">{seeding ? "Preparando contatos…" : "Carregando…"}</p>
       ) : (
@@ -262,6 +264,94 @@ function ConciergeContactsEditor() {
           {rows.length === 0 && <p className="text-muted">Nenhum contato. Use “Adicionar contato”.</p>}
         </div>
       )}
+    </div>
+  );
+}
+
+function QuickContactsSettings({ rows }: { rows: ContentRow[] }) {
+  const [kicker, setKicker] = useState("Concierge QIMO");
+  const [title, setTitle] = useState("Como posso ajudar?");
+  const [loading, setLoading] = useState(true);
+  const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  useEffect(() => {
+    listSettings().then((s) => {
+      setKicker(s["concierge.fab.kicker"]?.pt || "Concierge QIMO");
+      setTitle(s["concierge.fab.title"]?.pt || "Como posso ajudar?");
+      setLoading(false);
+    });
+  }, []);
+
+  const quickRows = rows.filter((row) => row.published && (row.data as ConciergeContact)?.quick).slice(0, 5);
+
+  const save = async () => {
+    setBusy(true);
+    await Promise.all([
+      upsertSetting("concierge.fab.kicker", { pt: kicker }, "Concierge"),
+      upsertSetting("concierge.fab.title", { pt: title }, "Concierge"),
+    ]);
+    setBusy(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 1500);
+  };
+
+  return (
+    <div className="mt-5 rounded-[14px] border p-4" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <p className="kicker">Balão de ajuda</p>
+          <h4 className="font-serif text-xl font-light">Itens que aparecem no botão flutuante</h4>
+          <p className="mt-1 max-w-2xl font-sans text-[12px] text-muted">
+            Este é o painel do print. Ele mostra até 5 contatos publicados marcados como "Mostrar no balão".
+          </p>
+        </div>
+        <span className="rounded-full bg-gold/15 px-3 py-1 font-sans text-[11px] uppercase tracking-wide2 text-gold-deep">
+          {quickRows.length}/5 itens
+        </span>
+      </div>
+
+      <div className="mt-4 grid gap-3 sm:grid-cols-2">
+        <label className="block">
+          <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Texto pequeno</span>
+          <input value={kicker} onChange={(e) => setKicker(e.target.value)} disabled={loading}
+            className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+        </label>
+        <label className="block">
+          <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Título principal</span>
+          <input value={title} onChange={(e) => setTitle(e.target.value)} disabled={loading}
+            className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+        </label>
+      </div>
+
+      <div className="mt-3 flex flex-wrap items-center gap-2">
+        <button onClick={save} disabled={busy || loading} className="btn-primary !px-4 !py-1.5 text-[12px]">
+          {busy ? "Salvando..." : "Salvar textos do balão"}
+        </button>
+        {saved && <span className="font-sans text-[12px] text-olive-deep">✓ Salvo</span>}
+      </div>
+
+      <div className="mt-4 grid gap-2 sm:grid-cols-2">
+        {quickRows.map((row) => {
+          const c = row.data as ConciergeContact;
+          return (
+            <div key={row.id} className="flex items-center gap-3 rounded-[10px] border bg-white/35 p-3" style={{ borderColor: "var(--line)" }}>
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-black/[0.04] text-gold-deep">
+                <Icon name={c.icon} size={16} />
+              </span>
+              <span className="min-w-0">
+                <span className="block truncate font-serif text-[16px] font-light">{c.label}</span>
+                {c.hint && <span className="block truncate font-sans text-[11px] text-muted">{c.hint}</span>}
+              </span>
+            </div>
+          );
+        })}
+        {rows.length > 0 && quickRows.length === 0 && (
+          <p className="rounded-[10px] border border-dashed p-3 font-sans text-[12px] text-muted" style={{ borderColor: "var(--line)" }}>
+            Nenhum contato marcado ainda. Marque "Mostrar no balão" nos contatos abaixo.
+          </p>
+        )}
+      </div>
     </div>
   );
 }
