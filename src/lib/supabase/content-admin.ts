@@ -199,14 +199,54 @@ export async function contentCounts(): Promise<KindCount[]> {
 
 // ---- Páginas customizadas (construtor de blocos) ----
 import type { Block } from "@/lib/blocks";
+export interface PageSeo {
+  title?: string;
+  description?: string;
+  image?: string;
+  index?: boolean;
+}
 export interface PageRow {
   id: string; slug: string; title: string; icon: string;
   blocks: Block[]; published: boolean; sort: number; updated_at: string;
+  seo?: PageSeo;
+}
+
+function splitSeoBlock(blocks: Block[] = []): { blocks: Block[]; seo: PageSeo } {
+  const seoBlock = blocks.find((block) => block.type === "seo");
+  return {
+    blocks: blocks.filter((block) => block.type !== "seo"),
+    seo: {
+      title: seoBlock?.seoTitle || "",
+      description: seoBlock?.seoDescription || "",
+      image: seoBlock?.seoImage || "",
+      index: seoBlock?.seoIndex !== false,
+    },
+  };
+}
+
+function withSeoBlock(blocks: Block[] = [], seo?: PageSeo): Block[] {
+  const clean = blocks.filter((block) => block.type !== "seo");
+  const hasSeo = Boolean(seo?.title || seo?.description || seo?.image || seo?.index === false);
+  if (!hasSeo) return clean;
+  return [
+    ...clean,
+    {
+      id: "page_seo",
+      type: "seo",
+      seoTitle: seo?.title || "",
+      seoDescription: seo?.description || "",
+      seoImage: seo?.image || "",
+      seoIndex: seo?.index !== false,
+    },
+  ];
 }
 
 export async function listPages(): Promise<PageRow[]> {
   const { data } = await supabase().from("bordeaux_pages").select("*").order("sort");
-  return (data as PageRow[]) || [];
+  return ((data as PageRow[]) || []).map((page) => {
+    const normalized = splitSeoBlock(page.blocks || []);
+    return { ...page, blocks: normalized.blocks, seo: normalized.seo };
+  });
 }
 
 export async function createPage(): Promise<PageRow | null> {
@@ -219,7 +259,7 @@ export async function createPage(): Promise<PageRow | null> {
 
 export async function savePage(p: PageRow) {
   return supabase().from("bordeaux_pages")
-    .update({ slug: p.slug, title: p.title, icon: p.icon, blocks: p.blocks, published: p.published, sort: p.sort, updated_at: new Date().toISOString() })
+    .update({ slug: p.slug, title: p.title, icon: p.icon, blocks: withSeoBlock(p.blocks, p.seo), published: p.published, sort: p.sort, updated_at: new Date().toISOString() })
     .eq("id", p.id);
 }
 

@@ -13,7 +13,8 @@ export type BlockType =
   | "faq"
   | "video"
   | "spacer"
-  | "divider";
+  | "divider"
+  | "seo";
 
 export type BlockWidth = "normal" | "narrow" | "wide" | "full";
 export type BlockAlign = "left" | "center";
@@ -71,6 +72,10 @@ export interface Block {
   hideDesktop?: boolean;
   hideTablet?: boolean;
   hideMobile?: boolean;
+  seoTitle?: string;
+  seoDescription?: string;
+  seoImage?: string;
+  seoIndex?: boolean;
 }
 
 export const BLOCK_LIBRARY: { type: BlockType; label: string; icon: string; hint: string }[] = [
@@ -129,6 +134,8 @@ export function newBlock(type: BlockType): Block {
       return { ...base, spacing: "spacious" };
     case "divider":
       return { ...base };
+    case "seo":
+      return { ...base, seoTitle: "", seoDescription: "", seoImage: "", seoIndex: true };
   }
 }
 

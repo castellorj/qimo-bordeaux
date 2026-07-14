@@ -238,6 +238,34 @@ function pageSummary(page: PageRow) {
   return `${page.blocks?.length || 0} bloco(s)`;
 }
 
+function SeoEditor({ draft, onChange }: { draft: PageRow; onChange: (page: PageRow) => void }) {
+  const seo = draft.seo || {};
+  const title = seo.title || draft.title;
+  const description = seo.description || "Descricao da pagina para busca e compartilhamento.";
+  const setSeo = (patch: NonNullable<PageRow["seo"]>) => onChange({ ...draft, seo: { ...seo, ...patch } });
+  return (
+    <div className="mt-4 rounded-[12px] border p-4" style={{ borderColor: "var(--line)" }}>
+      <p className="kicker mb-3">SEO e compartilhamento</p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <TextInput label="Meta title" value={seo.title || ""} onChange={(value) => setSeo({ title: value })} />
+        <ImageInput label="Imagem social / Open Graph" value={seo.image || ""} onChange={(value) => setSeo({ image: value })} />
+      </div>
+      <div className="mt-3">
+        <TextInput label="Meta description" value={seo.description || ""} onChange={(value) => setSeo({ description: value })} area />
+      </div>
+      <label className="mt-3 flex items-center gap-2 font-sans text-[12px] text-muted">
+        <input type="checkbox" checked={seo.index !== false} onChange={(e) => setSeo({ index: e.target.checked })} />
+        Permitir indexacao por buscadores
+      </label>
+      <div className="mt-4 rounded-[10px] border bg-white/50 p-3" style={{ borderColor: "var(--line)" }}>
+        <p className="font-sans text-[12px] text-[#1a0dab]">{title}</p>
+        <p className="mt-1 truncate font-sans text-[11px] text-[#006621]">qimobr.com/paginas?p={draft.slug}</p>
+        <p className="mt-1 line-clamp-2 font-sans text-[12px] text-muted">{description}</p>
+      </div>
+    </div>
+  );
+}
+
 function DevicePreview({ draft }: { draft: PageRow }) {
   const [device, setDevice] = useState<"desktop" | "tablet" | "mobile">("desktop");
   const width = device === "mobile" ? "max-w-[390px]" : device === "tablet" ? "max-w-[720px]" : "max-w-full";
@@ -288,7 +316,7 @@ export function PagesBuilder() {
   const duplicatePage = async (page: PageRow) => {
     const p = await createPage();
     if (!p) return;
-    const copy = { ...p, title: pageCopyTitle(page.title), slug: uniqueSlug(page.slug), icon: page.icon, blocks: cloneBlocks(page.blocks || []), published: false };
+    const copy = { ...p, title: pageCopyTitle(page.title), slug: uniqueSlug(page.slug), icon: page.icon, blocks: cloneBlocks(page.blocks || []), seo: page.seo, published: false };
     await savePage(copy);
     await load();
     setDraft(copy);
@@ -334,6 +362,7 @@ export function PagesBuilder() {
                 <TextInput label="Icone" value={draft.icon} onChange={(icon) => setDraft({ ...draft, icon })} />
               </div>
               <p className="mt-2 font-mono text-[11px] text-muted">/paginas?p={draft.slug}</p>
+              <SeoEditor draft={draft} onChange={setDraft} />
             </div>
 
             <div className="mt-4 space-y-3">

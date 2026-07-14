@@ -48,6 +48,8 @@ function BannerBlock({ b }: { b: Block }) {
 
 export function BlockView({ b }: { b: Block }) {
   switch (b.type) {
+    case "seo":
+      return null;
     case "banner":
       return <BannerBlock b={b} />;
     case "heading":
@@ -185,9 +187,10 @@ function containerClass(b: Block) {
 }
 
 export function BlockRenderer({ blocks }: { blocks: Block[] }) {
+  const visibleBlocks = blocks.filter((block) => block.type !== "seo");
   return (
     <div>
-      {blocks.map((b) => (
+      {visibleBlocks.map((b) => (
         <section key={b.id} className={wrapperClass(b)}>
           {b.width === "full" || b.type === "banner" ? (
             <BlockView b={b} />

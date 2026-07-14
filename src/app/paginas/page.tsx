@@ -13,7 +13,51 @@ const ANON =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2dnppdHN6ZmNhamZydnpwYWNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzODMyMzIsImV4cCI6MjA5Mzk1OTIzMn0.4tBzaBgyvzwuTEvlX9wSc85c6EKtTVfEidYeeh6aGRw";
 
-interface Pg { slug: string; title: string; icon: string; blocks: Block[] }
+interface PgSeo { title?: string; description?: string; image?: string; index?: boolean }
+interface Pg { slug: string; title: string; icon: string; blocks: Block[]; seo?: PgSeo }
+
+function splitSeo(blocks: Block[] = []): { blocks: Block[]; seo: PgSeo } {
+  const seoBlock = blocks.find((block) => block.type === "seo");
+  return {
+    blocks: blocks.filter((block) => block.type !== "seo"),
+    seo: {
+      title: seoBlock?.seoTitle || "",
+      description: seoBlock?.seoDescription || "",
+      image: seoBlock?.seoImage || "",
+      index: seoBlock?.seoIndex !== false,
+    },
+  };
+}
+
+function upsertMeta(name: string, content: string, attr: "name" | "property" = "name") {
+  if (!content) return;
+  let el = document.head.querySelector<HTMLMetaElement>(`meta[${attr}="${name}"]`);
+  if (!el) {
+    el = document.createElement("meta");
+    el.setAttribute(attr, name);
+    document.head.appendChild(el);
+  }
+  el.setAttribute("content", content);
+}
+
+function PageMeta({ page }: { page: Pg }) {
+  useEffect(() => {
+    const title = page.seo?.title || page.title;
+    const description = page.seo?.description || "";
+    document.title = `${title} · QIMO Bordeaux`;
+    upsertMeta("description", description);
+    upsertMeta("og:title", title, "property");
+    upsertMeta("og:description", description, "property");
+    upsertMeta("twitter:title", title);
+    upsertMeta("twitter:description", description);
+    if (page.seo?.image) {
+      upsertMeta("og:image", page.seo.image, "property");
+      upsertMeta("twitter:image", page.seo.image);
+    }
+    upsertMeta("robots", page.seo?.index === false ? "noindex,nofollow" : "index,follow");
+  }, [page]);
+  return null;
+}
 
 function PaginasInner() {
   const sp = useSearchParams();
@@ -25,7 +69,10 @@ function PaginasInner() {
       headers: { apikey: ANON, Authorization: `Bearer ${ANON}` }, cache: "no-store",
     })
       .then((r) => (r.ok ? r.json() : []))
-      .then(setPages)
+      .then((rows: Pg[]) => setPages(rows.map((page) => {
+        const normalized = splitSeo(page.blocks || []);
+        return { ...page, blocks: normalized.blocks, seo: normalized.seo };
+      })))
       .catch(() => setPages([]));
   }, []);
 
@@ -38,6 +85,7 @@ function PaginasInner() {
     const hasBanner = pg.blocks?.[0]?.type === "banner";
     return (
       <article className="pb-16">
+        <PageMeta page={pg} />
         {!hasBanner && (
           <div className="container-editorial pt-10">
             <Crumb href="/paginas" label="Páginas" />
