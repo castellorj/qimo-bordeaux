@@ -72,11 +72,11 @@ function ReserveSheet({
   conflict?: MyReservation;
   onClose: () => void;
 }) {
-  const { guest, setGuestPhone, reserve, cancel } = useReservations();
+  const { guest, setGuestRoom, reserve, cancel } = useReservations();
   const [names, setNames] = useState<string[]>(() =>
     my?.party?.length ? my.party : [guest?.name?.trim() || ""]
   );
-  const [room, setRoom] = useState(guest?.phone || "");
+  const [room, setRoom] = useState(guest?.room || "");
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
 
@@ -100,11 +100,11 @@ function ReserveSheet({
 
     setBusy(true);
     setErr("");
-    if (room.trim() !== guest?.phone) setGuestPhone(room.trim());
+    if (room.trim() !== guest?.room) setGuestRoom(room.trim());
     const res = await reserve(rv.activityId, party);
     setBusy(false);
     if (!res.ok) {
-      setErr(res.error === "phone" ? "Informe o número do quarto para confirmar." : "Não foi possível reservar agora. Tente de novo.");
+      setErr(res.error === "room" || res.error === "phone" ? "Informe o número do quarto para confirmar." : "Não foi possível reservar agora. Tente de novo.");
       return;
     }
     onClose();

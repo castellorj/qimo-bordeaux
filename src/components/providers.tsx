@@ -22,12 +22,12 @@ const LocaleCtx = createContext<{
 }>({ locale: DEFAULT_LOCALE, setLocale: () => {}, t: (k) => k, cfg: () => undefined });
 
 /* ---------------- Reservas (atividades, via Supabase) ---------------- */
-export interface Guest { name?: string | null; phone?: string | null }
+export interface Guest { name?: string | null; phone?: string | null; room?: string | null }
 
 interface ReservationsValue {
   ready: boolean;
   guest: Guest | null;
-  setGuestPhone: (phone: string) => void;
+  setGuestRoom: (room: string) => void;
   reservableByKey: Map<string, Reservable>;
   mine: Map<string, MyReservation>; // por activityId
   count: number;
@@ -36,7 +36,7 @@ interface ReservationsValue {
   cancel: (activityId: string) => Promise<void>;
 }
 const ReservationsCtx = createContext<ReservationsValue>({
-  ready: false, guest: null, setGuestPhone: () => {}, reservableByKey: new Map(), mine: new Map(),
+  ready: false, guest: null, setGuestRoom: () => {}, reservableByKey: new Map(), mine: new Map(),
   count: 0, refresh: async () => {}, reserve: async () => ({ ok: false }), cancel: async () => {},
 });
 
@@ -50,7 +50,13 @@ function readGuest(): Guest | null {
     const raw = localStorage.getItem(GUEST_LS);
     if (!raw) return null;
     const g = JSON.parse(raw);
-    return typeof g === "object" && g ? g : null;
+    if (typeof g !== "object" || !g) return null;
+    if (!g.room && typeof g.phone === "string" && /^\d{1,5}$/.test(g.phone.trim())) {
+      const migrated = { ...g, phone: null, room: g.phone.trim() };
+      try { localStorage.setItem(GUEST_LS, JSON.stringify(migrated)); } catch {}
+      return migrated;
+    }
+    return g;
   } catch { return null; }
 }
 
@@ -85,23 +91,27 @@ function fallbackReservables(remote: Reservable[]): Reservable[] {
   return fallback;
 }
 
-function readLocalReservations(phone?: string | null): MyReservation[] {
-  if (!phone) return [];
+function reservationOwner(guest?: Guest | null) {
+  return guest?.room?.trim() || guest?.phone?.trim() || null;
+}
+
+function readLocalReservations(owner?: string | null): MyReservation[] {
+  if (!owner) return [];
   try {
     const raw = localStorage.getItem(LOCAL_RES_LS);
     const rows = raw ? JSON.parse(raw) : [];
-    return Array.isArray(rows) ? rows.filter((r) => r.phone === phone).map(({ phone: _phone, ...rest }) => rest) : [];
+    return Array.isArray(rows) ? rows.filter((r) => r.owner === owner || r.phone === owner).map(({ owner: _owner, phone: _phone, ...rest }) => rest) : [];
   } catch { return []; }
 }
 
-function upsertLocalReservation(phone: string, rv: Reservable, party: string[]) {
+function upsertLocalReservation(owner: string, rv: Reservable, party: string[]) {
   const raw = localStorage.getItem(LOCAL_RES_LS);
   const rows = raw ? JSON.parse(raw) : [];
   const list = Array.isArray(rows) ? rows : [];
-  const next = list.filter((r) => !(r.phone === phone && r.activityId === rv.activityId));
+  const next = list.filter((r) => !((r.owner === owner || r.phone === owner) && r.activityId === rv.activityId));
   next.push({
-    phone,
-    reservationId: `local-${rv.activityId}-${phone}`,
+    owner,
+    reservationId: `local-${rv.activityId}-${owner}`,
     activityId: rv.activityId,
     contentKey: rv.contentKey,
     dayNumber: rv.dayNumber,
@@ -114,11 +124,11 @@ function upsertLocalReservation(phone: string, rv: Reservable, party: string[]) 
   localStorage.setItem(LOCAL_RES_LS, JSON.stringify(next));
 }
 
-function removeLocalReservation(phone: string, activityId: string) {
+function removeLocalReservation(owner: string, activityId: string) {
   const raw = localStorage.getItem(LOCAL_RES_LS);
   const rows = raw ? JSON.parse(raw) : [];
   const list = Array.isArray(rows) ? rows : [];
-  localStorage.setItem(LOCAL_RES_LS, JSON.stringify(list.filter((r) => !(r.phone === phone && r.activityId === activityId))));
+  localStorage.setItem(LOCAL_RES_LS, JSON.stringify(list.filter((r) => !((r.owner === owner || r.phone === owner) && r.activityId === activityId))));
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -132,16 +142,16 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const [mineArr, setMineArr] = useState<MyReservation[]>([]);
   const started = useRef(false);
 
-  const loadMine = useCallback(async (phone?: string | null) => {
-    if (!phone) { setMineArr([]); return; }
-    const remote = await fetchMyReservations(phone);
-    setMineArr([...remote, ...readLocalReservations(phone)]);
+  const loadMine = useCallback(async (owner?: string | null) => {
+    if (!owner) { setMineArr([]); return; }
+    const remote = await fetchMyReservations(owner);
+    setMineArr([...remote, ...readLocalReservations(owner)]);
   }, []);
 
   const refresh = useCallback(async () => {
     const g = readGuest();
     setGuest(g);
-    const [rv] = await Promise.all([fetchReservable(), loadMine(g?.phone)]);
+    const [rv] = await Promise.all([fetchReservable(), loadMine(reservationOwner(g))]);
     setReservable(rv);
   }, [loadMine]);
 
@@ -202,48 +212,49 @@ export function Providers({ children }: { children: React.ReactNode }) {
     } catch {}
   }, []);
 
-  const setGuestPhone = useCallback((phone: string) => {
-    const next = { ...(readGuest() || {}), phone };
+  const setGuestRoom = useCallback((room: string) => {
+    const next = { ...(readGuest() || {}), room };
     try { localStorage.setItem(GUEST_LS, JSON.stringify(next)); } catch {}
     setGuest(next);
-    loadMine(phone);
+    loadMine(reservationOwner(next));
   }, [loadMine]);
 
   const reserve = useCallback<ReservationsValue["reserve"]>(async (activityId, party) => {
     const g = readGuest();
-    const phone = g?.phone;
+    const owner = reservationOwner(g);
     const name = g?.name || party[0] || "Convidado";
-    if (!phone) return { ok: false, error: "phone" };
+    if (!owner) return { ok: false, error: "room" };
     if (activityId.startsWith(LOCAL_ACTIVITY_PREFIX)) {
       const rv = fallbackReservables(reservable).find((item) => item.activityId === activityId);
       if (!rv) return { ok: false, error: "Atividade indisponivel." };
-      upsertLocalReservation(phone, rv, party);
+      upsertLocalReservation(owner, rv, party);
       setMineArr((current) => {
         const remote = current.filter((r) => !r.activityId.startsWith(LOCAL_ACTIVITY_PREFIX));
-        return [...remote, ...readLocalReservations(phone)];
+        return [...remote, ...readLocalReservations(owner)];
       });
       return { ok: true, status: "confirmed" };
     }
-    const { data, error } = await guestReserve(activityId, name, phone, party);
+    const { data, error } = await guestReserve(activityId, name, owner, party);
     if (error) return { ok: false, error: error.message };
-    const [rv] = await Promise.all([fetchReservable(), loadMine(phone)]);
+    const [rv] = await Promise.all([fetchReservable(), loadMine(owner)]);
     setReservable(rv);
     return { ok: true, status: (data as any)?.status };
   }, [loadMine, reservable]);
 
   const cancel = useCallback(async (activityId: string) => {
     const g = readGuest();
-    if (!g?.phone) return;
+    const owner = reservationOwner(g);
+    if (!owner) return;
     if (activityId.startsWith(LOCAL_ACTIVITY_PREFIX)) {
-      removeLocalReservation(g.phone, activityId);
+      removeLocalReservation(owner, activityId);
       setMineArr((current) => {
         const remote = current.filter((r) => !r.activityId.startsWith(LOCAL_ACTIVITY_PREFIX));
-        return [...remote, ...readLocalReservations(g.phone)];
+        return [...remote, ...readLocalReservations(owner)];
       });
       return;
     }
-    await guestCancel(activityId, g.phone);
-    const [rv] = await Promise.all([fetchReservable(), loadMine(g.phone)]);
+    await guestCancel(activityId, owner);
+    const [rv] = await Promise.all([fetchReservable(), loadMine(owner)]);
     setReservable(rv);
   }, [loadMine]);
 
@@ -258,7 +269,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <LocaleCtx.Provider value={{ locale, setLocale, t, cfg }}>
       <ReservationsCtx.Provider
-        value={{ ready, guest, setGuestPhone, reservableByKey, mine, count: mineArr.length, refresh, reserve, cancel }}
+        value={{ ready, guest, setGuestRoom, reservableByKey, mine, count: mineArr.length, refresh, reserve, cancel }}
       >
         {/* Renderiza o HTML já pronto (SSR/estático) na hora — sem esconder até hidratar.
             Os overrides do painel (labels/fotos) chegam async e trocam suavemente. */}
