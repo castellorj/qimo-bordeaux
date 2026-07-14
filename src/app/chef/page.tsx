@@ -83,7 +83,6 @@ function ChefExperienceCard({
           )}
           <div className="absolute inset-0" style={{ background: "rgba(20,7,11,0.34)" }} />
           <div className="scrim-strong absolute inset-0" />
-          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16" style={{ background: "linear-gradient(to bottom, rgba(139,58,74,0), rgb(139,58,74))" }} />
 
           {item.qimoSelect && (
             <div className="chip-on-photo absolute left-4 top-4 !border-gold/50 font-sans text-[10px] font-semibold uppercase tracking-luxe text-gold-soft">
@@ -98,7 +97,7 @@ function ChefExperienceCard({
           </div>
         </div>
 
-        <div className="flex items-center justify-center gap-2 bg-petrol-600 px-4 py-3.5 font-sans text-[12px] font-medium uppercase tracking-wide text-cream">
+        <div className="flex items-center justify-center gap-2 border-t bg-petrol-600 px-4 py-2.5 font-sans text-[11px] font-semibold uppercase tracking-wide text-cream shadow-[inset_0_1px_0_rgba(255,255,255,.16)]" style={{ borderColor: "rgba(255,255,255,.18)" }}>
           {open ? "Ocultar detalhes" : "Ver detalhes"}
           <Icon name="ChevronDown" size={15} className={open ? "rotate-180" : ""} />
         </div>
