@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase/client";
 import {
   fetchActivities, fetchParticipants, fetchReservations,
   updateCapacity, setHidden, deleteParticipant,
-  reserve, cancelReservation, upsertParticipantByPhone,
+  reserve, cancelReservation, upsertParticipantByPhone, updateParticipant,
   type BxActivityFull, type BxParticipant, type BxReservation,
 } from "@/lib/supabase/bordeaux";
 import { Icon } from "@/components/Icon";
@@ -365,6 +365,8 @@ function PasseioRow({ a, onChange }: { a: BxActivityFull; onChange: () => void }
 /* ---------------- Participantes ---------------- */
 function Participantes({ parts, onChange }: { parts: BxParticipant[]; onChange: () => void }) {
   const [f, setF] = useState({ full_name: "", family: "", phone: "", email: "", companions: 0 });
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [edit, setEdit] = useState({ full_name: "", family: "", phone: "", email: "", companions: 0 });
   const [bulk, setBulk] = useState("");
   const [bulkMsg, setBulkMsg] = useState("");
   const [busy, setBusy] = useState(false);
@@ -385,6 +387,31 @@ function Participantes({ parts, onChange }: { parts: BxParticipant[]; onChange: 
     }
     setBulk(""); setBulkMsg(`${count} cliente(s) importado(s) ou atualizado(s).`);
     await onChange(); setBusy(false);
+  };
+  const startEdit = (p: BxParticipant) => {
+    setEditingId(p.id);
+    setEdit({
+      full_name: p.full_name || "",
+      family: p.family || "",
+      phone: p.phone || "",
+      email: p.email || "",
+      companions: p.companions || 0,
+    });
+  };
+  const saveEdit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingId || !edit.full_name.trim()) return;
+    setBusy(true);
+    await updateParticipant(editingId, {
+      full_name: edit.full_name.trim(),
+      family: edit.family.trim() || null,
+      phone: edit.phone.trim() || null,
+      email: edit.email.trim() || null,
+      companions: edit.companions || 0,
+    });
+    setEditingId(null);
+    await onChange();
+    setBusy(false);
   };
   return (
     <div className="grid gap-8 lg:grid-cols-[340px_1fr]">
@@ -438,12 +465,38 @@ function Participantes({ parts, onChange }: { parts: BxParticipant[]; onChange: 
         <p className="kicker mb-3">{parts.length} clientes</p>
         <div className="space-y-2">
           {parts.map((p) => (
-            <div key={p.id} className="card flex items-center gap-3 p-4">
-              <div className="min-w-0 flex-1">
-                <p className="truncate font-serif text-[17px] font-light">{p.full_name}</p>
-                <p className="font-sans text-[12px] text-muted">{[p.family, p.phone, p.email].filter(Boolean).join(" · ")}</p>
-              </div>
-              <button onClick={async () => { await deleteParticipant(p.id); onChange(); }} aria-label="Remover" className="text-muted hover:text-[#8f2f2f]"><Icon name="X" size={16} /></button>
+            <div key={p.id} className="card p-4">
+              {editingId === p.id ? (
+                <form onSubmit={saveEdit} className="space-y-3">
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    {[
+                      { k: "full_name", label: "Nome completo *" },
+                      { k: "family", label: "Cabine / par / familia" },
+                      { k: "phone", label: "Telefone" },
+                      { k: "email", label: "E-mail" },
+                    ].map(({ k, label }) => (
+                      <label key={k} className="block">
+                        <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">{label}</span>
+                        <input value={(edit as any)[k]} onChange={(e) => setEdit({ ...edit, [k]: e.target.value })}
+                          className="mt-1 w-full rounded-[10px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+                      </label>
+                    ))}
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    <button disabled={busy} className="btn-primary !px-4 !py-2 text-[12px]">{busy ? "Salvando..." : "Salvar cliente"}</button>
+                    <button type="button" disabled={busy} onClick={() => setEditingId(null)} className="btn-ghost !px-4 !py-2 text-[12px]">Cancelar</button>
+                  </div>
+                </form>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate font-serif text-[17px] font-light">{p.full_name}</p>
+                    <p className="font-sans text-[12px] text-muted">{[p.family, p.phone, p.email].filter(Boolean).join(" · ")}</p>
+                  </div>
+                  <button onClick={() => startEdit(p)} aria-label="Editar" className="text-muted hover:text-gold-deep"><Icon name="Pencil" size={16} /></button>
+                  <button onClick={async () => { await deleteParticipant(p.id); onChange(); }} aria-label="Remover" className="text-muted hover:text-[#8f2f2f]"><Icon name="X" size={16} /></button>
+                </div>
+              )}
             </div>
           ))}
           {parts.length === 0 && <p className="text-muted">Nenhum participante ainda.</p>}

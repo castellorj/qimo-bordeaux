@@ -91,6 +91,10 @@ export async function upsertParticipantByPhone(p: Partial<BxParticipant>) {
   }
   return sb.from("bordeaux_participants").insert(payload).select().single();
 }
+export async function updateParticipant(id: string, p: Partial<BxParticipant>) {
+  const payload = { ...p, phone: normalizePhone(p.phone) || null };
+  return supabase().from("bordeaux_participants").update(payload).eq("id", id).select().single();
+}
 export async function deleteParticipant(id: string) {
   return supabase().from("bordeaux_participants").delete().eq("id", id);
 }
