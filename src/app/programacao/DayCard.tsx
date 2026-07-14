@@ -162,15 +162,11 @@ export function DayCard({ day, img, priority = false }: { day: Day; img?: string
                           </div>
                           {a.description && <p className="mt-2 font-sans text-[13px] leading-relaxed text-muted">{a.description}</p>}
                           {paid && (
-                            <div className="mt-3 rounded-[12px] border px-3 py-2.5" style={{ borderColor: "rgba(159,54,80,.38)", background: "rgba(159,54,80,.08)" }}>
-                              <div className="flex flex-wrap items-center justify-between gap-2">
-                                <span className="inline-flex items-center gap-1.5 font-sans text-[11px] font-semibold uppercase tracking-wide text-[#9f3650]">
-                                  <Icon name="Coins" size={14} /> {"Pago \u00e0 parte"}
-                                </span>
-                                <span className="rounded-full bg-[#9f3650] px-3 py-1 font-sans text-[12px] font-semibold text-cream">
-                                  {cleanPrice(price) || "Valor sob consulta"}
-                                </span>
-                              </div>
+                            <div className="mt-3">
+                              <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border px-3 py-1.5 font-sans text-[12px] font-semibold leading-none text-[#9f3650]" style={{ borderColor: "rgba(159,54,80,.32)", background: "rgba(159,54,80,.08)" }}>
+                                <Icon name="Coins" size={13} />
+                                <span className="truncate">{"Pago \u00e0 parte"} · {cleanPrice(price) || "Valor sob consulta"}</span>
+                              </span>
                             </div>
                           )}
                           <div className="mt-3 flex flex-wrap items-center gap-2">
