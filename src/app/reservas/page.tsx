@@ -11,6 +11,10 @@ export default function ReservasPage() {
   const items = Array.from(mine.values()).sort(
     (a, b) => (a.dayNumber ?? 99) - (b.dayNumber ?? 99) || (a.startTime || "").localeCompare(b.startTime || "")
   );
+  const nextReservation = items[0];
+  const confirmedCount = items.filter((item) => item.status === "confirmed").length;
+  const waitlistCount = items.filter((item) => item.status !== "confirmed").length;
+  const seatCount = items.reduce((sum, item) => sum + (item.seats || item.party.length || 1), 0);
   const dayGroups = items.reduce<Array<{ day: number | null; items: typeof items }>>((groups, item) => {
     const day = item.dayNumber ?? null;
     const group = groups.find((g) => g.day === day);
@@ -39,19 +43,45 @@ export default function ReservasPage() {
           </div>
         ) : (
           <>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="kicker">
-                  {items.length} {items.length === 1 ? "reserva" : "reservas"}
-                  {guest?.name ? ` · ${guest.name.split(" ")[0]}` : ""}
-                </p>
-                <p className="mt-1 font-sans text-[12px] text-muted">
-                  {guest?.room ? `Quarto ${guest.room}` : "Confirme o quarto ao reservar"} · agenda atualizada automaticamente
-                </p>
+            <div className="rounded-[16px] border p-5 shadow-soft" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
+              <div className="flex flex-wrap items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <p className="kicker">Minha agenda</p>
+                  <h2 className="display mt-2 text-3xl sm:text-4xl">
+                    {guest?.room ? `Quarto ${guest.room}` : "Reservas da viagem"}
+                  </h2>
+                  <p className="mt-3 max-w-xl font-sans text-[13px] leading-relaxed text-muted">
+                    Suas escolhas ficam organizadas por dia. Se houver duas atividades no mesmo horário, o guia permite manter apenas uma opção por quarto.
+                  </p>
+                </div>
+                <Link href="/programacao" className="btn-primary !px-4 !py-2.5 text-[12px]">
+                  <Icon name="Plus" size={14} /> Reservar mais
+                </Link>
               </div>
-              <Link href="/programacao" className="flex items-center gap-1.5 font-sans text-[12px] font-semibold text-petrol-600 hover:text-petrol-500">
-                <Icon name="Plus" size={14} /> Reservar mais
-              </Link>
+
+              <div className="mt-5 grid gap-3 sm:grid-cols-4">
+                <AgendaStat icon="CalendarCheck" label="Confirmadas" value={String(confirmedCount)} />
+                <AgendaStat icon="Clock" label="Espera" value={String(waitlistCount)} />
+                <AgendaStat icon="Users" label="Pessoas" value={String(seatCount)} />
+                <AgendaStat icon="RefreshCw" label="Atualização" value="ao vivo" />
+              </div>
+
+              {nextReservation && (
+                <div className="mt-4 rounded-[12px] border p-4" style={{ borderColor: "var(--gold)", background: "color-mix(in srgb, var(--gold) 9%, transparent)" }}>
+                  <p className="font-sans text-[11px] font-semibold uppercase tracking-wide2 text-gold-deep">Próxima escolha</p>
+                  <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-serif text-xl font-light leading-snug">{nextReservation.title}</p>
+                      <p className="mt-1 font-sans text-[12px] text-muted">
+                        Dia {nextReservation.dayNumber ?? "a confirmar"} · {nextReservation.startTime || "horário a confirmar"}
+                      </p>
+                    </div>
+                    <span className={`rounded-full px-3 py-1 font-sans text-[11px] font-medium ${nextReservation.status === "confirmed" ? "bg-olive/15 text-olive-deep" : "bg-gold/15 text-gold-deep"}`}>
+                      {nextReservation.status === "confirmed" ? "Confirmada" : "Lista de espera"}
+                    </span>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="mt-5 space-y-6">
@@ -102,5 +132,21 @@ export default function ReservasPage() {
         )}
       </div>
     </>
+  );
+}
+
+function AgendaStat({ icon, label, value }: { icon: string; label: string; value: string }) {
+  return (
+    <div className="rounded-[12px] border bg-white/40 p-3" style={{ borderColor: "var(--line)" }}>
+      <div className="flex items-center gap-2">
+        <span className="grid h-8 w-8 place-items-center rounded-full bg-black/[0.04] text-gold-deep">
+          <Icon name={icon} size={15} />
+        </span>
+        <div>
+          <p className="font-serif text-xl font-light leading-none">{value}</p>
+          <p className="mt-1 font-sans text-[10px] uppercase tracking-wide2 text-muted">{label}</p>
+        </div>
+      </div>
+    </div>
   );
 }
