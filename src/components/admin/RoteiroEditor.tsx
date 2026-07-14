@@ -50,6 +50,7 @@ async function syncActivities(day: Day) {
 export function RoteiroEditor() {
   const [rows, setRows] = useState<ContentRow[] | null>(null);
   const [seeding, setSeeding] = useState(false);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     let r = await listContent("day");
@@ -60,7 +61,9 @@ export function RoteiroEditor() {
       r = await listContent("day");
       setSeeding(false);
     }
-    setRows(r.sort((a, b) => (a.data?.n ?? 0) - (b.data?.n ?? 0)));
+    const sorted = r.sort((a, b) => (a.data?.n ?? 0) - (b.data?.n ?? 0));
+    setRows(sorted);
+    setSelectedId((current) => current && sorted.some((row) => row.id === current) ? current : sorted[0]?.id ?? null);
   }, []);
   useEffect(() => { load(); }, [load]);
 
@@ -76,27 +79,57 @@ export function RoteiroEditor() {
     load();
   };
 
-  if (rows === null) return <p className="text-muted">{seeding ? "Importando o roteiro para edição…" : "Carregando…"}</p>;
+  if (rows === null) return <p className="text-muted">{seeding ? "Importando o roteiro para edicao..." : "Carregando..."}</p>;
+  const selected = rows.find((row) => row.id === selectedId) || rows[0];
 
   return (
     <div>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="max-w-2xl font-sans text-[13px] leading-relaxed text-muted">
-          Edite o roteiro completo: título, textos, foto, portos, agenda do navio e as atividades de cada dia.
-          Ao salvar um dia, os passeios reserváveis são atualizados automaticamente. Tudo <strong>sem republicar</strong>.
-        </p>
-        <button onClick={addDay} className="btn-primary !px-4 !py-2 text-[12px]"><Icon name="Plus" size={14} /> Adicionar dia</button>
+      <div className="rounded-[14px] border p-4" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="kicker">Roteiro</p>
+            <h2 className="font-serif text-2xl font-light">Escolha um dia para editar</h2>
+            <p className="mt-1 max-w-2xl font-sans text-[12px] text-muted">
+              Edite titulo, foto, portos, agenda do navio e atividades. Ao salvar, os passeios reservaveis sao sincronizados.
+            </p>
+          </div>
+          <button onClick={addDay} className="btn-primary !px-4 !py-2 text-[12px]"><Icon name="Plus" size={14} /> Adicionar dia</button>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {rows.map((row) => {
+            const day = row.data as Day;
+            const active = row.id === selectedId;
+            return (
+              <button
+                key={row.id}
+                onClick={() => setSelectedId(row.id)}
+                className={clsx(
+                  "rounded-[12px] border p-4 text-left transition-colors hover:border-gold",
+                  active ? "bg-petrol-600 text-cream" : "bg-white/35"
+                )}
+                style={{ borderColor: active ? "transparent" : "var(--line)" }}
+              >
+                <span className={clsx("inline-grid h-9 w-9 place-items-center rounded-full font-serif text-base", active ? "bg-cream/15" : "bg-petrol-600/10 text-petrol-600")}>
+                  {String(day.n).padStart(2, "0")}
+                </span>
+                <span className="mt-3 block truncate font-serif text-lg font-light leading-tight">{day.title || `Dia ${day.n}`}</span>
+                <span className={clsx("mt-1 block truncate font-sans text-[12px]", active ? "text-cream/75" : "text-muted")}>
+                  {day.date} - {day.activities.length} atividade(s)
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
-      <div className="mt-5 space-y-4">
-        {rows.map((r) => <DayEditor key={r.id} row={r} onChange={load} />)}
+      <div className="mt-5">
+        {selected && <DayEditor key={selected.id} row={selected} onChange={load} initiallyOpen />}
       </div>
     </div>
   );
 }
-
 /* -------------------- Editor de um dia -------------------- */
-function DayEditor({ row, onChange }: { row: ContentRow; onChange: () => void }) {
-  const [open, setOpen] = useState(false);
+function DayEditor({ row, onChange, initiallyOpen = false }: { row: ContentRow; onChange: () => void; initiallyOpen?: boolean }) {
+  const [open, setOpen] = useState(initiallyOpen);
   const [d, setD] = useState<Day>(row.data as Day);
   const [busy, setBusy] = useState(false);
   const [saved, setSaved] = useState(false);
