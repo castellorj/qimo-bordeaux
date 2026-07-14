@@ -425,6 +425,7 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
   const [guest, setGuest] = useState("");
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
+  const [view, setView] = useState<"reserved" | "waitlist" | "empty" | "all">("reserved");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -442,16 +443,30 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
   };
 
   const active = res.filter((r) => r.status !== "cancelled");
+  const confirmedSeats = active.filter((r) => r.status === "confirmed").reduce((s, r) => s + (r.seats || 1), 0);
+  const waitlistSeats = active.filter((r) => r.status === "waitlist").reduce((s, r) => s + (r.seats || 1), 0);
 
   // Agrupa por passeio (para ver quem reservou o quê)
   const byActivity = acts
     .map((a) => {
       const list = active.filter((r) => r.activity_id === a.id);
       const people = list.reduce((s, r) => s + (r.seats || 1), 0);
-      return { a, list, people };
+      const waitlist = list.filter((r) => r.status === "waitlist").reduce((s, r) => s + (r.seats || 1), 0);
+      return { a, list, people, waitlist };
     })
-    .filter((g) => g.list.length > 0)
     .sort((x, y) => (x.a.day_number ?? 99) - (y.a.day_number ?? 99));
+  const filteredGroups = byActivity.filter((g) => {
+    if (view === "all") return true;
+    if (view === "empty") return g.list.length === 0;
+    if (view === "waitlist") return g.waitlist > 0;
+    return g.list.length > 0;
+  });
+  const views = [
+    { key: "reserved" as const, label: "Com reservas", count: byActivity.filter((g) => g.list.length > 0).length, icon: "Check" },
+    { key: "waitlist" as const, label: "Lista de espera", count: byActivity.filter((g) => g.waitlist > 0).length, icon: "Clock" },
+    { key: "empty" as const, label: "Sem reservas", count: byActivity.filter((g) => g.list.length === 0).length, icon: "Circle" },
+    { key: "all" as const, label: "Todos", count: byActivity.length, icon: "Ticket" },
+  ];
 
   const personLabel = (r: BxReservation) => {
     if (r.source === "guest" && r.party && r.party.length) return r.party[0];
@@ -460,52 +475,86 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
   const companions = (r: BxReservation) => (r.source === "guest" && r.party ? r.party.slice(1) : []);
 
   return (
-    <div className="grid gap-8 lg:grid-cols-[360px_1fr]">
-      <form onSubmit={submit} className="card h-fit p-6">
-        <h3 className="font-serif text-xl font-light">Nova reserva</h3>
-        <p className="mt-1 font-sans text-[12px] leading-relaxed text-muted">Inscreva alguém num passeio manualmente. Os hóspedes também reservam pelo app — e aparecem aqui na hora.</p>
-        <div className="mt-4 space-y-3">
-          <label className="block">
-            <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Passeio</span>
-            <select value={activityId} onChange={(e) => setActivityId(e.target.value)} className="mt-1 w-full rounded-[10px] border bg-transparent px-4 py-2.5 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }}>
-              <option value="">Escolha o passeio…</option>
-              {acts.map((a) => (
-                <option key={a.id} value={a.id}>Dia {a.day_number} · {a.title} ({a.available ?? "∞"} vagas)</option>
-              ))}
-            </select>
-          </label>
-          <label className="block">
-            <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Participante</span>
-            <select value={participantId} onChange={(e) => setParticipantId(e.target.value)} className="mt-1 w-full rounded-[10px] border bg-transparent px-4 py-2.5 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }}>
-              <option value="">Escolha um cadastrado…</option>
-              {parts.map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}
-            </select>
-          </label>
-          {!participantId && (
-            <label className="block">
-              <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">…ou nome avulso</span>
-              <span className="mb-1 block font-sans text-[11px] text-muted">Para alguém que ainda não está cadastrado em Participantes.</span>
-              <input placeholder="Nome" value={guest} onChange={(e) => setGuest(e.target.value)} className="mt-1 w-full rounded-[10px] border bg-transparent px-4 py-2.5 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
-            </label>
-          )}
-          <div className="flex gap-3">
-            <label className="flex flex-1 items-center gap-2 font-sans text-[12px] text-muted">Adultos
-              <input type="number" min={1} value={adults} onChange={(e) => setAdults(parseInt(e.target.value) || 1)} className="w-16 rounded-[8px] border bg-transparent px-2 py-1.5 text-center outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
-            </label>
-            <label className="flex flex-1 items-center gap-2 font-sans text-[12px] text-muted">Crianças
-              <input type="number" min={0} value={children} onChange={(e) => setChildren(parseInt(e.target.value) || 0)} className="w-16 rounded-[8px] border bg-transparent px-2 py-1.5 text-center outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
-            </label>
+    <div className="space-y-6">
+      <div className="rounded-[14px] border p-4" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="kicker">Reservas</p>
+            <h2 className="font-serif text-2xl font-light">Acompanhe por passeio</h2>
+            <p className="mt-1 max-w-2xl font-sans text-[12px] text-muted">Veja confirmados, lista de espera e passeios ainda sem inscritos.</p>
           </div>
-          {msg && <p className={clsx("font-sans text-[12px]", msg.ok ? "text-olive-deep" : "text-[#8f2f2f]")}>{msg.text}</p>}
-          <button disabled={busy} className="btn-primary w-full">{busy ? "…" : "Reservar"}</button>
+          <div className="flex flex-wrap gap-2 font-sans text-[11px]">
+            <span className="rounded-full bg-olive/15 px-3 py-1 text-olive-deep">{confirmedSeats} confirmados</span>
+            <span className="rounded-full bg-gold/15 px-3 py-1 text-gold-deep">{waitlistSeats} em espera</span>
+          </div>
         </div>
-      </form>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          {views.map((item) => {
+            const selected = view === item.key;
+            return (
+              <button
+                key={item.key}
+                onClick={() => setView(item.key)}
+                className={clsx("rounded-[12px] border p-4 text-left transition-colors hover:border-gold", selected ? "bg-petrol-600 text-cream" : "bg-white/35")}
+                style={{ borderColor: selected ? "transparent" : "var(--line)" }}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className={clsx("grid h-9 w-9 place-items-center rounded-full", selected ? "bg-cream/15" : "bg-gold/12 text-gold-deep")}><Icon name={item.icon} size={17} /></span>
+                  <span className="font-serif text-3xl font-light">{item.count}</span>
+                </div>
+                <span className={clsx("mt-2 block font-sans text-[12px]", selected ? "text-cream/75" : "text-muted")}>{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
 
-      <div>
-        <p className="kicker mb-3">{active.length} reservas · {byActivity.length} passeios com inscritos</p>
-        {byActivity.length === 0 && <p className="text-muted">Nenhuma reserva ainda.</p>}
-        <div className="space-y-5">
-          {byActivity.map(({ a, list, people }) => (
+      <div className="grid gap-8 lg:grid-cols-[360px_1fr]">
+        <form onSubmit={submit} className="card h-fit p-6">
+          <h3 className="font-serif text-xl font-light">Nova reserva</h3>
+          <p className="mt-1 font-sans text-[12px] leading-relaxed text-muted">Inscreva alguém num passeio manualmente. Os hóspedes também reservam pelo app — e aparecem aqui na hora.</p>
+          <div className="mt-4 space-y-3">
+            <label className="block">
+              <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Passeio</span>
+              <select value={activityId} onChange={(e) => setActivityId(e.target.value)} className="mt-1 w-full rounded-[10px] border bg-transparent px-4 py-2.5 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }}>
+                <option value="">Escolha o passeio…</option>
+                {acts.map((a) => (
+                  <option key={a.id} value={a.id}>Dia {a.day_number} · {a.title} ({a.available ?? "∞"} vagas)</option>
+                ))}
+              </select>
+            </label>
+            <label className="block">
+              <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Participante</span>
+              <select value={participantId} onChange={(e) => setParticipantId(e.target.value)} className="mt-1 w-full rounded-[10px] border bg-transparent px-4 py-2.5 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }}>
+                <option value="">Escolha um cadastrado…</option>
+                {parts.map((p) => <option key={p.id} value={p.id}>{p.full_name}</option>)}
+              </select>
+            </label>
+            {!participantId && (
+              <label className="block">
+                <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">…ou nome avulso</span>
+                <span className="mb-1 block font-sans text-[11px] text-muted">Para alguém que ainda não está cadastrado em Participantes.</span>
+                <input placeholder="Nome" value={guest} onChange={(e) => setGuest(e.target.value)} className="mt-1 w-full rounded-[10px] border bg-transparent px-4 py-2.5 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+              </label>
+            )}
+            <div className="flex gap-3">
+              <label className="flex flex-1 items-center gap-2 font-sans text-[12px] text-muted">Adultos
+                <input type="number" min={1} value={adults} onChange={(e) => setAdults(parseInt(e.target.value) || 1)} className="w-16 rounded-[8px] border bg-transparent px-2 py-1.5 text-center outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+              </label>
+              <label className="flex flex-1 items-center gap-2 font-sans text-[12px] text-muted">Crianças
+                <input type="number" min={0} value={children} onChange={(e) => setChildren(parseInt(e.target.value) || 0)} className="w-16 rounded-[8px] border bg-transparent px-2 py-1.5 text-center outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+              </label>
+            </div>
+            {msg && <p className={clsx("font-sans text-[12px]", msg.ok ? "text-olive-deep" : "text-[#8f2f2f]")}>{msg.text}</p>}
+            <button disabled={busy} className="btn-primary w-full">{busy ? "…" : "Reservar"}</button>
+          </div>
+        </form>
+
+        <div>
+          <p className="kicker mb-3">{active.length} reservas · {filteredGroups.length} passeio(s) neste filtro</p>
+          {filteredGroups.length === 0 && <p className="text-muted">Nada para mostrar neste filtro.</p>}
+          <div className="space-y-5">
+            {filteredGroups.map(({ a, list, people }) => (
             <div key={a.id} className="card overflow-hidden">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b px-5 py-3.5" style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--petrol-600) 6%, transparent)" }}>
                 <div className="min-w-0">
@@ -517,6 +566,9 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
                 </span>
               </div>
               <div className="divide-y" style={{ borderColor: "var(--line)" }}>
+                {list.length === 0 && (
+                  <div className="px-5 py-4 font-sans text-[13px] text-muted">Nenhuma reserva neste passeio ainda.</div>
+                )}
                 {list.map((r) => {
                   const comps = companions(r);
                   return (
@@ -548,7 +600,8 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
                 })}
               </div>
             </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
     </div>
