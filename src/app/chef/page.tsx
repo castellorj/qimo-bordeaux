@@ -15,11 +15,13 @@ export default function ChefPage() {
 
   return (
     <>
-      <PageHero section="chef" small bgImage="/photos/ship-dining.jpg" kickerOnly />
+      <PageHero section="chef" small bgImage="/photos/ship-dining.jpg" kickerOnly imageOnly />
 
       <div className="container-editorial py-12">
-        <div className="mb-10">
-          <p className="prose-luxe max-w-2xl">{t("hero.chef.i")}</p>
+        <div className="mx-auto mb-10 max-w-2xl text-center">
+          <p className="kicker">{t("hero.chef.k").replace("Curadoria", "Curadoria Chef")}</p>
+          <div className="gold-rule mx-auto mt-5" />
+          <p className="prose-luxe mx-auto mt-5">{t("hero.chef.i")}</p>
         </div>
 
         <div className="space-y-6">

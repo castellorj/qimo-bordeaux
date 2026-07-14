@@ -11,6 +11,7 @@ export function PageHero({
   section,
   bgImage,
   kickerOnly,
+  imageOnly,
 }: {
   kicker?: string;
   title?: string;
@@ -19,6 +20,7 @@ export function PageHero({
   section?: string; // resolve automaticamente: nav.<s> (título), hero.<s>.k, hero.<s>.i
   bgImage?: string;
   kickerOnly?: boolean;
+  imageOnly?: boolean;
 }) {
   const { t, cfg } = useLocale();
   const k = section ? t(`hero.${section}.k`) : kicker;
@@ -44,8 +46,8 @@ export function PageHero({
         className={`container-editorial relative z-10 ${kickerOnly ? "min-h-[360px] py-14 sm:min-h-[420px]" : small ? "py-14" : "py-20 sm:py-24"}`}
         style={bg ? { textShadow: "0 1px 18px rgba(12,4,7,.9), 0 1px 3px rgba(12,4,7,.7)" } : undefined}
       >
-        {k && <p className={`kicker ${bg ? "!text-gold-soft" : ""}`}>{k}</p>}
-        {!kickerOnly && (
+        {!imageOnly && k && <p className={`kicker ${bg ? "!text-gold-soft" : ""}`}>{k}</p>}
+        {!imageOnly && !kickerOnly && (
           <>
             <h1 className={`display mt-4 text-4xl sm:text-5xl md:text-6xl ${bg ? "text-cream" : ""}`}>{ti}</h1>
             <div className="gold-rule mt-6" />
