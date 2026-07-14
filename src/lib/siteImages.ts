@@ -14,7 +14,6 @@ export interface SiteImage {
 export const SITE_IMAGES: SiteImage[] = [
   // ---- Telas de entrada ----
   { key: "img.hero.viagem", label: "Viagem (entrada)", group: "Telas de entrada", def: "/photos/hero-bordeaux.jpg", hint: "A primeira tela do cliente." },
-  { key: "img.hero.hoje", label: "Hoje (saudação)", group: "Telas de entrada", def: "/photos/hero-dordogne-sunset.jpg" },
   { key: "img.hero.gate", label: "Boas-vindas (login)", group: "Telas de entrada", def: "/photos/hero-bordeaux.jpg", hint: "Foto atrás do pedido de telefone." },
 
   // ---- Topos de seção (foto grande no topo da página) ----

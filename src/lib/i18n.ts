@@ -65,7 +65,6 @@ export const ui: Dict = {
     en: "The most memorable tables in Bordeaux.",
     es: "Las mesas más memorables de Bordeaux.",
   },
-  "nav.hoje": { pt: "Hoje", en: "Today", es: "Hoy" },
   "nav.viagem": { pt: "Viagem", en: "Trip", es: "Viaje" },
   "nav.descobrir": { pt: "Descobrir", en: "Discover", es: "Descubrir" },
   "nav.mais": { pt: "Mais", en: "More", es: "Más" },
@@ -179,7 +178,7 @@ export const ui: Dict = {
     es: "Concierge, emergencias, transporte y soporte del equipo — a un toque, incluso sin conexión.",
   },
   seloQimo: { pt: "Seleção QIMO", en: "QIMO Selection", es: "Selección QIMO" },
-  // Tela Hoje / concierge contextual
+  // Concierge contextual
   greetMorning: { pt: "Bom dia", en: "Good morning", es: "Buenos días" },
   greetAfternoon: { pt: "Boa tarde", en: "Good afternoon", es: "Buenas tardes" },
   greetEvening: { pt: "Boa noite", en: "Good evening", es: "Buenas noches" },
@@ -425,17 +424,12 @@ export function makeT(locale: Locale, overrides?: UiOverrides) {
 
 // Chaves editáveis pela equipe (rótulos de botões e seções principais)
 export const EDITABLE_LABELS: { key: string; grp: string }[] = [
-  { key: "nav.hoje", grp: "Menu" }, { key: "nav.viagem", grp: "Menu" }, { key: "nav.descobrir", grp: "Menu" },
+  { key: "nav.viagem", grp: "Menu" }, { key: "nav.descobrir", grp: "Menu" },
   { key: "nav.reservas", grp: "Menu" }, { key: "nav.mais", grp: "Menu" },
   { key: "nav.programacao", grp: "Menu" }, { key: "nav.barco", grp: "Menu" }, { key: "nav.mapa", grp: "Menu" },
   { key: "nav.cidades", grp: "Menu" }, { key: "nav.vinicolas", grp: "Menu" }, { key: "nav.restaurantes", grp: "Menu" },
   { key: "nav.vinhos", grp: "Menu" }, { key: "nav.gastronomia", grp: "Menu" }, { key: "nav.experiencias", grp: "Menu" },
   { key: "nav.compras", grp: "Menu" }, { key: "nav.concierge", grp: "Menu" }, { key: "nav.informacoes", grp: "Menu" },
-  // Tela Hoje — todos os textos da tela inicial do hóspede
-  { key: "onBoard", grp: "Tela Hoje" }, { key: "greetMorning", grp: "Tela Hoje" }, { key: "greetAfternoon", grp: "Tela Hoje" }, { key: "greetEvening", grp: "Tela Hoje" },
-  { key: "boardingLabel", grp: "Tela Hoje" }, { key: "whatNow", grp: "Tela Hoje" }, { key: "recommendations", grp: "Tela Hoje" },
-  { key: "exploreBordeaux", grp: "Tela Hoje" }, { key: "exploreBordeauxSub", grp: "Tela Hoje" },
-  { key: "recWalk", grp: "Tela Hoje" }, { key: "recCoat", grp: "Tela Hoje" }, { key: "recWater", grp: "Tela Hoje" }, { key: "recSun", grp: "Tela Hoje" }, { key: "recDress", grp: "Tela Hoje" },
   { key: "prog.seeDay", grp: "Programação" }, { key: "prog.hideDay", grp: "Programação" },
   { key: "prog.activity", grp: "Programação" }, { key: "prog.activities", grp: "Programação" },
   { key: "howToGet", grp: "Botões" }, { key: "startNav", grp: "Botões" },

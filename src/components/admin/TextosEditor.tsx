@@ -8,7 +8,6 @@ import clsx from "clsx";
 const FEATURED_GROUPS = [
   { name: "Menu", icon: "Menu", hint: "abas e navegacao" },
   { name: "Tela de entrada", icon: "Smartphone", hint: "primeiro acesso do hospede" },
-  { name: "Tela Hoje", icon: "Home", hint: "saudacao e recomendacoes" },
   { name: "ProgramaÃ§Ã£o", icon: "CalendarDays", hint: "botoes do roteiro" },
   { name: "Restaurantes", icon: "Utensils", hint: "titulos, filtros e chamadas" },
   { name: "Documentos", icon: "FileText", hint: "aviso e botoes" },

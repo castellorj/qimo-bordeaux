@@ -21,7 +21,7 @@ export { LangDropdown, LangRow } from "./LangSwitch";
 
 // Qual das 5 áreas está ativa, mesmo em subpáginas
 function activeSection(pathname: string): string {
-  if (pathname === "/" || pathname.startsWith("/hoje")) return "/hoje";
+  if (pathname === "/" || pathname.startsWith("/hoje")) return "/programacao";
   const p = pathname;
   if (/^\/(viagem|programacao)/.test(p)) return "/programacao";
   if (p.startsWith("/chef")) return "/chef";

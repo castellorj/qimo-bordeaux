@@ -3,8 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
-// A página inicial do site abre na Viagem (programação). O "Hoje" fica em /hoje,
-// acessível pela aba. Esta raiz apenas redireciona.
+// A página inicial do site abre direto na programação da viagem.
 export default function RootRedirect() {
   const router = useRouter();
   useEffect(() => { router.replace("/programacao"); }, [router]);

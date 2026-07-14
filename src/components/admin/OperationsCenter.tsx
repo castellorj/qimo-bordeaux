@@ -50,9 +50,9 @@ const HUB: { icon: string; title: string; desc: string; items: { label: string; 
   {
     icon: "Smartphone",
     title: "Telas de entrada",
-    desc: "As primeiras telas que o hóspede vê: Viagem (porta de entrada) e Hoje.",
+    desc: "A primeira tela que o hóspede vê: Viagem, a porta de entrada do guia.",
     items: [
-      { label: "Fotos das telas (Viagem e Hoje)", hint: "troque a foto de fundo · sem republicar", go: "telas" },
+      { label: "Foto da tela Viagem", hint: "troque a foto de fundo · sem republicar", go: "telas" },
       { label: "Frases e títulos das telas", hint: "saudação, chamadas e botões", go: "textos" },
     ],
   },
