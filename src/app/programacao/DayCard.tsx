@@ -31,6 +31,11 @@ function groupActivities(activities: Activity[]) {
   return groups;
 }
 
+function isOnBoardActivity(activity: Activity) {
+  const text = `${activity.title} ${activity.description || ""}`.toLowerCase();
+  return !activity.location || text.includes("a bordo") || text.includes("navio");
+}
+
 export function DayCard({ day, img, priority = false }: { day: Day; img: string; priority?: boolean }) {
   const { t, cfg } = useLocale();
   const [open, setOpen] = useState(false);
@@ -109,8 +114,14 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
                       </div>
                     )}
                     <div className={isChoice ? "space-y-3" : ""}>
-                      {group.items.map((a, index) => (
-                        <div key={a.id} className="card p-4">
+                      {group.items.map((a, index) => {
+                        const onBoard = isOnBoardActivity(a);
+                        return (
+                        <div
+                          key={a.id}
+                          className={`card p-4 ${onBoard ? "border-l-4 bg-petrol-600/[0.035]" : ""}`}
+                          style={onBoard ? { borderLeftColor: "var(--gold)" } : undefined}
+                        >
                           <div className="min-w-0">
                             {a.time && !isChoice && <span className="font-sans text-[13px] font-semibold tabular-nums text-gold-deep">{a.time}</span>}
                             {isChoice && <span className="mb-1 inline-flex rounded-full bg-black/[0.04] px-2 py-0.5 font-sans text-[10px] font-semibold uppercase tracking-wide2 text-muted">Opção {index + 1}</span>}
@@ -118,6 +129,7 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
                           </div>
                           {a.description && <p className="mt-2 font-sans text-[13px] leading-relaxed text-muted">{a.description}</p>}
                           <div className="mt-3 flex flex-wrap items-center gap-2">
+                            {onBoard && <span className="chip border-gold/50 bg-gold/10 text-gold-deep"><Icon name="Ship" size={13} /> A bordo</span>}
                             {a.qimoSelect && <QimoSeal />}
                             {a.location && <span className="chip">{a.location}</span>}
                             {a.linkedWinery && <Link href={`/vinicolas/${a.linkedWinery}`} className="chip hover:text-gold"><Icon name="Grape" size={13} /> Ver vinícola</Link>}
@@ -125,7 +137,7 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
                           </div>
                           <ActivityReserve contentKey={a.id} />
                         </div>
-                      ))}
+                      );})}
                     </div>
                   </div>
                 </li>

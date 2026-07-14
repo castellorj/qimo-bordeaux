@@ -11,7 +11,7 @@ import type { ChefExperience } from "@/lib/types";
 export default function ChefPage() {
   const { t } = useLocale();
   const items = useGuideKind<ChefExperience>("chef");
-  const [openSlug, setOpenSlug] = useState<string | null>(items[0]?.slug ?? null);
+  const [openSlug, setOpenSlug] = useState<string | null>(null);
 
   return (
     <>
@@ -19,9 +19,11 @@ export default function ChefPage() {
 
       <div className="container-editorial py-12">
         <div className="mx-auto mb-10 max-w-2xl text-center">
-          <p className="kicker">{t("hero.chef.k").replace("Curadoria", "Curadoria Chef")}</p>
+          <h1 className="font-serif text-[32px] font-light leading-tight text-petrol-700 sm:text-5xl">
+            {t("hero.chef.k").replace("Curadoria", "Curadoria Chef")}
+          </h1>
           <div className="gold-rule mx-auto mt-5" />
-          <p className="prose-luxe mx-auto mt-5">{t("hero.chef.i")}</p>
+          <p className="mx-auto mt-5 max-w-xl font-sans text-[16px] leading-relaxed text-muted sm:text-[17px]">{t("hero.chef.i")}</p>
         </div>
 
         <div className="space-y-6">
@@ -92,10 +94,10 @@ function ChefExperienceCard({
             </div>
           )}
 
-          <div className="absolute inset-x-0 bottom-0 p-6 pb-7 sm:p-8 sm:pb-8" style={{ textShadow: "0 1px 18px rgba(12,4,7,.85), 0 1px 3px rgba(12,4,7,.7)" }}>
-            {item.category && <p className="font-sans text-[11px] uppercase tracking-luxe text-gold-soft">{item.category}</p>}
-            <h2 className="mt-1 max-w-3xl font-serif text-3xl font-light leading-tight text-cream sm:text-4xl">{item.name}</h2>
-            {item.chef && <p className="mt-2 font-serif text-[15px] font-light italic text-cream/95">{item.chef}</p>}
+          <div className="absolute inset-x-0 bottom-0 p-5 pb-6 sm:p-7 sm:pb-7" style={{ textShadow: "0 1px 18px rgba(12,4,7,.85), 0 1px 3px rgba(12,4,7,.7)" }}>
+            {item.category && <p className="font-sans text-[10px] uppercase tracking-luxe text-gold-soft">{item.category}</p>}
+            <h2 className="mt-1 max-w-3xl font-serif text-[26px] font-light leading-[1.08] text-cream sm:text-[32px]">{item.name}</h2>
+            {item.chef && <p className="mt-1.5 font-serif text-[14px] font-light italic text-cream/95">{item.chef}</p>}
           </div>
         </div>
 
@@ -109,7 +111,7 @@ function ChefExperienceCard({
         <div className="animate-fade-up">
           <div className="mt-5 card p-5">
             {item.chef && <p className="kicker-muted flex items-center gap-1.5"><Icon name="Sparkles" size={12} /> {item.chef}</p>}
-            <p className="mt-2 font-sans text-[14px] leading-relaxed text-muted">{item.description}</p>
+            <p className="mt-2 font-sans text-[13px] leading-relaxed text-muted">{item.description}</p>
 
             <div className="mt-4 flex flex-wrap items-center gap-2">
               {item.duration && <span className="chip"><Icon name="Clock" size={13} /> {item.duration}</span>}
