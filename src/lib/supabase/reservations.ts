@@ -1,6 +1,7 @@
 "use client";
 
 import { supabase } from "./client";
+import { normalizePhone, phoneVariants } from "@/lib/phone";
 
 // Passeio reservável (vem do RPC bordeaux_reservable)
 export interface Reservable {
@@ -54,7 +55,7 @@ export async function fetchReservable(): Promise<Reservable[]> {
 }
 
 export async function fetchMyReservations(phone: string): Promise<MyReservation[]> {
-  const { data, error } = await supabase().rpc("bordeaux_guest_my", { p_phone: phone });
+  const { data, error } = await supabase().rpc("bordeaux_guest_my", { p_phone: normalizePhone(phone) });
   if (error || !data) return [];
   return (data as any[]).map((r) => ({
     reservationId: r.reservation_id,
@@ -73,24 +74,24 @@ export async function guestReserve(activityId: string, name: string, phone: stri
   return supabase().rpc("bordeaux_guest_reserve", {
     p_activity: activityId,
     p_guest_name: name,
-    p_guest_phone: phone,
+    p_guest_phone: normalizePhone(phone),
     p_party: party,
     p_notes: null,
   });
 }
 
 export async function guestCancel(activityId: string, phone: string) {
-  return supabase().rpc("bordeaux_guest_cancel", { p_activity: activityId, p_phone: phone });
+  return supabase().rpc("bordeaux_guest_cancel", { p_activity: activityId, p_phone: normalizePhone(phone) });
 }
 
 export async function fetchGuestParty(phone: string): Promise<GuestPassenger[]> {
-  const clean = phone.trim();
+  const clean = normalizePhone(phone);
   if (!clean) return [];
   const sb = supabase();
   const { data: owner } = await sb
     .from("bordeaux_participants")
     .select("id,full_name,phone,family")
-    .eq("phone", clean)
+    .in("phone", phoneVariants(clean))
     .maybeSingle();
 
   if (!owner) return [];

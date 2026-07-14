@@ -1,6 +1,7 @@
 "use client";
 
 import { supabase } from "./client";
+import { normalizePhone, phoneVariants } from "@/lib/phone";
 
 export interface BxActivity {
   id: string;
@@ -77,17 +78,18 @@ export async function fetchParticipants(): Promise<BxParticipant[]> {
   return (data as BxParticipant[]) || [];
 }
 export async function addParticipant(p: Partial<BxParticipant>) {
-  return supabase().from("bordeaux_participants").insert(p).select().single();
+  return supabase().from("bordeaux_participants").insert({ ...p, phone: normalizePhone(p.phone) || null }).select().single();
 }
 export async function upsertParticipantByPhone(p: Partial<BxParticipant>) {
-  const phone = p.phone?.trim();
+  const phone = normalizePhone(p.phone);
   if (!phone) return addParticipant(p);
   const sb = supabase();
-  const { data: existing } = await sb.from("bordeaux_participants").select("id").eq("phone", phone).maybeSingle();
+  const { data: existing } = await sb.from("bordeaux_participants").select("id").in("phone", phoneVariants(phone)).maybeSingle();
+  const payload = { ...p, phone };
   if (existing?.id) {
-    return sb.from("bordeaux_participants").update(p).eq("id", existing.id).select().single();
+    return sb.from("bordeaux_participants").update(payload).eq("id", existing.id).select().single();
   }
-  return sb.from("bordeaux_participants").insert(p).select().single();
+  return sb.from("bordeaux_participants").insert(payload).select().single();
 }
 export async function deleteParticipant(id: string) {
   return supabase().from("bordeaux_participants").delete().eq("id", id);

@@ -10,6 +10,7 @@ import { getCurrentLang, type Lang } from "./GoogleTranslate";
 import { LangDropdown } from "./LangSwitch";
 import { useLocale } from "./providers";
 import { cleanSiteImage, siteImageDef } from "@/lib/siteImages";
+import { normalizePhone } from "@/lib/phone";
 
 const DEVICE_LS = "qimo_device_token:v2";
 const GUEST_LS = "qimo:guest:v2";
@@ -82,7 +83,7 @@ export function WelcomeSheet() {
         if (dev) {
           const { data } = await supabase().rpc("guest_by_device", { p_device: dev });
           const g = (data as any[])?.[0];
-          if (g) { try { localStorage.setItem(GUEST_LS, JSON.stringify({ name: g.name, phone: g.phone ?? null })); } catch {} return; }
+          if (g) { try { localStorage.setItem(GUEST_LS, JSON.stringify({ name: g.name, phone: normalizePhone(g.phone) || null })); } catch {} return; }
         }
         setShow(true);
       } catch { setShow(true); }
@@ -101,7 +102,7 @@ export function WelcomeSheet() {
 
   const enter = (guestName?: string) => {
     // Guarda nome E telefone (E.164) — o telefone identifica as reservas do convidado.
-    try { localStorage.setItem(GUEST_LS, JSON.stringify({ name: guestName ?? null, phone: phone ?? null })); } catch {}
+    try { localStorage.setItem(GUEST_LS, JSON.stringify({ name: guestName ?? null, phone: normalizePhone(phone) || null })); } catch {}
     setLeaving(true);
     const onHome = typeof window !== "undefined" && window.location.pathname === "/";
     setTimeout(() => {
@@ -112,10 +113,11 @@ export function WelcomeSheet() {
 
   const submitPhone = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!phone || phone.replace(/\D/g, "").length < 8) { setErr(L.errPhone); return; }
+    const cleanPhone = normalizePhone(phone);
+    if (!cleanPhone || cleanPhone.length < 10) { setErr(L.errPhone); return; }
     setBusy(true); setErr("");
     try {
-      const { data, error } = await supabase().rpc("guest_check", { p_phone: phone });
+      const { data, error } = await supabase().rpc("guest_check", { p_phone: cleanPhone });
       if (error) throw error;
       const g = (data as any[])?.[0];
       if (g) { await supabase().rpc("guest_touch", { p_id: g.id, p_device: deviceToken() }); enter(g.name); }
@@ -129,7 +131,7 @@ export function WelcomeSheet() {
     setBusy(true); setErr("");
     try {
       const { error } = await supabase().rpc("guest_register", {
-        p_name: name.trim(), p_email: email.trim(), p_phone: phone, p_country: country, p_device: deviceToken(),
+        p_name: name.trim(), p_email: email.trim(), p_phone: normalizePhone(phone), p_country: country, p_device: deviceToken(),
       });
       if (error) throw error;
       enter(name.trim());

@@ -7,6 +7,7 @@ import {
   fetchReservable, fetchMyReservations, guestReserve, guestCancel, fetchGuestParty,
   type Reservable, type MyReservation, type GuestPassenger,
 } from "@/lib/supabase/reservations";
+import { normalizePhone } from "@/lib/phone";
 
 const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://vvvzitszfcajfrvzpace.supabase.co";
 const SB_ANON =
@@ -58,7 +59,7 @@ function readGuest(): Guest | null {
       try { localStorage.setItem(GUEST_LS, JSON.stringify(migrated)); } catch {}
       return migrated;
     }
-    return g;
+    return { ...g, phone: normalizePhone(g.phone) || null };
   } catch { return null; }
 }
 
@@ -111,7 +112,7 @@ function fallbackReservables(remote: Reservable[]): Reservable[] {
 }
 
 function reservationOwner(guest?: Guest | null) {
-  return guest?.phone?.trim() || null;
+  return normalizePhone(guest?.phone) || null;
 }
 
 function normalizedName(name?: string | null) {
@@ -133,7 +134,11 @@ function readLocalReservations(owner?: string | null): MyReservation[] {
   try {
     const raw = localStorage.getItem(LOCAL_RES_LS);
     const rows = raw ? JSON.parse(raw) : [];
-    return Array.isArray(rows) ? rows.filter((r) => r.owner === owner || r.phone === owner).map(({ owner: _owner, phone: _phone, ...rest }) => rest) : [];
+    return Array.isArray(rows)
+      ? rows
+        .filter((r) => normalizePhone(r.owner || r.phone) === owner)
+        .map(({ owner: _owner, phone: _phone, ...rest }) => rest)
+      : [];
   } catch { return []; }
 }
 
@@ -141,7 +146,7 @@ function upsertLocalReservation(owner: string, rv: Reservable, party: string[]) 
   const raw = localStorage.getItem(LOCAL_RES_LS);
   const rows = raw ? JSON.parse(raw) : [];
   const list = Array.isArray(rows) ? rows : [];
-  const next = list.filter((r) => !((r.owner === owner || r.phone === owner) && r.activityId === rv.activityId));
+  const next = list.filter((r) => !(normalizePhone(r.owner || r.phone) === owner && r.activityId === rv.activityId));
   next.push({
     owner,
     reservationId: `local-${rv.activityId}-${owner}`,
@@ -161,7 +166,7 @@ function removeLocalReservation(owner: string, activityId: string) {
   const raw = localStorage.getItem(LOCAL_RES_LS);
   const rows = raw ? JSON.parse(raw) : [];
   const list = Array.isArray(rows) ? rows : [];
-  localStorage.setItem(LOCAL_RES_LS, JSON.stringify(list.filter((r) => !((r.owner === owner || r.phone === owner) && r.activityId === activityId))));
+  localStorage.setItem(LOCAL_RES_LS, JSON.stringify(list.filter((r) => !(normalizePhone(r.owner || r.phone) === owner && r.activityId === activityId))));
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -178,8 +183,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   const loadMine = useCallback(async (owner?: string | null, guestName?: string | null, party: GuestPassenger[] = []) => {
     if (!owner) { setMineArr([]); return; }
-    const currentName = guestName || party.find((p) => p.phone === owner)?.fullName || null;
-    const phones = Array.from(new Set([owner, ...party.map((p) => p.phone).filter(Boolean) as string[]]));
+    const currentName = guestName || party.find((p) => normalizePhone(p.phone) === owner)?.fullName || null;
+    const phones = Array.from(new Set([owner, ...party.map((p) => normalizePhone(p.phone)).filter(Boolean)]));
     const batches = await Promise.all(phones.map(async (phone) => ({
       phone,
       rows: await fetchMyReservations(phone),
