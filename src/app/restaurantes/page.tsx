@@ -158,10 +158,6 @@ export default function RestaurantesPage() {
         <div className="mt-8">
           {grouped.map((group) => group.items.length > 0 && (
             <section key={group.key} className="mb-12">
-              <div className="mb-5 max-w-3xl">
-                <h2 className="display text-3xl">{group.title}</h2>
-                <p className="mt-2 font-sans text-[14px] leading-relaxed text-muted">{group.intro}</p>
-              </div>
               <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {group.items.map((r, i) => <RestaurantCard key={r.slug} r={r} priority={i < 2} />)}
               </div>
