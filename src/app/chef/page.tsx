@@ -18,12 +18,7 @@ export default function ChefPage() {
       <PageHero section="chef" small bgImage="/photos/ship-dining.jpg" />
 
       <div className="container-editorial py-12">
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="kicker">{t("chef.curator")}</p>
-          <p className="prose-luxe mx-auto mt-4">{t("chef.lead")}</p>
-        </div>
-
-        <div className="mt-10 space-y-6">
+        <div className="space-y-6">
           {items.map((item, i) => (
             <ChefExperienceCard
               key={item.slug}
