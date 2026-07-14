@@ -74,16 +74,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
     setReservable(rv);
   }, [loadMine]);
 
-  useEffect(() => {
-    if (started.current) return;
-    started.current = true;
-    setReady(true);
-    setGuest(readGuest());
-    // Passeios reserváveis + minhas reservas
-    refresh();
-    // Rótulos de botões/menus editados no painel (aplicados sem rebuild)
+  const refreshSettings = useCallback(async () => {
     fetch(`${SB_URL}/rest/v1/bordeaux_settings?select=key,pt,en,es`, {
       headers: { apikey: SB_ANON, Authorization: `Bearer ${SB_ANON}` },
+      cache: "no-store",
     })
       .then((r) => (r.ok ? r.json() : []))
       .then((rows: any[]) => {
@@ -92,7 +86,37 @@ export function Providers({ children }: { children: React.ReactNode }) {
         setOverrides(m);
       })
       .catch(() => {});
-  }, [refresh]);
+  }, []);
+
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    setReady(true);
+    setGuest(readGuest());
+    // Passeios reserváveis + minhas reservas
+    refresh();
+    // Rótulos de botões/menus editados no painel (aplicados sem rebuild)
+    refreshSettings();
+
+    const refreshLiveData = () => {
+      refresh();
+      refreshSettings();
+    };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") refreshLiveData();
+    };
+    const onMsg = (e: MessageEvent) => {
+      if (e.data?.source === "qimo-admin" && e.data?.type === "qimo-refresh") refreshLiveData();
+    };
+    window.addEventListener("focus", refreshLiveData);
+    document.addEventListener("visibilitychange", onVisible);
+    window.addEventListener("message", onMsg);
+    return () => {
+      window.removeEventListener("focus", refreshLiveData);
+      document.removeEventListener("visibilitychange", onVisible);
+      window.removeEventListener("message", onMsg);
+    };
+  }, [refresh, refreshSettings]);
 
   const setLocale = useCallback((l: Locale) => {
     setLocaleState(l);

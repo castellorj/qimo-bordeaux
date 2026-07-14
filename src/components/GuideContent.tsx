@@ -73,8 +73,17 @@ export function GuideContentProvider({ children }: { children: React.ReactNode }
     const onMsg = (e: MessageEvent) => {
       if (e.data?.source === "qimo-admin" && e.data?.type === "qimo-refresh") refresh();
     };
+    const onVisible = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
     window.addEventListener("message", onMsg);
-    return () => window.removeEventListener("message", onMsg);
+    window.addEventListener("focus", refresh);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("message", onMsg);
+      window.removeEventListener("focus", refresh);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, []);
 
   return (
