@@ -19,11 +19,11 @@ const STR: Record<Lang, Record<string, string>> = {
   pt: {
     kicker: "Bordeaux Experience",
     title1: "Bem-vindo a bordo",
-    sub1: "Seu concierge digital pela grande Bordeaux. Informe seu telefone para entrar.",
+    sub1: "Seu concierge digital pela grande Bordeaux. Informe seu telefone com DDD para entrar.",
     btn1: "Entrar", checking: "Verificando…",
     title2: "Complete seu cadastro", sub2: "Só mais um passo para abrir o seu guia.",
     name: "Nome completo *", email: "E-mail *", btn2: "Entrar no guia", registering: "Cadastrando…", back: "← Voltar",
-    errPhone: "Informe um telefone válido, com DDD.", errForm: "Preencha nome e e-mail válidos.",
+    errPhone: "Informe um telefone válido com DDD. Exemplo: 21 99999-9999.", errForm: "Preencha nome e e-mail válidos.",
     priv: "Seus dados são tratados com discrição. Sem senha, sem spam.",
   },
   en: {
@@ -163,7 +163,7 @@ export function WelcomeSheet() {
             <p className="mx-auto mt-3 max-w-xs font-serif text-[15px] font-light leading-relaxed text-cream/80">{L.sub1}</p>
             <div className="mt-8">
               <PhoneInput international defaultCountry="BR" value={phone} onChange={setPhone}
-                onCountryChange={(c) => setCountry(c || "BR")} autoFocus placeholder="+55 21 99999-9999" />
+                onCountryChange={(c) => setCountry(c || "BR")} autoFocus placeholder="+55 DDD + número" />
             </div>
             {err && <p className="mt-3 font-sans text-[12px] text-gold-soft">{err}</p>}
             <button type="submit" disabled={busy} className="btn-primary mt-6 w-full !py-3.5 text-[15px]">

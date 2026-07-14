@@ -362,7 +362,7 @@ export const ui: Dict = {
   "gate.kicker": { pt: "Bordeaux Experience", en: "Bordeaux Experience", es: "Bordeaux Experience" },
   "gate.title1": { pt: "Bem-vindo a bordo", en: "Welcome aboard", es: "Bienvenido a bordo" },
   "gate.sub1": {
-    pt: "Seu concierge digital pela grande Bordeaux. Informe seu telefone para entrar.",
+    pt: "Seu concierge digital pela grande Bordeaux. Informe seu telefone com DDD para entrar.",
     en: "Your digital concierge through greater Bordeaux. Enter your phone number to access the guide.",
     es: "Tu concierge digital por la gran Bordeaux. Ingresa tu teléfono para acceder a la guía.",
   },
@@ -375,7 +375,7 @@ export const ui: Dict = {
   "gate.btn2": { pt: "Entrar no guia", en: "Enter the guide", es: "Entrar a la guía" },
   "gate.registering": { pt: "Cadastrando…", en: "Registering…", es: "Registrando…" },
   "gate.back": { pt: "← Voltar", en: "← Back", es: "← Volver" },
-  "gate.errPhone": { pt: "Informe um telefone válido, com DDD.", en: "Enter a valid phone number.", es: "Ingresa un teléfono válido." },
+  "gate.errPhone": { pt: "Informe um telefone válido com DDD. Exemplo: 21 99999-9999.", en: "Enter a valid phone number with area code.", es: "Ingresa un teléfono válido con código de área." },
   "gate.errForm": { pt: "Preencha nome e e-mail válidos.", en: "Enter a valid name and email.", es: "Ingresa un nombre y correo válidos." },
   "gate.priv": { pt: "Seus dados são tratados com discrição. Sem senha, sem spam.", en: "Your details are handled with discretion. No password, no spam.", es: "Tus datos se tratan con discreción. Sin contraseña, sin spam." },
   "hero.concierge.k": { pt: "Concierge QIMO", en: "QIMO Concierge", es: "Concierge QIMO" },
