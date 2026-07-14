@@ -426,6 +426,7 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
   const [view, setView] = useState<"reserved" | "waitlist" | "empty" | "all">("reserved");
+  const [query, setQuery] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -473,6 +474,46 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
     return r.participant?.full_name || r.guest_name || "—";
   };
   const companions = (r: BxReservation) => (r.source === "guest" && r.party ? r.party.slice(1) : []);
+  const q = query.trim().toLowerCase();
+  const visibleGroups = filteredGroups.filter(({ a, list }) => {
+    if (!q) return true;
+    const activityText = `${a.title} ${a.day_number ?? ""} ${a.start_time ?? ""}`.toLowerCase();
+    const reservationText = list.map((r) => `${personLabel(r)} ${r.guest_phone ?? ""} ${companions(r).join(" ")}`).join(" ").toLowerCase();
+    return activityText.includes(q) || reservationText.includes(q);
+  });
+  const timeline = byActivity
+    .filter((g) => g.list.length > 0)
+    .sort((x, y) =>
+      (x.a.day_number ?? 99) - (y.a.day_number ?? 99) ||
+      (x.a.start_time || "").localeCompare(y.a.start_time || "") ||
+      x.a.title.localeCompare(y.a.title)
+    );
+  const csvCell = (value: unknown) => `"${String(value ?? "").replace(/"/g, '""')}"`;
+  const exportCsv = () => {
+    const rows = active.map((r) => {
+      const activity = acts.find((a) => a.id === r.activity_id);
+      return [
+        activity?.day_number ?? r.activity?.day_number ?? "",
+        activity?.start_time ?? r.activity?.start_time ?? "",
+        activity?.title ?? r.activity?.title ?? "",
+        personLabel(r),
+        r.guest_phone || "",
+        companions(r).join(", "),
+        r.seats || 1,
+        r.status,
+        r.source === "guest" ? "app" : "equipe",
+      ];
+    });
+    const header = ["Dia", "Horario", "Passeio", "Responsavel", "Quarto/contato", "Acompanhantes", "Lugares", "Status", "Origem"];
+    const csv = [header, ...rows].map((row) => row.map(csvCell).join(";")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "qimo-reservas.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   return (
     <div className="space-y-6">
@@ -483,9 +524,12 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
             <h2 className="font-serif text-2xl font-light">Acompanhe por passeio</h2>
             <p className="mt-1 max-w-2xl font-sans text-[12px] text-muted">Veja confirmados, lista de espera e passeios ainda sem inscritos.</p>
           </div>
-          <div className="flex flex-wrap gap-2 font-sans text-[11px]">
+          <div className="flex flex-wrap items-center gap-2 font-sans text-[11px]">
             <span className="rounded-full bg-olive/15 px-3 py-1 text-olive-deep">{confirmedSeats} confirmados</span>
             <span className="rounded-full bg-gold/15 px-3 py-1 text-gold-deep">{waitlistSeats} em espera</span>
+            <button type="button" onClick={exportCsv} className="rounded-full border px-3 py-1 font-semibold text-petrol-600 hover:border-gold" style={{ borderColor: "var(--line)" }}>
+              Exportar CSV
+            </button>
           </div>
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -550,11 +594,40 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
           </div>
         </form>
 
+
         <div>
-          <p className="kicker mb-3">{active.length} reservas · {filteredGroups.length} passeio(s) neste filtro</p>
-          {filteredGroups.length === 0 && <p className="text-muted">Nada para mostrar neste filtro.</p>}
+          <div className="mb-4 rounded-[14px] border p-4" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="kicker">Linha do tempo</p>
+                <p className="mt-1 font-sans text-[12px] text-muted">Resumo por dia e horario para a operacao.</p>
+              </div>
+              <input
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Buscar passeio, quarto ou nome"
+                className="min-w-[220px] rounded-[10px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold"
+                style={{ borderColor: "var(--line)" }}
+              />
+            </div>
+            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+              {timeline.length === 0 && <span className="font-sans text-[12px] text-muted">Nenhuma reserva confirmada ainda.</span>}
+              {timeline.map(({ a, people, waitlist }) => (
+                <div key={a.id} className="min-w-[190px] rounded-[12px] border bg-white/35 p-3" style={{ borderColor: "var(--line)" }}>
+                  <p className="font-sans text-[10px] uppercase tracking-wide2 text-gold-deep">Dia {a.day_number}{a.start_time ? ` - ${a.start_time}` : ""}</p>
+                  <p className="mt-1 line-clamp-2 font-serif text-[15px] font-light leading-tight">{a.title}</p>
+                  <p className="mt-2 font-sans text-[11px] text-muted">
+                    {people} {people === 1 ? "pessoa" : "pessoas"}{a.capacity_total != null ? ` / ${a.capacity_total}` : ""}
+                    {waitlist > 0 ? ` - ${waitlist} espera` : ""}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+          <p className="kicker mb-3">{active.length} reservas · {visibleGroups.length} passeio(s) neste filtro</p>
+          {visibleGroups.length === 0 && <p className="text-muted">Nada para mostrar neste filtro.</p>}
           <div className="space-y-5">
-            {filteredGroups.map(({ a, list, people }) => (
+            {visibleGroups.map(({ a, list, people }) => (
             <div key={a.id} className="card overflow-hidden">
               <div className="flex flex-wrap items-center justify-between gap-2 border-b px-5 py-3.5" style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--petrol-600) 6%, transparent)" }}>
                 <div className="min-w-0">
