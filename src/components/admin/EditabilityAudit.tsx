@@ -60,8 +60,8 @@ const AREAS: Area[] = [
     title: "Concierge",
     status: "complete",
     where: "Fotos e concierge",
-    editable: ["secoes do acordeao (criar/renomear/reordenar/ocultar)", "secoes de texto livre", "contatos", "balao de contatos rapidos"],
-    gaps: ["frases em frances e etiqueta ainda vem do arquivo (a secao e editavel, o conteudo interno nao)"],
+    editable: ["secoes do acordeao (criar/renomear/reordenar/ocultar)", "secoes de texto livre", "contatos", "balao de contatos rapidos", "frases em frances", "dicas de etiqueta"],
+    gaps: ["links uteis e alguns modulos automaticos ainda seguem uma estrutura fixa"],
   },
   {
     title: "Paginas extras",

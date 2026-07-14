@@ -3,7 +3,7 @@
 import { supabase } from "./client";
 import {
   cities, wineries, restaurants, appellations, gastronomy, experiences, shopping, chefExperiences,
-  infoFacts, etiquetteTips, ship, documentCategories,
+  infoFacts, etiquetteTips, frenchPhrases, ship, documentCategories,
 } from "@/content";
 
 // O Navio é um registro único (slug fixo) — permite editar a página /barco no painel.
@@ -22,6 +22,7 @@ export const CONTENT_KINDS = [
   { kind: "ship", label: "Navio", file: [shipRecord] },
   { kind: "info_fact", label: "Info úteis", file: infoFacts },
   { kind: "etiquette_tip", label: "Etiqueta", file: etiquetteTips },
+  { kind: "french_phrase", label: "Frases em francês", file: frenchPhrases },
   { kind: "document_category", label: "Documentos", file: documentCategories },
 ] as const;
 

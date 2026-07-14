@@ -277,6 +277,7 @@ export interface ConciergeSection {
 }
 
 export interface FrenchPhrase {
+  slug: string;
   pt: string;
   fr: string;
   hint: string; // pronúncia aproximada

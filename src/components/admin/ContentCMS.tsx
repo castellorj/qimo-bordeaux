@@ -16,7 +16,7 @@ const LONG = 70;
 const KIND_GROUPS = [
   { title: "Principais", kinds: ["city", "winery", "restaurant", "document_category"] },
   { title: "Descobrir", kinds: ["wine", "gastronomy", "experience", "shopping", "chef"] },
-  { title: "Utilidades", kinds: ["ship", "info_fact", "etiquette_tip"] },
+  { title: "Utilidades", kinds: ["ship", "info_fact", "etiquette_tip", "french_phrase"] },
 ];
 const FEATURED_KINDS: Record<string, { icon: string; title: string; hint: string }> = {
   restaurant: { icon: "Utensils", title: "Restaurantes", hint: "menus, reservas, fotos e recomendacoes" },
@@ -52,6 +52,7 @@ const FIELD_LABELS: Record<string, string> = {
   whereToBuy: "Onde comprar", priceRange: "Faixa de preço", taxFree: "Tax Free",
   sectionOrder: "Ordem das seções",
   dossier: "Dossiê da ficha (Markdown)",
+  pt: "Português", fr: "Francês", hint: "Pronúncia / dica",
   intro: "Introdução", note: "Nota de rodapé", stats: "Números", facts: "Ficha rápida",
   highlights: "Destaques", dining: "Gastronomia", suitesList: "Lista de suítes", suites: "Suítes (bloco)",
   included: "Tudo incluído",

@@ -12,8 +12,9 @@ import { LangRow } from "@/components/SiteChrome";
 const Dossier = dynamic(() => import("@/components/Dossier").then((m) => m.Dossier), { ssr: false });
 import { useLocale } from "@/components/providers";
 import { useGuideList } from "@/components/GuideContent";
-import { frenchPhrases, etiquette, ship } from "@/content";
-import type { ConciergeContact, ConciergeSection } from "@/lib/types";
+import { ship } from "@/content";
+import type { EtiquetteTip } from "@/content/info";
+import type { ConciergeContact, ConciergeSection, FrenchPhrase } from "@/lib/types";
 
 const WHATSAPP = process.env.NEXT_PUBLIC_QIMO_WHATSAPP || "5521995453817";
 const PHONE = process.env.NEXT_PUBLIC_QIMO_PHONE || "+5521995453817";
@@ -139,7 +140,19 @@ function CurrencyConverter() {
 }
 
 /* Conteúdo de cada módulo de seção */
-function ModuleBody({ section, contacts, t }: { section: ConciergeSection; contacts: ConciergeContact[]; t: (k: string) => string }) {
+function ModuleBody({
+  section,
+  contacts,
+  etiquetteTips,
+  phrases,
+  t,
+}: {
+  section: ConciergeSection;
+  contacts: ConciergeContact[];
+  etiquetteTips: EtiquetteTip[];
+  phrases: FrenchPhrase[];
+  t: (k: string) => string;
+}) {
   switch (section.module) {
     case "contacts": {
       const qimo = contacts.filter((c) => c.slug.startsWith("qimo"));
@@ -180,9 +193,9 @@ function ModuleBody({ section, contacts, t }: { section: ConciergeSection; conta
     case "etiquette":
       return (
         <ul className="space-y-3">
-          {etiquette.map((e, i) => (
-            <li key={i} className="flex items-start gap-3 font-serif text-[15px] font-light leading-relaxed" style={{ color: "var(--text)" }}>
-              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-gold" /><span>{e}</span>
+          {etiquetteTips.map((e) => (
+            <li key={e.slug} className="flex items-start gap-3 font-serif text-[15px] font-light leading-relaxed" style={{ color: "var(--text)" }}>
+              <span className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-gold" /><span>{e.text}</span>
             </li>
           ))}
         </ul>
@@ -190,8 +203,8 @@ function ModuleBody({ section, contacts, t }: { section: ConciergeSection; conta
     case "phrases":
       return (
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          {frenchPhrases.map((p, i) => (
-            <div key={i} className="rounded-[10px] border p-4" style={{ borderColor: "var(--line)" }}>
+          {phrases.map((p) => (
+            <div key={p.slug} className="rounded-[10px] border p-4" style={{ borderColor: "var(--line)" }}>
               <p className="font-sans text-[12px] text-muted">{p.pt}</p>
               <p className="mt-1 font-serif text-xl font-light" style={{ color: "var(--text)" }}>{p.fr}</p>
               <p className="mt-0.5 font-sans text-[12px] italic text-gold">/ {p.hint} /</p>
@@ -227,10 +240,10 @@ function ModuleBody({ section, contacts, t }: { section: ConciergeSection; conta
 }
 
 // contagem exibida no cabeçalho de algumas seções
-function sectionCount(section: ConciergeSection, contacts: ConciergeContact[]): number | undefined {
+function sectionCount(section: ConciergeSection, contacts: ConciergeContact[], etiquetteTips: EtiquetteTip[], phrases: FrenchPhrase[]): number | undefined {
   if (section.module === "contacts") return contacts.length;
-  if (section.module === "etiquette") return etiquette.length;
-  if (section.module === "phrases") return frenchPhrases.length;
+  if (section.module === "etiquette") return etiquetteTips.length;
+  if (section.module === "phrases") return phrases.length;
   return undefined;
 }
 
@@ -238,6 +251,8 @@ export default function ConciergePage() {
   const { t } = useLocale();
   const contacts = useGuideList<ConciergeContact>("concierge");
   const sections = useGuideList<ConciergeSection>("concierge_section");
+  const etiquetteTips = useGuideList<EtiquetteTip>("etiquette_tip");
+  const phrases = useGuideList<FrenchPhrase>("french_phrase");
 
   return (
     <>
@@ -245,8 +260,8 @@ export default function ConciergePage() {
 
       <div className="container-editorial space-y-3 py-10">
         {sections.map((s) => (
-          <Section key={s.slug} title={s.title} hint={s.hint} count={sectionCount(s, contacts)} defaultOpen={s.defaultOpen}>
-            <ModuleBody section={s} contacts={contacts} t={t} />
+          <Section key={s.slug} title={s.title} hint={s.hint} count={sectionCount(s, contacts, etiquetteTips, phrases)} defaultOpen={s.defaultOpen}>
+            <ModuleBody section={s} contacts={contacts} etiquetteTips={etiquetteTips} phrases={phrases} t={t} />
           </Section>
         ))}
       </div>

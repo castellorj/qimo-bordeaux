@@ -97,20 +97,20 @@ export const conciergeContacts: ConciergeContact[] = [
 ];
 
 export const frenchPhrases: FrenchPhrase[] = [
-  { pt: "Bom dia", fr: "Bonjour", hint: "bon-jur" },
-  { pt: "Boa noite", fr: "Bonsoir", hint: "bon-suár" },
-  { pt: "Por favor", fr: "S'il vous plaît", hint: "sil vu plé" },
-  { pt: "Obrigado(a)", fr: "Merci", hint: "mer-ci" },
-  { pt: "De nada", fr: "Je vous en prie", hint: "je vuz-an pri" },
-  { pt: "Com licença / Desculpe", fr: "Excusez-moi", hint: "eks-kü-zé muá" },
-  { pt: "Você fala inglês?", fr: "Parlez-vous anglais ?", hint: "par-lé vu an-glê" },
-  { pt: "A conta, por favor", fr: "L'addition, s'il vous plaît", hint: "la-di-si-on sil vu plé" },
-  { pt: "Uma taça de vinho tinto", fr: "Un verre de vin rouge", hint: "an vér de van ruj" },
-  { pt: "Saúde! (brinde)", fr: "Santé !", hint: "san-té" },
-  { pt: "Está delicioso", fr: "C'est délicieux", hint: "sé dé-li-si-ê" },
-  { pt: "Quanto custa?", fr: "Combien ça coûte ?", hint: "com-biã sa cut" },
-  { pt: "Onde fica o banheiro?", fr: "Où sont les toilettes ?", hint: "u son lê tualét" },
-  { pt: "Preciso de ajuda", fr: "J'ai besoin d'aide", hint: "jé be-zuã déd" },
+  { slug: "bom-dia", pt: "Bom dia", fr: "Bonjour", hint: "bon-jur" },
+  { slug: "boa-noite", pt: "Boa noite", fr: "Bonsoir", hint: "bon-suár" },
+  { slug: "por-favor", pt: "Por favor", fr: "S'il vous plaît", hint: "sil vu plé" },
+  { slug: "obrigado", pt: "Obrigado(a)", fr: "Merci", hint: "mer-ci" },
+  { slug: "de-nada", pt: "De nada", fr: "Je vous en prie", hint: "je vuz-an pri" },
+  { slug: "com-licenca", pt: "Com licença / Desculpe", fr: "Excusez-moi", hint: "eks-kü-zé muá" },
+  { slug: "fala-ingles", pt: "Você fala inglês?", fr: "Parlez-vous anglais ?", hint: "par-lé vu an-glê" },
+  { slug: "conta-por-favor", pt: "A conta, por favor", fr: "L'addition, s'il vous plaît", hint: "la-di-si-on sil vu plé" },
+  { slug: "vinho-tinto", pt: "Uma taça de vinho tinto", fr: "Un verre de vin rouge", hint: "an vér de van ruj" },
+  { slug: "saude", pt: "Saúde! (brinde)", fr: "Santé !", hint: "san-té" },
+  { slug: "delicioso", pt: "Está delicioso", fr: "C'est délicieux", hint: "sé dé-li-si-ê" },
+  { slug: "quanto-custa", pt: "Quanto custa?", fr: "Combien ça coûte ?", hint: "com-biã sa cut" },
+  { slug: "banheiro", pt: "Onde fica o banheiro?", fr: "Où sont les toilettes ?", hint: "u son lê tualét" },
+  { slug: "ajuda", pt: "Preciso de ajuda", fr: "J'ai besoin d'aide", hint: "jé be-zuã déd" },
 ];
 
 export const etiquette = [

@@ -215,6 +215,17 @@ const registry: CmsKindConfig[] = [
     ],
   },
   {
+    kind: "french_phrase",
+    label: "Frases em frances",
+    description: "Frases rapidas usadas na tela Concierge.",
+    fields: [
+      { key: "slug", label: "Identificador", type: "text", section: "Sistema" },
+      { key: "pt", label: "Português", type: "text", section: "Texto" },
+      { key: "fr", label: "Francês", type: "text", section: "Texto" },
+      { key: "hint", label: "Pronúncia aproximada", type: "text", section: "Texto" },
+    ],
+  },
+  {
     kind: "document_category",
     label: "Documentos",
     description: "Categorias da tela Documentos.",
