@@ -39,6 +39,7 @@ function hrefFor(c: ConciergeContact) {
     case "maps":
       return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.value)}`;
     case "link":
+    case "instagram":
       return c.value;
     default:
       return "#";
@@ -79,7 +80,7 @@ function ContactCard({ c }: { c: ConciergeContact }) {
   return (
     <a
       href={hrefFor(c)}
-      target={c.type === "link" || c.type === "maps" || c.type === "whatsapp" ? "_blank" : undefined}
+      target={c.type === "link" || c.type === "instagram" || c.type === "maps" || c.type === "whatsapp" ? "_blank" : undefined}
       rel="noopener noreferrer"
       className="card card-hover group flex items-center gap-4 p-4"
     >
@@ -155,21 +156,9 @@ function ModuleBody({
 }) {
   switch (section.module) {
     case "contacts": {
-      const qimo = contacts.filter((c) => c.slug.startsWith("qimo"));
-      const emergency = contacts.filter((c) => c.type === "emergency" || c.slug.includes("hospital") || c.slug.includes("consulado"));
-      const utils = contacts.filter((c) => !c.slug.startsWith("qimo") && c.type !== "emergency" && !c.slug.includes("hospital") && !c.slug.includes("consulado"));
-      const Group = ({ label, list }: { label: string; list: ConciergeContact[] }) =>
-        list.length ? (
-          <div>
-            <p className="kicker mb-3">{label}</p>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">{list.map((c) => <ContactCard key={c.slug} c={c} />)}</div>
-          </div>
-        ) : null;
       return (
-        <div className="space-y-6">
-          <Group label={t("conc.grp.support")} list={qimo} />
-          <Group label={t("conc.grp.emergency")} list={emergency} />
-          <Group label={t("conc.grp.utils")} list={utils} />
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          {contacts.map((c) => <ContactCard key={c.slug} c={c} />)}
         </div>
       );
     }

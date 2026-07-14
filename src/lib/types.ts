@@ -247,7 +247,7 @@ export interface ChefExperience {
 export interface ConciergeContact {
   slug: string;
   label: string;
-  type: "call" | "whatsapp" | "emergency" | "maps" | "info" | "link";
+  type: "call" | "whatsapp" | "emergency" | "maps" | "info" | "link" | "instagram";
   value: string;
   hint?: string;
   icon: string; // nome lucide

@@ -1,19 +1,18 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import { Icon } from "./Icon";
 import { useGuideList } from "./GuideContent";
 import type { ConciergeContact } from "@/lib/types";
 
 // Fallback: se nenhum contato estiver marcado como "rápido" no painel, mostra estes.
-const QUICK_FALLBACK = ["qimo-whatsapp", "qimo-call", "emergency-eu", "samu"];
+const QUICK_FALLBACK = ["qimo-whatsapp", "qimo-call", "qimo-instagram", "emergency-eu"];
 
 function hrefFor(type: string, value: string): { href: string; external: boolean } {
   if (type === "whatsapp") return { href: `https://wa.me/${value.replace(/\D/g, "")}`, external: true };
   if (type === "call" || type === "emergency") return { href: `tel:${value.replace(/[^\d+]/g, "")}`, external: false };
   if (type === "maps") return { href: `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(value)}`, external: true };
-  if (type === "link") return { href: value, external: true };
+  if (type === "link" || type === "instagram") return { href: value, external: true };
   return { href: "#", external: false };
 }
 
@@ -83,9 +82,6 @@ export function ConciergeFab() {
             })}
           </div>
 
-          <Link href="/concierge" onClick={() => setOpen(false)} className="mt-4 flex items-center justify-center gap-1.5 font-sans text-[12px] uppercase tracking-wide2 text-petrol-600 hover:text-petrol-500">
-            Ver todos os contatos <Icon name="ArrowRight" size={14} />
-          </Link>
         </div>
       </div>
     </>

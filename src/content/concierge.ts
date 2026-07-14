@@ -21,6 +21,15 @@ export const conciergeContacts: ConciergeContact[] = [
     quick: true,
   },
   {
+    slug: "qimo-instagram",
+    label: "Instagram QIMO",
+    type: "instagram",
+    value: "https://instagram.com/qimobr",
+    hint: "@qimobr",
+    icon: "Instagram",
+    quick: true,
+  },
+  {
     slug: "emergency-eu",
     label: "Emergência (Europa)",
     type: "emergency",

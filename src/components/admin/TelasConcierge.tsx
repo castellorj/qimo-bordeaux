@@ -26,9 +26,9 @@ import clsx from "clsx";
 
 const CONTACT_TYPES = [
   { v: "whatsapp", l: "WhatsApp" }, { v: "call", l: "Ligação" }, { v: "emergency", l: "Emergência" },
-  { v: "maps", l: "Mapa / endereço" }, { v: "link", l: "Link / site" }, { v: "info", l: "Informação" },
+  { v: "maps", l: "Mapa / endereço" }, { v: "link", l: "Link / site" }, { v: "instagram", l: "Instagram" }, { v: "info", l: "Informação" },
 ];
-const CONTACT_ICONS = ["MessageCircle", "Phone", "Siren", "Ambulance", "Shield", "Cross", "Landmark", "MapPin", "Globe", "Mail", "Info", "Bell", "Navigation", "Coins", "Car"];
+const CONTACT_ICONS = ["MessageCircle", "Phone", "Instagram", "Siren", "Ambulance", "Shield", "Cross", "Landmark", "MapPin", "Globe", "Mail", "Info", "Bell", "Navigation", "Coins", "Car"];
 type EditorTab = "photos" | "sections" | "contacts";
 
 const EDITOR_TABS: { id: EditorTab; icon: string; title: string; hint: string }[] = [
@@ -214,6 +214,19 @@ function ConciergeContactsEditor() {
     await upsertContent("concierge", slug, { slug, label: "Novo contato", type: "call", value: "", hint: "", icon: "Phone" }, sort, true);
     load();
   };
+  const addInstagram = async () => {
+    const sort = (rows?.reduce((m, r) => Math.max(m, r.sort), 0) ?? 0) + 10;
+    await upsertContent("concierge", "qimo-instagram", {
+      slug: "qimo-instagram",
+      label: "Instagram QIMO",
+      type: "instagram",
+      value: "https://instagram.com/qimobr",
+      hint: "@qimobr",
+      icon: "Instagram",
+      quick: true,
+    }, sort, true);
+    load();
+  };
 
   const move = async (idx: number, dir: number) => {
     if (!rows) return;
@@ -232,7 +245,10 @@ function ConciergeContactsEditor() {
             Edite, oculte, exclua, reordene e adicione contatos do balão e da página Concierge. Salva na hora, <strong>sem republicar</strong>.
           </p>
         </div>
-        <button onClick={addNew} className="btn-primary !px-4 !py-2 text-[12px]"><Icon name="Plus" size={14} /> Adicionar contato</button>
+        <div className="flex flex-wrap gap-2">
+          <button onClick={addInstagram} className="btn-ghost !px-4 !py-2 text-[12px]"><Icon name="Instagram" size={14} /> Instagram QIMO</button>
+          <button onClick={addNew} className="btn-primary !px-4 !py-2 text-[12px]"><Icon name="Plus" size={14} /> Adicionar contato</button>
+        </div>
       </div>
 
       {rows === null ? (
@@ -264,7 +280,7 @@ function ContactRow({ row, onChange, canUp, canDown, onMove }: {
   const [saved, setSaved] = useState(false);
 
   const dirty = label !== (d.label || "") || hint !== (d.hint || "") || value !== (d.value || "") || type !== (d.type || "call") || icon !== (d.icon || "Phone") || quick !== !!d.quick;
-  const valueLabel = type === "maps" ? "Endereço / local" : type === "link" ? "Link (URL)" : "Telefone / valor";
+  const valueLabel = type === "maps" ? "Endereço / local" : type === "link" || type === "instagram" ? "Link (URL)" : "Telefone / valor";
 
   const save = async () => {
     setBusy(true);
