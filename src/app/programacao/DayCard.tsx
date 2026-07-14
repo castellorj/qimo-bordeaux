@@ -17,7 +17,8 @@ const TYPE_ICON: Record<ActivityType, string> = {
 };
 
 function activityTimeKey(activity: Activity) {
-  return activity.time?.trim() || `sem-horario-${activity.id}`;
+  const start = activity.time?.split(/[–—-]/)[0]?.trim();
+  return start || `sem-horario-${activity.id}`;
 }
 
 function groupActivities(activities: Activity[]) {
@@ -26,7 +27,7 @@ function groupActivities(activities: Activity[]) {
     const key = activityTimeKey(activity);
     const group = groups.find((g) => g.key === key);
     if (group) group.items.push(activity);
-    else groups.push({ key, time: activity.time, items: [activity] });
+    else groups.push({ key, time: activity.time?.split(/[–—-]/)[0]?.trim() || activity.time, items: [activity] });
   });
   return groups;
 }
