@@ -125,7 +125,12 @@ export function DayCard({ day, img, priority = false }: { day: Day; img: string;
                         >
                           <div className="min-w-0">
                             {a.time && !isChoice && <span className="font-sans text-[13px] font-semibold tabular-nums text-gold-deep">{a.time}</span>}
-                            {isChoice && <span className="mb-1 inline-flex rounded-full bg-black/[0.04] px-2 py-0.5 font-sans text-[10px] font-semibold uppercase tracking-wide2 text-muted">Opção {index + 1}</span>}
+                            {isChoice && (
+                              <div className="mb-2 flex flex-wrap items-center gap-2">
+                                <span className="inline-flex rounded-full bg-black/[0.04] px-2 py-0.5 font-sans text-[10px] font-semibold uppercase tracking-wide2 text-muted">Opção {index + 1}</span>
+                                {a.time && <span className="inline-flex items-center gap-1 rounded-full bg-gold/10 px-2 py-0.5 font-sans text-[11px] font-semibold tabular-nums text-gold-deep"><Icon name="Clock" size={12} /> {a.time}</span>}
+                              </div>
+                            )}
                             <h3 className="font-serif text-xl font-light leading-snug">{a.title}</h3>
                           </div>
                           {a.description && <p className="mt-2 font-sans text-[13px] leading-relaxed text-muted">{a.description}</p>}

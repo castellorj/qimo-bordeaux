@@ -46,6 +46,17 @@ export default function ChefPage() {
   );
 }
 
+function chefDescription(description: string) {
+  const sentences = description
+    .split(/(?<=[.!?])\s+/)
+    .map((sentence) => sentence.trim())
+    .filter(Boolean);
+  return {
+    lead: sentences[0] || description,
+    body: sentences.slice(1),
+  };
+}
+
 function ChefExperienceCard({
   item,
   priority,
@@ -60,6 +71,7 @@ function ChefExperienceCard({
   onToggle: () => void;
 }) {
   const sectionRef = useRef<HTMLElement>(null);
+  const text = chefDescription(item.description);
 
   const close = () => {
     onToggle();
@@ -109,9 +121,21 @@ function ChefExperienceCard({
 
       {open && (
         <div className="animate-fade-up">
-          <div className="mt-5 card p-5">
+          <div className="mt-5 card p-5 sm:p-6">
             {item.chef && <p className="kicker-muted flex items-center gap-1.5"><Icon name="Sparkles" size={12} /> {item.chef}</p>}
-            <p className="mt-2 font-sans text-[13px] leading-relaxed text-muted">{item.description}</p>
+
+            <div className="mt-3 rounded-[12px] border-l-4 bg-gold/10 px-4 py-3" style={{ borderLeftColor: "var(--gold)" }}>
+              <p className="font-sans text-[10px] font-semibold uppercase tracking-wide2 text-gold-deep">Experiência exclusiva</p>
+              <p className="mt-1 font-serif text-[19px] font-light leading-snug" style={{ color: "var(--text)" }}>{text.lead}</p>
+            </div>
+
+            {text.body.length > 0 && (
+              <div className="mt-4 space-y-3">
+                {text.body.map((paragraph, index) => (
+                  <p key={index} className="font-sans text-[13px] leading-relaxed text-muted">{paragraph}</p>
+                ))}
+              </div>
+            )}
 
             <div className="mt-4 flex flex-wrap items-center gap-2">
               {item.duration && <span className="chip"><Icon name="Clock" size={13} /> {item.duration}</span>}

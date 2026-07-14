@@ -18,12 +18,12 @@ const inputCls = "mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font
 const lineStyle = { borderColor: "var(--line)" } as const;
 
 function isOffShipReservable(a: Activity) {
-  return a.type !== "transfer" && a.reservable !== false && Boolean(a.location?.trim());
+  return a.type !== "transfer" && Boolean(a.location?.trim());
 }
 
 /* Sincroniza os passeios reserváveis (bordeaux_activities) com as atividades do dia.
-   Reservável = atividade marcada como "precisa reservar" (a.reservable !== false) e que
-   não é transfer. As demais (ex.: shows para todos, palestras) ficam ocultas das reservas.
+   Reservável = toda atividade fora do barco, isto é: tem local preenchido e não é transfer.
+   As demais (ex.: shows para todos, palestras) ficam ocultas das reservas.
    Capacidade já editada no painel é preservada. */
 async function syncActivities(day: Day) {
   const sb = supabase();
@@ -304,12 +304,10 @@ function DayEditor({ row, onChange, initiallyOpen = false }: { row: ContentRow; 
                   <label className="flex items-center gap-1.5 font-sans text-[12px] text-muted">
                     <input type="checkbox" checked={!!a.qimoSelect} onChange={(e) => setAct(i, { qimoSelect: e.target.checked })} /> Seleção QIMO
                   </label>
-                  <label className={clsx("flex items-center gap-1.5 font-sans text-[12px]", a.type === "transfer" ? "text-muted opacity-50" : "text-muted")}>
-                    <input type="checkbox" disabled={a.type === "transfer"}
-                      checked={a.type !== "transfer" && a.reservable !== false}
-                      onChange={(e) => setAct(i, { reservable: e.target.checked })} /> Precisa reservar
+                  <label className={clsx("flex items-center gap-1.5 font-sans text-[12px]", isOffShipReservable(a) ? "text-muted" : "text-muted opacity-50")}>
+                    <input type="checkbox" disabled checked={isOffShipReservable(a)} readOnly /> Entra nas reservas
                   </label>
-                  {a.type === "transfer" && <span className="font-sans text-[11px] text-muted">Transfer não entra nas reservas</span>}
+                  {!isOffShipReservable(a) && <span className="font-sans text-[11px] text-muted">Só atividades com local fora do barco entram nas reservas</span>}
                   <span className="ml-auto flex items-center gap-1">
                     <button onClick={() => moveAct(i, -1)} disabled={i === 0} aria-label="Subir" className="grid h-7 w-7 place-items-center rounded-md text-muted hover:text-petrol-600 disabled:opacity-30"><Icon name="ChevronDown" size={15} className="rotate-180" /></button>
                     <button onClick={() => moveAct(i, 1)} disabled={i === d.activities.length - 1} aria-label="Descer" className="grid h-7 w-7 place-items-center rounded-md text-muted hover:text-petrol-600 disabled:opacity-30"><Icon name="ChevronDown" size={15} /></button>
