@@ -4,7 +4,6 @@ import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { DayCard } from "./DayCard";
 import { useGuideList } from "@/components/GuideContent";
-import { useReservations } from "@/components/providers";
 import { cities, wineries } from "@/content";
 import { cleanSiteImage } from "@/lib/siteImages";
 import type { Day } from "@/lib/types";
@@ -28,15 +27,9 @@ function dayImage(day: Day): string | undefined {
   return undefined;
 }
 
-function shortName(name?: string | null) {
-  const parts = (name || "").trim().split(/\s+/).filter(Boolean);
-  return parts.slice(0, 2).join(" ") || name || "";
-}
-
 /** Roteiro dia a dia — lido do banco (editável no painel) com fallback ao arquivo. */
 export function ProgramacaoDays() {
   const itinerary = [...useGuideList<Day>("day")].sort((a, b) => a.n - b.n);
-  const { guest, guestParty } = useReservations();
   const [active, setActive] = useState<number | null>(null);
   const navRef = useRef<HTMLDivElement>(null);
 
@@ -84,15 +77,6 @@ export function ProgramacaoDays() {
       </nav>
 
       <div className="container-editorial pt-6">
-        {guest?.name && (
-          <div className="mb-4 rounded-[14px] border px-4 py-3" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
-            <p className="font-sans text-[11px] uppercase tracking-wide2 text-gold-deep">Bem-vindo a bordo</p>
-            <h2 className="mt-1 font-serif text-2xl font-light">Olá, {shortName(guest.name)}</h2>
-            <p className="mt-1 font-sans text-[12px] text-muted">
-              Sua agenda usa seu telefone pessoal. {guestParty.length > 1 ? "Você pode reservar também para o seu par de cabine." : "Reservas vinculadas ao seu cadastro."}
-            </p>
-          </div>
-        )}
         <p className="font-sans text-[12px] italic text-muted">
           Toque em um dia para ver a programação. Horários sujeitos a alterações — confirmados a bordo.
         </p>

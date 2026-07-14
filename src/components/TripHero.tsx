@@ -4,10 +4,9 @@ import { useEffect, useState } from "react";
 import { Countdown } from "./Countdown";
 import { Weather } from "./Weather";
 import { PhotoImg } from "./PhotoImg";
-import { useLocale } from "./providers";
+import { useLocale, useReservations } from "./providers";
 import { TRIP } from "@/content";
 import { fullDate } from "@/lib/format";
-import { cleanSiteImage } from "@/lib/siteImages";
 
 /**
  * Cabeçalho fotográfico de boas-vindas (saudação + data + clima + contagem).
@@ -24,6 +23,7 @@ export function TripHero({
   title?: string; // se omitido, mostra a saudação (Bom dia/Boa tarde/Boa noite)
 }) {
   const { t, cfg } = useLocale();
+  const { guest } = useReservations();
   const [greeting, setGreeting] = useState("");
   const [today, setToday] = useState("");
 
@@ -33,7 +33,9 @@ export function TripHero({
     setToday(fullDate(new Date().toISOString().slice(0, 10)));
   }, [t]);
 
-  const img = cleanSiteImage(cfg(imageKey)) || cleanSiteImage(defaultImage);
+  const img = cfg(imageKey)?.trim() || defaultImage;
+  const guestName = (guest?.name || "").trim().split(/\s+/).filter(Boolean).slice(0, 2).join(" ");
+  const heroTitle = guestName ? `Olá, ${guestName}` : title || greeting || " ";
 
   return (
     <section className="relative overflow-hidden">
@@ -46,7 +48,7 @@ export function TripHero({
 
       <div className="text-on-photo container-editorial relative z-10 pb-20 pt-12 text-center sm:pt-16">
         <p className="font-sans text-[11px] uppercase tracking-luxe text-gold-soft">{t("onBoard")}</p>
-        <h1 className="display mt-4 text-4xl text-cream sm:text-5xl">{title || greeting || " "}</h1>
+        <h1 className="display mt-4 text-4xl text-cream sm:text-5xl">{heroTitle}</h1>
         <p className="mt-2 font-sans text-[13px] text-cream/70">{today}</p>
 
         <div className="mx-auto mt-8 flex max-w-md items-center justify-center rounded-full border border-cream/20 bg-petrol-950/40 px-5 py-3 backdrop-blur-sm">
