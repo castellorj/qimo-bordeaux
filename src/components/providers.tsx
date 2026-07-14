@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, useCallback, useRef } from "react";
+import { itinerary } from "@/content";
 import { type Locale, DEFAULT_LOCALE, makeT, type UiOverrides } from "@/lib/i18n";
 import {
   fetchReservable, fetchMyReservations, guestReserve, guestCancel,
@@ -41,6 +42,8 @@ const ReservationsCtx = createContext<ReservationsValue>({
 
 const GUEST_LS = "qimo:guest";
 const LOCALE_KEY = "qimo:locale";
+const LOCAL_RES_LS = "qimo:local-reservations";
+const LOCAL_ACTIVITY_PREFIX = "local:";
 
 function readGuest(): Guest | null {
   try {
@@ -49,6 +52,73 @@ function readGuest(): Guest | null {
     const g = JSON.parse(raw);
     return typeof g === "object" && g ? g : null;
   } catch { return null; }
+}
+
+function startTime(time?: string | null) {
+  return time?.split(/[–—-]/)[0]?.trim() || null;
+}
+
+function localActivityId(contentKey: string) {
+  return `${LOCAL_ACTIVITY_PREFIX}${contentKey}`;
+}
+
+function fallbackReservables(remote: Reservable[]): Reservable[] {
+  const remoteKeys = new Set(remote.map((r) => r.contentKey).filter(Boolean));
+  const fallback: Reservable[] = [];
+  itinerary.forEach((day) => {
+    day.activities.forEach((activity) => {
+      if (activity.type === "transfer" || !activity.location?.trim() || remoteKeys.has(activity.id)) return;
+      fallback.push({
+        activityId: localActivityId(activity.id),
+        contentKey: activity.id,
+        dayNumber: day.n,
+        startTime: startTime(activity.time),
+        title: activity.title,
+        capacityTotal: activity.capacity ?? null,
+        reserved: 0,
+        available: activity.capacity ?? null,
+        qimoSelect: !!activity.qimoSelect,
+        status: "local",
+      });
+    });
+  });
+  return fallback;
+}
+
+function readLocalReservations(phone?: string | null): MyReservation[] {
+  if (!phone) return [];
+  try {
+    const raw = localStorage.getItem(LOCAL_RES_LS);
+    const rows = raw ? JSON.parse(raw) : [];
+    return Array.isArray(rows) ? rows.filter((r) => r.phone === phone).map(({ phone: _phone, ...rest }) => rest) : [];
+  } catch { return []; }
+}
+
+function upsertLocalReservation(phone: string, rv: Reservable, party: string[]) {
+  const raw = localStorage.getItem(LOCAL_RES_LS);
+  const rows = raw ? JSON.parse(raw) : [];
+  const list = Array.isArray(rows) ? rows : [];
+  const next = list.filter((r) => !(r.phone === phone && r.activityId === rv.activityId));
+  next.push({
+    phone,
+    reservationId: `local-${rv.activityId}-${phone}`,
+    activityId: rv.activityId,
+    contentKey: rv.contentKey,
+    dayNumber: rv.dayNumber,
+    startTime: rv.startTime,
+    title: rv.title,
+    party,
+    seats: party.length,
+    status: "confirmed",
+  });
+  localStorage.setItem(LOCAL_RES_LS, JSON.stringify(next));
+}
+
+function removeLocalReservation(phone: string, activityId: string) {
+  const raw = localStorage.getItem(LOCAL_RES_LS);
+  const rows = raw ? JSON.parse(raw) : [];
+  const list = Array.isArray(rows) ? rows : [];
+  localStorage.setItem(LOCAL_RES_LS, JSON.stringify(list.filter((r) => !(r.phone === phone && r.activityId === activityId))));
 }
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -64,7 +134,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   const loadMine = useCallback(async (phone?: string | null) => {
     if (!phone) { setMineArr([]); return; }
-    setMineArr(await fetchMyReservations(phone));
+    const remote = await fetchMyReservations(phone);
+    setMineArr([...remote, ...readLocalReservations(phone)]);
   }, []);
 
   const refresh = useCallback(async () => {
@@ -102,6 +173,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
       refresh();
       refreshSettings();
     };
+    const refreshReservationStock = () => {
+      if (document.visibilityState === "visible") refresh();
+    };
+    const stockTimer = window.setInterval(refreshReservationStock, 12000);
     const onVisible = () => {
       if (document.visibilityState === "visible") refreshLiveData();
     };
@@ -112,6 +187,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("message", onMsg);
     return () => {
+      window.clearInterval(stockTimer);
       window.removeEventListener("focus", refreshLiveData);
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("message", onMsg);
@@ -138,21 +214,41 @@ export function Providers({ children }: { children: React.ReactNode }) {
     const phone = g?.phone;
     const name = g?.name || party[0] || "Convidado";
     if (!phone) return { ok: false, error: "phone" };
+    if (activityId.startsWith(LOCAL_ACTIVITY_PREFIX)) {
+      const rv = fallbackReservables(reservable).find((item) => item.activityId === activityId);
+      if (!rv) return { ok: false, error: "Atividade indisponivel." };
+      upsertLocalReservation(phone, rv, party);
+      setMineArr((current) => {
+        const remote = current.filter((r) => !r.activityId.startsWith(LOCAL_ACTIVITY_PREFIX));
+        return [...remote, ...readLocalReservations(phone)];
+      });
+      return { ok: true, status: "confirmed" };
+    }
     const { data, error } = await guestReserve(activityId, name, phone, party);
     if (error) return { ok: false, error: error.message };
-    await loadMine(phone);
+    const [rv] = await Promise.all([fetchReservable(), loadMine(phone)]);
+    setReservable(rv);
     return { ok: true, status: (data as any)?.status };
-  }, [loadMine]);
+  }, [loadMine, reservable]);
 
   const cancel = useCallback(async (activityId: string) => {
     const g = readGuest();
     if (!g?.phone) return;
+    if (activityId.startsWith(LOCAL_ACTIVITY_PREFIX)) {
+      removeLocalReservation(g.phone, activityId);
+      setMineArr((current) => {
+        const remote = current.filter((r) => !r.activityId.startsWith(LOCAL_ACTIVITY_PREFIX));
+        return [...remote, ...readLocalReservations(g.phone)];
+      });
+      return;
+    }
     await guestCancel(activityId, g.phone);
-    await loadMine(g.phone);
+    const [rv] = await Promise.all([fetchReservable(), loadMine(g.phone)]);
+    setReservable(rv);
   }, [loadMine]);
 
   const reservableByKey = new Map<string, Reservable>(); // por content_key
-  reservable.forEach((r) => { if (r.contentKey) reservableByKey.set(r.contentKey, r); });
+  [...reservable, ...fallbackReservables(reservable)].forEach((r) => { if (r.contentKey) reservableByKey.set(r.contentKey, r); });
   const mine = new Map<string, MyReservation>();
   mineArr.forEach((r) => mine.set(r.activityId, r));
 

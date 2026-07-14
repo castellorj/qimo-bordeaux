@@ -96,11 +96,11 @@ function ReserveSheet({
       setErr(`Este quarto já reservou "${conflict.title}" neste mesmo horário. Cancele ou altere a outra escolha antes de reservar esta opção.`);
       return;
     }
-    if (!guest?.phone && !room.trim()) { setErr("Informe o número do quarto para confirmar."); return; }
+    if (!room.trim()) { setErr("Informe o número do quarto para confirmar."); return; }
 
     setBusy(true);
     setErr("");
-    if (!guest?.phone && room.trim()) setGuestPhone(room.trim());
+    if (room.trim() !== guest?.phone) setGuestPhone(room.trim());
     const res = await reserve(rv.activityId, party);
     setBusy(false);
     if (!res.ok) {
@@ -172,20 +172,18 @@ function ReserveSheet({
           </button>
         </div>
 
-        {!guest?.phone && (
-          <label className="mt-5 block">
-            <span className="font-sans text-[11px] uppercase tracking-wide2 text-muted">Número do quarto</span>
-            <span className="mb-1 block font-sans text-[12px] text-muted">Usamos o quarto para evitar duas reservas no mesmo horário.</span>
-            <input
-              value={room}
-              onChange={(e) => setRoom(e.target.value)}
-              inputMode="text"
-              placeholder="Ex: 302"
-              className="mt-1 w-full rounded-[10px] border bg-transparent px-3 py-2.5 font-sans text-base outline-none focus:border-gold"
-              style={{ borderColor: "var(--line)" }}
-            />
-          </label>
-        )}
+        <label className="mt-5 block">
+          <span className="font-sans text-[11px] uppercase tracking-wide2 text-muted">Número do quarto</span>
+          <span className="mb-1 block font-sans text-[12px] text-muted">Confirme seu quarto para evitar duas reservas no mesmo horário.</span>
+          <input
+            value={room}
+            onChange={(e) => setRoom(e.target.value)}
+            inputMode="text"
+            placeholder="Ex: 302"
+            className="mt-1 w-full rounded-[10px] border bg-transparent px-3 py-2.5 font-sans text-base outline-none focus:border-gold"
+            style={{ borderColor: "var(--line)" }}
+          />
+        </label>
 
         {err && <p className="mt-3 font-sans text-[12px] text-[#8f2f2f]">{err}</p>}
 
