@@ -16,9 +16,6 @@ import { ship } from "@/content";
 import type { EtiquetteTip } from "@/content/info";
 import type { ConciergeContact, ConciergeSection, FrenchPhrase } from "@/lib/types";
 
-const WHATSAPP = process.env.NEXT_PUBLIC_QIMO_WHATSAPP || "5521995453817";
-const PHONE = process.env.NEXT_PUBLIC_QIMO_PHONE || "+5521995453817";
-
 // Links úteis da viagem (seção "links")
 const TRIP_LINKS = [
   { key: "barco", href: "/barco", icon: "Ship" },
@@ -32,10 +29,10 @@ const TRIP_LINKS = [
 function hrefFor(c: ConciergeContact) {
   switch (c.type) {
     case "whatsapp":
-      return `https://wa.me/${(c.slug === "qimo-whatsapp" ? WHATSAPP : c.value).replace(/\D/g, "")}`;
+      return `https://wa.me/${c.value.replace(/\D/g, "")}`;
     case "call":
     case "emergency":
-      return `tel:${c.slug === "qimo-call" ? PHONE : c.value}`;
+      return `tel:${c.value}`;
     case "maps":
       return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(c.value)}`;
     case "link":

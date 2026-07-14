@@ -39,6 +39,11 @@ self.addEventListener("fetch", (event) => {
 
   const url = new URL(request.url);
 
+  if (url.hostname.includes("supabase.co") || url.pathname.startsWith("/rest/v1/")) {
+    event.respondWith(fetch(request).catch(() => caches.match(request)));
+    return;
+  }
+
   // Clima — network-first
   if (url.hostname.includes("open-meteo.com")) {
     event.respondWith(

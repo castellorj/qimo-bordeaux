@@ -6,6 +6,11 @@ import { useGuideList } from "./GuideContent";
 import { useLocale } from "./providers";
 import type { ConciergeContact } from "@/lib/types";
 
+const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://vvvzitszfcajfrvzpace.supabase.co";
+const SB_ANON =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2dnppdHN6ZmNhamZydnpwYWNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzODMyMzIsImV4cCI6MjA5Mzk1OTIzMn0.4tBzaBgyvzwuTEvlX9wSc85c6EKtTVfEidYeeh6aGRw";
+
 // Fallback: se nenhum contato estiver marcado como "rápido" no painel, mostra estes.
 const QUICK_FALLBACK = ["qimo-whatsapp", "qimo-call", "qimo-instagram", "emergency-eu"];
 
@@ -20,6 +25,7 @@ function hrefFor(type: string, value: string): { href: string; external: boolean
 export function ConciergeFab() {
   const { cfg } = useLocale();
   const [open, setOpen] = useState(false);
+  const [liveItems, setLiveItems] = useState<ConciergeContact[] | null>(null);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -27,9 +33,26 @@ export function ConciergeFab() {
   }, [open]);
 
   const contacts = useGuideList<ConciergeContact>("concierge");
+
+  useEffect(() => {
+    if (!open) return;
+    fetch(`${SB_URL}/rest/v1/bordeaux_content?select=data,sort,published&kind=eq.concierge&published=eq.true&order=sort`, {
+      headers: { apikey: SB_ANON, Authorization: `Bearer ${SB_ANON}` },
+      cache: "no-store",
+    })
+      .then((r) => (r.ok ? r.json() : []))
+      .then((rows: any[]) => {
+        const quick = rows
+          .map((row) => row.data as ConciergeContact)
+          .filter((contact) => contact.quick)
+          .slice(0, 5);
+        setLiveItems(quick);
+      })
+      .catch(() => {});
+  }, [open]);
   // Quais contatos aparecem no balão é definido no painel (flag "rápido").
   // Enquanto ninguém marcou nada, cai nos 4 padrões.
-  const flagged = contacts.filter((c) => c.quick);
+  const flagged = liveItems ?? contacts.filter((c) => c.quick);
   const items = (
     flagged.length
       ? flagged
