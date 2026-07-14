@@ -247,14 +247,71 @@ function Shell({ email }: { email?: string }) {
 
 /* ---------------- Passeios (editar capacidade) ---------------- */
 function Passeios({ acts, onChange }: { acts: BxActivityFull[]; onChange: () => void }) {
+  const [filter, setFilter] = useState<"all" | "attention" | "soldout" | "hidden" | "free">("all");
+  const visibleActs = acts.filter((a) => {
+    const hidden = a.status === "hidden";
+    const free = a.capacity_total == null;
+    const soldout = !hidden && a.capacity_total != null && (a.available ?? 0) <= 0;
+    const almost = !hidden && a.capacity_total != null && (a.available ?? 0) > 0 && a.reserved >= a.capacity_total * 0.8;
+    if (filter === "hidden") return hidden;
+    if (filter === "free") return free && !hidden;
+    if (filter === "soldout") return soldout;
+    if (filter === "attention") return soldout || almost || a.waitlisted > 0;
+    return true;
+  });
+  const summary = {
+    attention: acts.filter((a) => a.status !== "hidden" && a.capacity_total != null && ((a.available ?? 0) <= 0 || a.reserved >= a.capacity_total * 0.8 || a.waitlisted > 0)).length,
+    soldout: acts.filter((a) => a.status !== "hidden" && a.capacity_total != null && (a.available ?? 0) <= 0).length,
+    hidden: acts.filter((a) => a.status === "hidden").length,
+    free: acts.filter((a) => a.status !== "hidden" && a.capacity_total == null).length,
+  };
+  const filters = [
+    { key: "all" as const, label: "Todos", count: acts.length, icon: "Ticket" },
+    { key: "attention" as const, label: "Atencao", count: summary.attention, icon: "AlertTriangle" },
+    { key: "soldout" as const, label: "Esgotados", count: summary.soldout, icon: "CircleMinus" },
+    { key: "hidden" as const, label: "Ocultos", count: summary.hidden, icon: "EyeOff" },
+    { key: "free" as const, label: "Livres", count: summary.free, icon: "Infinity" },
+  ];
+
   return (
     <div>
-      <p className="mb-4 flex items-start gap-2 font-sans text-[13px] text-muted">
-        <Icon name="Info" size={14} className="mt-0.5 shrink-0 text-gold-deep" />
-        <span>Defina a <strong>capacidade</strong> (vagas totais) de cada passeio. Deixe <strong>0</strong> para “livre” (sem limite). Passeios ocultos não aparecem no guia.</span>
-      </p>
-      <div className="space-y-2">
-        {acts.map((a) => (
+      <div className="rounded-[14px] border p-4" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <p className="kicker">Vagas dos passeios</p>
+            <h2 className="font-serif text-2xl font-light">O que precisa de atencao?</h2>
+            <p className="mt-1 max-w-2xl font-sans text-[12px] text-muted">
+              Ajuste capacidade e visibilidade. Use 0 para deixar o passeio livre, sem limite de vagas.
+            </p>
+          </div>
+        </div>
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          {filters.map((item) => {
+            const selected = filter === item.key;
+            return (
+              <button
+                key={item.key}
+                onClick={() => setFilter(item.key)}
+                className={clsx("rounded-[12px] border p-4 text-left transition-colors hover:border-gold", selected ? "bg-petrol-600 text-cream" : "bg-white/35")}
+                style={{ borderColor: selected ? "transparent" : "var(--line)" }}
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className={clsx("grid h-9 w-9 place-items-center rounded-full", selected ? "bg-cream/15" : "bg-gold/12 text-gold-deep")}>
+                    <Icon name={item.icon} size={17} />
+                  </span>
+                  <span className="font-serif text-3xl font-light">{item.count}</span>
+                </div>
+                <span className={clsx("mt-2 block font-sans text-[12px]", selected ? "text-cream/75" : "text-muted")}>{item.label}</span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+      <div className="mt-4 space-y-2">
+        {visibleActs.length === 0 && (
+          <div className="card p-6 text-center font-sans text-[13px] text-muted">Nenhum passeio neste filtro.</div>
+        )}
+        {visibleActs.map((a) => (
           <PasseioRow key={a.id} a={a} onChange={onChange} />
         ))}
       </div>
@@ -270,10 +327,17 @@ function PasseioRow({ a, onChange }: { a: BxActivityFull; onChange: () => void }
   const cap0 = a.capacity_total;
   const pct = cap0 ? Math.min(100, Math.round((a.reserved / cap0) * 100)) : 0;
   const tone = cap0 == null ? "muted" : (a.available ?? 0) <= 0 ? "red" : a.reserved >= cap0 * 0.8 ? "amber" : "green";
+  const statusLabel = hidden ? "Oculto" : cap0 == null ? "Livre" : (a.available ?? 0) <= 0 ? "Esgotado" : a.reserved >= cap0 * 0.8 ? "Poucas vagas" : "Disponivel";
   return (
     <div className="card flex flex-wrap items-center gap-3 p-4">
       <div className="min-w-0 flex-1">
-        <p className="truncate font-serif text-[17px] font-light">Dia {a.day_number} · {a.title}</p>
+        <div className="flex flex-wrap items-center gap-2">
+          <p className="truncate font-serif text-[17px] font-light">Dia {a.day_number} · {a.title}</p>
+          <span className={clsx("rounded-full px-2.5 py-1 font-sans text-[10px] uppercase tracking-wide2",
+            hidden ? "bg-black/5 text-muted" : tone === "red" ? "bg-[#8f2f2f]/12 text-[#8f2f2f]" : tone === "amber" ? "bg-gold/15 text-gold-deep" : tone === "green" ? "bg-olive/15 text-olive-deep" : "bg-black/5 text-muted")}>
+            {statusLabel}
+          </span>
+        </div>
         <p className="font-sans text-[12px] text-muted">
           {cap0 != null ? `${a.reserved} de ${cap0} vagas ocupadas` : `${a.reserved} reservados · livre`}
           {a.waitlisted > 0 && ` · ${a.waitlisted} na lista de espera`}
