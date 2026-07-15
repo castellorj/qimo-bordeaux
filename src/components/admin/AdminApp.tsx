@@ -592,6 +592,23 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
     return r.participant?.full_name || r.guest_name || "—";
   };
   const companions = (r: BxReservation) => (r.source === "guest" && r.party ? r.party.slice(1) : []);
+  const participantByName = (name?: string | null) => {
+    const normalized = (name || "").trim().toLowerCase();
+    if (!normalized) return undefined;
+    return parts.find((p) => p.full_name.trim().toLowerCase() === normalized);
+  };
+  const participantForReservation = (r: BxReservation) =>
+    (r.participant_id ? parts.find((p) => p.id === r.participant_id) : undefined) ||
+    (r.guest_phone ? parts.find((p) => p.phone === r.guest_phone) : undefined) ||
+    participantByName(personLabel(r));
+  const reservationGroup = (r: BxReservation) => {
+    const names = [personLabel(r), ...companions(r)];
+    const groups = names
+      .map((name) => participantByName(name)?.family)
+      .concat(participantForReservation(r)?.family)
+      .filter(Boolean) as string[];
+    return [...new Set(groups)].join(", ");
+  };
   const q = query.trim().toLowerCase();
   const visibleGroups = filteredGroups.filter(({ a, list }) => {
     if (!q) return true;
@@ -606,29 +623,39 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
       (x.a.start_time || "").localeCompare(y.a.start_time || "") ||
       x.a.title.localeCompare(y.a.title)
     );
-  const csvCell = (value: unknown) => `"${String(value ?? "").replace(/"/g, '""')}"`;
-  const exportCsv = () => {
+  const excelCell = (value: unknown) => String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+  const exportExcel = () => {
     const rows = active.map((r) => {
       const activity = acts.find((a) => a.id === r.activity_id);
       return [
         activity?.day_number ?? r.activity?.day_number ?? "",
         activity?.start_time ?? r.activity?.start_time ?? "",
         activity?.title ?? r.activity?.title ?? "",
+        reservationGroup(r),
         personLabel(r),
-        r.guest_phone || "",
+        r.guest_phone || participantForReservation(r)?.phone || "",
         companions(r).join(", "),
         r.seats || 1,
-        r.status,
+        r.status === "confirmed" ? "Confirmada" : r.status === "waitlist" ? "Lista de espera" : r.status,
         r.source === "guest" ? "app" : "equipe",
+        r.created_at ? new Date(r.created_at).toLocaleString("pt-BR") : "",
+        r.notes || "",
       ];
     });
-    const header = ["Dia", "Horario", "Passeio", "Responsavel", "Telefone", "Acompanhantes", "Lugares", "Status", "Origem"];
-    const csv = [header, ...rows].map((row) => row.map(csvCell).join(";")).join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const header = ["Dia", "Horario", "Passeio", "Grupo Bordeaux", "Responsavel", "Telefone", "Acompanhantes", "Lugares", "Status", "Origem", "Criado em", "Observacoes"];
+    const tableRows = [header, ...rows]
+      .map((row, index) => `<tr>${row.map((cell) => index === 0 ? `<th>${excelCell(cell)}</th>` : `<td>${excelCell(cell)}</td>`).join("")}</tr>`)
+      .join("");
+    const html = `<!doctype html><html><head><meta charset="utf-8"><style>table{border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px}th{background:#3f1d25;color:#fff}td,th{border:1px solid #d8d0c7;padding:6px 8px;vertical-align:top}td{mso-number-format:"\\@"}</style></head><body><table>${tableRows}</table></body></html>`;
+    const blob = new Blob([html], { type: "application/vnd.ms-excel;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "qimo-reservas.csv";
+    link.download = `qimo-reservas-${new Date().toISOString().slice(0, 10)}.xls`;
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -645,8 +672,8 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
           <div className="flex flex-wrap items-center gap-2 font-sans text-[11px]">
             <span className="rounded-full bg-olive/15 px-3 py-1 text-olive-deep">{confirmedSeats} confirmados</span>
             <span className="rounded-full bg-gold/15 px-3 py-1 text-gold-deep">{waitlistSeats} em espera</span>
-            <button type="button" onClick={exportCsv} className="rounded-full border px-3 py-1 font-semibold text-petrol-600 hover:border-gold" style={{ borderColor: "var(--line)" }}>
-              Exportar CSV
+            <button type="button" onClick={exportExcel} className="rounded-full border px-3 py-1 font-semibold text-petrol-600 hover:border-gold" style={{ borderColor: "var(--line)" }}>
+              Exportar Excel
             </button>
           </div>
         </div>
