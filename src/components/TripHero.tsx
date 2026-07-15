@@ -46,16 +46,16 @@ export function TripHero({
       )}
       <div className="absolute inset-0 bg-gradient-to-b from-petrol-950/80 via-petrol-900/70 to-petrol-950/92" />
 
-      <div className="text-on-photo container-editorial relative z-10 pb-16 pt-24 text-center sm:pb-20 sm:pt-28">
+      <div className="text-on-photo container-editorial relative z-10 pb-16 pt-12 text-center sm:pb-20 sm:pt-16">
         <p className="font-sans text-[11px] uppercase tracking-luxe text-gold-soft">{t("onBoard")}</p>
         <h1 className="display mt-4 text-4xl text-cream sm:text-5xl">{heroTitle}</h1>
         <p className="mt-2 font-sans text-[13px] text-cream/70">{today}</p>
 
-        <div className="mx-auto mt-8 flex max-w-md items-center justify-center rounded-full border border-cream/20 bg-petrol-950/40 px-5 py-3 backdrop-blur-sm">
+        <div className="mx-auto mt-20 flex max-w-md items-center justify-center rounded-full border border-cream/20 bg-petrol-950/40 px-5 py-3 backdrop-blur-sm sm:mt-24">
           <Weather compact />
         </div>
 
-        <div className="mt-8">
+        <div className="mt-10">
           <Countdown iso={TRIP.boardingISO} label={t("boardingLabel")} />
         </div>
       </div>
