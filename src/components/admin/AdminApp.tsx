@@ -698,7 +698,7 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
         </div>
       </div>
 
-      <div className="grid gap-8 lg:grid-cols-[360px_1fr]">
+      <div className="grid min-w-0 gap-8 lg:grid-cols-[360px_minmax(0,1fr)]">
         <form onSubmit={submit} className="card h-fit p-6">
           <h3 className="font-serif text-xl font-light">Nova reserva</h3>
           <p className="mt-1 font-sans text-[12px] leading-relaxed text-muted">Inscreva alguém num passeio manualmente. Os hóspedes também reservam pelo app — e aparecem aqui na hora.</p>
@@ -740,7 +740,7 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
         </form>
 
 
-        <div>
+        <div className="min-w-0">
           <div className="mb-4 rounded-[14px] border p-4" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div>
@@ -755,7 +755,7 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
                 style={{ borderColor: "var(--line)" }}
               />
             </div>
-            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
+            <div className="mt-3 flex max-w-full gap-2 overflow-x-auto pb-1">
               {timeline.length === 0 && <span className="font-sans text-[12px] text-muted">Nenhuma reserva confirmada ainda.</span>}
               {timeline.map(({ a, people, waitlist }) => (
                 <div key={a.id} className="min-w-[190px] rounded-[12px] border bg-white/35 p-3" style={{ borderColor: "var(--line)" }}>
@@ -771,15 +771,15 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
           </div>
           <p className="kicker mb-3">{active.length} reservas · {visibleGroups.length} passeio(s) neste filtro</p>
           {visibleGroups.length === 0 && <p className="text-muted">Nada para mostrar neste filtro.</p>}
-          <div className="space-y-5">
+          <div className="min-w-0 space-y-5">
             {visibleGroups.map(({ a, list, people }) => (
-            <div key={a.id} className="card overflow-hidden">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b px-5 py-3.5" style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--petrol-600) 6%, transparent)" }}>
-                <div className="min-w-0">
+            <div key={a.id} className="card min-w-0 overflow-hidden">
+              <div className="flex flex-wrap items-start justify-between gap-2 border-b px-5 py-3.5" style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--petrol-600) 6%, transparent)" }}>
+                <div className="min-w-0 flex-1">
                   <p className="font-sans text-[11px] uppercase tracking-wide2 text-gold-deep">Dia {a.day_number}{a.start_time ? ` · ${a.start_time}` : ""}</p>
-                  <p className="truncate font-serif text-[17px] font-light">{a.title}</p>
+                  <p className="font-serif text-[17px] font-light leading-tight">{a.title}</p>
                 </div>
-                <span className="shrink-0 rounded-full bg-petrol-600/10 px-3 py-1 font-sans text-[12px] font-medium text-petrol-600">
+                <span className="max-w-full shrink-0 whitespace-normal rounded-full bg-petrol-600/10 px-3 py-1 text-center font-sans text-[12px] font-medium leading-tight text-petrol-600">
                   {people} {people === 1 ? "pessoa" : "pessoas"}{a.capacity_total != null ? ` / ${a.capacity_total}` : ""}
                 </span>
               </div>
