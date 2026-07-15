@@ -51,7 +51,7 @@ export function TripHero({
         <h1 className="display mt-4 text-4xl text-cream sm:text-5xl">{heroTitle}</h1>
         <p className="mt-2 font-sans text-[13px] text-cream/70">{today}</p>
 
-        <div className="mx-auto mt-32 flex max-w-md items-center justify-center rounded-full border border-cream/20 bg-petrol-950/40 px-5 py-3 backdrop-blur-sm sm:mt-36">
+        <div className="mx-auto mt-40 flex max-w-md items-center justify-center rounded-full border border-cream/20 bg-petrol-950/40 px-5 py-3 backdrop-blur-sm sm:mt-44">
           <Weather compact />
         </div>
 
