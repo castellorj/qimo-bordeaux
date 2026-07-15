@@ -367,15 +367,21 @@ function Participantes({ parts, onChange }: { parts: BxParticipant[]; onChange: 
   const [f, setF] = useState({ full_name: "", family: "", phone: "", email: "", companions: 0 });
   const [editingId, setEditingId] = useState<string | null>(null);
   const [edit, setEdit] = useState({ full_name: "", family: "", phone: "", email: "", companions: 0 });
-  const [sort, setSort] = useState<"name" | "phoneAsc">("name");
+  const [sort, setSort] = useState<"name" | "phoneAsc" | "groupAsc">("name");
   const [bulk, setBulk] = useState("");
   const [bulkMsg, setBulkMsg] = useState("");
   const [busy, setBusy] = useState(false);
+  const groupNumber = (family?: string | null) => Number((family || "").match(/\d+/)?.[0]) || Number.MAX_SAFE_INTEGER;
   const sortedParts = [...parts].sort((a, b) => {
     if (sort === "phoneAsc") {
       const phoneA = Number((a.phone || "").replace(/\D/g, "")) || Number.MAX_SAFE_INTEGER;
       const phoneB = Number((b.phone || "").replace(/\D/g, "")) || Number.MAX_SAFE_INTEGER;
       if (phoneA !== phoneB) return phoneA - phoneB;
+    }
+    if (sort === "groupAsc") {
+      const groupA = groupNumber(a.family);
+      const groupB = groupNumber(b.family);
+      if (groupA !== groupB) return groupA - groupB;
     }
     return a.full_name.localeCompare(b.full_name, "pt-BR", { sensitivity: "base" });
   });
@@ -477,12 +483,13 @@ function Participantes({ parts, onChange }: { parts: BxParticipant[]; onChange: 
             Ordenar
             <select
               value={sort}
-              onChange={(e) => setSort(e.target.value as "name" | "phoneAsc")}
+              onChange={(e) => setSort(e.target.value as "name" | "phoneAsc" | "groupAsc")}
               className="rounded-[10px] border bg-transparent px-3 py-2 font-sans text-[12px] outline-none focus:border-gold"
               style={{ borderColor: "var(--line)" }}
             >
               <option value="name">Nome A-Z</option>
               <option value="phoneAsc">Telefone menor-maior</option>
+              <option value="groupAsc">Grupo Bordeaux menor-maior</option>
             </select>
           </label>
         </div>
