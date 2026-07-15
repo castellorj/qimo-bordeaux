@@ -41,7 +41,7 @@ export function SiteChrome({ searchIndex }: { searchIndex: SearchDoc[] }) {
 
   // Só carrega o gate (e suas libs) se não houver convidado salvo neste device.
   useEffect(() => {
-    try { if (!localStorage.getItem("qimo:guest:v2")) setMaybeGate(true); } catch { setMaybeGate(true); }
+    try { if (!localStorage.getItem("qimo:guest:v3")) setMaybeGate(true); } catch { setMaybeGate(true); }
   }, []);
 
   // O painel administrativo tem seu próprio layout (sem o chrome do guia)

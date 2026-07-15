@@ -72,10 +72,19 @@ function ReserveSheet({
   conflict?: MyReservation;
   onClose: () => void;
 }) {
-  const { guest, guestParty, reserve, cancel } = useReservations();
-  const allowedNames = guestParty.length
-    ? guestParty.map((p) => p.fullName).filter(Boolean)
-    : [guest?.name?.trim() || "Convidado"];
+  const { guest, guestParty, refresh, reserve, cancel } = useReservations();
+  const guestPhone = (guest?.phone || "").replace(/\D/g, "");
+  const guestName = (guest?.name || "").trim();
+  const partyPeople = guestParty.length
+    ? [...guestParty].sort((a, b) => {
+      const aSelf = (a.phone || "").replace(/\D/g, "") === guestPhone || a.fullName.trim().toLowerCase() === guestName.toLowerCase();
+      const bSelf = (b.phone || "").replace(/\D/g, "") === guestPhone || b.fullName.trim().toLowerCase() === guestName.toLowerCase();
+      return Number(bSelf) - Number(aSelf) || a.fullName.localeCompare(b.fullName);
+    })
+    : [];
+  const allowedNames = partyPeople.length
+    ? partyPeople.map((p) => p.fullName).filter(Boolean)
+    : [guestName || "Convidado"];
   const [names, setNames] = useState<string[]>(() => {
     const saved = my?.party?.filter((name) => allowedNames.includes(name)) || [];
     return saved.length ? saved : [allowedNames[0]].filter(Boolean);
@@ -87,6 +96,10 @@ function ReserveSheet({
     document.body.style.overflow = "hidden";
     return () => { document.body.style.overflow = ""; };
   }, []);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
 
   const toggleName = (name: string) => {
     setNames((current) => {
@@ -153,16 +166,22 @@ function ReserveSheet({
           <p className="font-sans text-[11px] uppercase tracking-wide2 text-muted">Quem vai a este passeio</p>
           <p className="mt-0.5 font-sans text-[12px] text-muted">Você só pode reservar para você e para o par vinculado ao mesmo Grupo Bordeaux.</p>
           <div className="mt-3 space-y-2">
-            {allowedNames.map((name, i) => (
-              <label key={`${name}-${i}`} className="flex cursor-pointer items-center gap-2 rounded-[12px] border px-3 py-2.5" style={{ borderColor: names.includes(name) ? "var(--gold)" : "var(--line)", background: names.includes(name) ? "color-mix(in srgb, var(--gold) 8%, transparent)" : "transparent" }}>
-                <input type="checkbox" checked={names.includes(name)} onChange={() => toggleName(name)} />
-                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-black/[0.04] text-gold-deep">
-                  <Icon name={i === 0 ? "User" : "UserPlus"} size={16} />
-                </span>
-                <span className="min-w-0 flex-1 font-sans text-sm">{name}</span>
-                {i === 0 && <span className="rounded-full bg-black/[0.04] px-2 py-0.5 font-sans text-[10px] uppercase tracking-wide2 text-muted">Você</span>}
-              </label>
-            ))}
+            {allowedNames.map((name, i) => {
+              const person = partyPeople.find((p) => p.fullName === name);
+              const isSelf = i === 0 && (!!guestPhone || !!guestName);
+              return (
+                <label key={`${name}-${i}`} className="flex cursor-pointer items-center gap-2 rounded-[12px] border px-3 py-2.5" style={{ borderColor: names.includes(name) ? "var(--gold)" : "var(--line)", background: names.includes(name) ? "color-mix(in srgb, var(--gold) 8%, transparent)" : "transparent" }}>
+                  <input type="checkbox" checked={names.includes(name)} onChange={() => toggleName(name)} />
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-black/[0.04] text-gold-deep">
+                    <Icon name={isSelf ? "User" : "UserPlus"} size={16} />
+                  </span>
+                  <span className="min-w-0 flex-1 font-sans text-sm">{name}</span>
+                  <span className="rounded-full bg-black/[0.04] px-2 py-0.5 font-sans text-[10px] uppercase tracking-wide2 text-muted">
+                    {isSelf ? "Você" : person ? "Par" : ""}
+                  </span>
+                </label>
+              );
+            })}
           </div>
         </div>
 

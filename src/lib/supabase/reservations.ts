@@ -61,6 +61,15 @@ function sameGroup(a?: string | null, b?: string | null) {
   return (a || "").trim().toLowerCase() === (b || "").trim().toLowerCase();
 }
 
+function mapPassenger(p: any): GuestPassenger {
+  return {
+    id: p.id,
+    fullName: p.full_name ?? p.fullName ?? "",
+    phone: p.phone ?? null,
+    family: p.family ?? null,
+  };
+}
+
 export async function fetchReservable(): Promise<Reservable[]> {
   const { data, error } = await supabase().rpc("bordeaux_reservable");
   if (error || !data) return [];
@@ -112,6 +121,12 @@ export async function fetchGuestParty(phone: string): Promise<GuestPassenger[]> 
   const clean = normalizePhone(phone);
   if (!clean) return [];
   const sb = supabase();
+
+  const { data: rpcParty } = await sb.rpc("bordeaux_guest_party", { p_phone: clean });
+  if (Array.isArray(rpcParty) && rpcParty.length) {
+    return rpcParty.map(mapPassenger).filter((p) => p.fullName);
+  }
+
   const { data: owners } = await sb
     .from("bordeaux_participants")
     .select("id,full_name,phone,family")
@@ -146,10 +161,5 @@ export async function fetchGuestParty(phone: string): Promise<GuestPassenger[]> 
     if (byGroup.length) party = byGroup;
   }
 
-  return party.map((p) => ({
-    id: p.id,
-    fullName: p.full_name,
-    phone: p.phone,
-    family: p.family,
-  }));
+  return party.map(mapPassenger);
 }

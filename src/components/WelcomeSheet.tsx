@@ -10,10 +10,10 @@ import { getCurrentLang, type Lang } from "./GoogleTranslate";
 import { LangDropdown } from "./LangSwitch";
 import { useLocale } from "./providers";
 import { cleanSiteImage, siteImageDef } from "@/lib/siteImages";
-import { normalizePhone } from "@/lib/phone";
+import { normalizePhone, phoneVariants } from "@/lib/phone";
 
-const DEVICE_LS = "qimo_device_token:v2";
-const GUEST_LS = "qimo:guest:v2";
+const DEVICE_LS = "qimo_device_token:v3";
+const GUEST_LS = "qimo:guest:v3";
 
 const STR: Record<Lang, Record<string, string>> = {
   pt: {
@@ -54,6 +54,23 @@ function deviceToken(): string {
     if (!d) { d = crypto.randomUUID(); localStorage.setItem(DEVICE_LS, d); }
     return d;
   } catch { return crypto.randomUUID(); }
+}
+
+async function participantByPhone(phone: string) {
+  const clean = normalizePhone(phone);
+  if (!clean) return null;
+  const { data: party } = await supabase().rpc("bordeaux_guest_party", { p_phone: clean });
+  const first = Array.isArray(party) ? party[0] : null;
+  if (first?.full_name) {
+    return { name: first.full_name, phone: normalizePhone(first.phone) || clean };
+  }
+  const { data } = await supabase()
+    .from("bordeaux_participants")
+    .select("full_name,phone")
+    .in("phone", phoneVariants(clean))
+    .limit(1);
+  const row = data?.[0];
+  return row ? { name: row.full_name, phone: normalizePhone(row.phone) || clean } : null;
 }
 
 export function WelcomeSheet() {
@@ -118,12 +135,19 @@ export function WelcomeSheet() {
     if (!cleanPhone || cleanPhone.length < 10) { setErr(L.errPhone); return; }
     setBusy(true); setErr("");
     try {
+      const participant = await participantByPhone(cleanPhone);
+      if (participant) { enter(participant.name); return; }
+
       const { data, error } = await supabase().rpc("guest_check", { p_phone: cleanPhone });
       if (error) throw error;
       const g = (data as any[])?.[0];
       if (g) { await supabase().rpc("guest_touch", { p_id: g.id, p_device: deviceToken() }); enter(g.name); }
       else setStep(2);
-    } catch { enter(); } finally { setBusy(false); }
+    } catch {
+      const participant = await participantByPhone(cleanPhone);
+      if (participant) enter(participant.name);
+      else enter();
+    } finally { setBusy(false); }
   };
 
   const submitRegister = async (e: React.FormEvent) => {

@@ -43,7 +43,7 @@ const ReservationsCtx = createContext<ReservationsValue>({
   count: 0, refresh: async () => {}, reserve: async () => ({ ok: false }), cancel: async () => {},
 });
 
-const GUEST_LS = "qimo:guest:v2";
+const GUEST_LS = "qimo:guest:v3";
 const LOCALE_KEY = "qimo:locale";
 const LOCAL_RES_LS = "qimo:local-reservations";
 const LOCAL_ACTIVITY_PREFIX = "local:";
