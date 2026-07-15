@@ -59,20 +59,28 @@ export function ProgramacaoDays() {
     chip?.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
   }, [active]);
 
+  const openAndFocusDay = (dayNumber: number) => {
+    setActive(dayNumber);
+    setOpenDay(dayNumber);
+    requestAnimationFrame(() => {
+      document.getElementById(`dia-${dayNumber}`)?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+  };
+
   return (
     <>
       {/* Índice de dias */}
       <nav className="sticky top-16 z-30 border-b backdrop-blur-md" style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--bg) 85%, transparent)" }}>
         <div ref={navRef} className="no-scrollbar container-editorial flex gap-2 overflow-x-auto py-2">
           {itinerary.map((d) => (
-            <a key={d.n} href={`#dia-${d.n}`} data-day={d.n}
+            <button key={d.n} type="button" onClick={() => openAndFocusDay(d.n)} data-day={d.n}
               className={clsx(
                 "inline-flex shrink-0 items-center rounded-full border px-4 py-1.5 font-sans text-[12px] transition-colors min-h-[42px]",
                 active === d.n ? "border-transparent bg-petrol-600 text-cream" : "hover:border-gold hover:text-gold"
               )}
               style={{ borderColor: active === d.n ? "transparent" : "var(--line)" }}>
               Dia {d.n}
-            </a>
+            </button>
           ))}
         </div>
       </nav>

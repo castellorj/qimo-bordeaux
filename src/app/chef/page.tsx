@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PageHero } from "@/components/PageHero";
 import { Icon } from "@/components/Icon";
 import { useGuideList } from "@/components/GuideContent";
@@ -72,6 +72,11 @@ function ChefExperienceCard({
 }) {
   const sectionRef = useRef<HTMLElement>(null);
   const text = chefDescription(item.description);
+
+  useEffect(() => {
+    if (!open) return;
+    requestAnimationFrame(() => sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }, [open]);
 
   const close = () => {
     onToggle();

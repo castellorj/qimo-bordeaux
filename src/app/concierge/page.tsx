@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import clsx from "clsx";
@@ -44,15 +44,21 @@ function hrefFor(c: ConciergeContact) {
 }
 
 /* Seção colapsável (acordeão) */
-function Section({ title, hint, count, defaultOpen, children }: {
-  title: string; hint?: string; count?: number; defaultOpen?: boolean; children: React.ReactNode;
+function Section({ title, hint, count, open, onToggle, children }: {
+  title: string; hint?: string; count?: number; open: boolean; onToggle: () => void; children: React.ReactNode;
 }) {
-  const [open, setOpen] = useState(!!defaultOpen);
+  const sectionRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    requestAnimationFrame(() => sectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
+  }, [open]);
+
   return (
-    <div className="card overflow-hidden">
+    <div ref={sectionRef} className="card scroll-mt-28 overflow-hidden">
       <button
         type="button"
-        onClick={() => setOpen((o) => !o)}
+        onClick={onToggle}
         aria-expanded={open}
         className="flex w-full items-center gap-3.5 p-5 text-left transition-colors hover:bg-black/[0.015]"
       >
@@ -314,6 +320,15 @@ export default function ConciergePage() {
         { slug: "ofertas", title: "Ofertas", hint: "Benefícios exclusivos dos parceiros QIMO", module: "offers" as const },
         ...sections.slice(1),
       ];
+  const firstDefaultOpen = visibleSections.find((section) => section.module !== "contacts" && section.defaultOpen)?.slug ?? null;
+  const [openSection, setOpenSection] = useState<string | null>(firstDefaultOpen);
+
+  useEffect(() => {
+    setOpenSection((current) => {
+      if (current && visibleSections.some((section) => section.slug === current)) return current;
+      return firstDefaultOpen;
+    });
+  }, [firstDefaultOpen, visibleSections]);
 
   return (
     <>
@@ -321,7 +336,14 @@ export default function ConciergePage() {
 
       <div className="container-editorial space-y-3 py-10">
         {visibleSections.map((s) => (
-          <Section key={s.slug} title={s.title} hint={s.hint} count={sectionCount(s, contacts, etiquetteTips, phrases, offers)} defaultOpen={s.module === "contacts" ? false : s.defaultOpen}>
+          <Section
+            key={s.slug}
+            title={s.title}
+            hint={s.hint}
+            count={sectionCount(s, contacts, etiquetteTips, phrases, offers)}
+            open={openSection === s.slug}
+            onToggle={() => setOpenSection((current) => (current === s.slug ? null : s.slug))}
+          >
             <ModuleBody section={s} contacts={contacts} etiquetteTips={etiquetteTips} phrases={phrases} offers={offers} t={t} />
           </Section>
         ))}
