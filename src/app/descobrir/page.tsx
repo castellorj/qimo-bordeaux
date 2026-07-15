@@ -8,7 +8,7 @@ const items: HubItem[] = [
   { href: "/gastronomia", icon: "UtensilsCrossed", key: "gastronomia", image: "/photos/food-entrecote.jpg" },
   { href: "/experiencias", icon: "Sparkles", key: "experiencias", image: "/photos/wine-glass.jpg" },
   { href: "/compras", icon: "ShoppingBag", key: "compras", image: "/photos/shop-laguiole.jpg" },
-  { href: "/cidades", icon: "Landmark", key: "cidades", image: "/photos/hero-saint-emilion.jpg" },
+  { href: "/cidades", icon: "Landmark", key: "cidades", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Place_de_la_Bourse%2C_Bordeaux%2C_France.jpg/1280px-Place_de_la_Bourse%2C_Bordeaux%2C_France.jpg" },
 ];
 
 export default function DescobrirPage() {

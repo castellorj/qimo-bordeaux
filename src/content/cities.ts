@@ -6,7 +6,7 @@ export const cities: City[] = [
     name: "Bordeaux",
     region: "Gironde · Nova Aquitânia",
     tagline: "A Bela Adormecida que despertou em pedra dourada",
-    heroImage: "https://www.travelonatimebudget.co.uk/wp-content/uploads/2023/03/Place-de-la-Bourse-Bordeaux.jpg",
+    heroImage: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Place_de_la_Bourse%2C_Bordeaux%2C_France.jpg/1280px-Place_de_la_Bourse%2C_Bordeaux%2C_France.jpg",
     history:
       "Porto romano fundado como Burdigala, Bordeaux enriqueceu com o comércio de vinho a partir da Idade Média, quando esteve sob domínio inglês por três séculos. O século XVIII lhe deu sua feição atual: uma cidade de fachadas de pedra calcária clara, alinhadas ao longo do rio Garonne em forma de meia-lua — o 'Port de la Lune'. Todo o centro histórico é Patrimônio Mundial da UNESCO, o maior conjunto urbano do mundo com essa distinção.",
     curiosities: [
@@ -43,7 +43,7 @@ export const cities: City[] = [
     name: "Pauillac",
     region: "Médoc · Margem esquerda",
     tagline: "A capital mundial do Cabernet Sauvignon",
-    heroImage: "https://www.guide-bordeaux-gironde.com/_bibli/articlesPage/236/images/facede-fluviale-de-pauillac.jpg?v=preload",
+    heroImage: "https://www.gironde-tourisme.com/wp-content/uploads/wpetourisme/53012314731-ff41e77e58-c.jpg",
     history:
       "Pequena cidade portuária às margens do Gironde, Pauillac é o coração do Médoc e detém uma concentração de prestígio sem paralelo: três dos cinco Premiers Grands Crus Classés de 1855 — Lafite Rothschild, Latour e Mouton Rothschild — nascem em seu solo de cascalho. É o terroir por excelência do Cabernet Sauvignon.",
     curiosities: [
@@ -67,7 +67,7 @@ export const cities: City[] = [
     name: "Cussac-Fort-Médoc",
     region: "Médoc · Margem esquerda",
     tagline: "Vauban à beira do estuário",
-    heroImage: "https://www.guide-bordeaux-gironde.com/_bibli/articlesPage/205/images/fort-medoc-3.jpg?v=preload",
+    heroImage: "https://www.cussac-fort-medoc.fr/wp-content/uploads/2020/12/Panoramique-Fort-Medoc-2-%C2%A9Thierry-KARM.jpg",
     history:
       "Vila do Médoc conhecida pelo Fort Médoc, fortaleza projetada por Vauban no fim do século XVII para proteger Bordeaux junto com a Cidadela de Blaye, na outra margem. Hoje é ponto de parada tranquilo entre os grandes vinhedos, com forte tradição de ostras e frutos do mar do Atlântico próximo.",
     curiosities: [
@@ -109,7 +109,7 @@ export const cities: City[] = [
     name: "Blaye",
     region: "Côtes de Blaye · Margem direita",
     tagline: "A cidadela de Vauban sobre o estuário",
-    heroImage: "https://www.guide-bordeaux-gironde.com/_bibli/annonces/4674/hd/citadelle-de-blaye-spiritprod33-adobestock.jpg?v=preload",
+    heroImage: "https://www.okvoyage.com/wp-content/uploads/2024/02/la-citadelle-de-blaye-autour-de-saint-emilion-1024x582.jpg",
     history:
       "Debruçada sobre o maior estuário da Europa, Blaye é guardada por uma cidadela monumental construída por Vauban no fim do século XVII — hoje Patrimônio Mundial da UNESCO. Suas Côtes produzem tintos redondos e acessíveis à base de Merlot. A Route de la Corniche Fleurie, à beira d'água, é uma das estradas mais pitorescas da Gironde.",
     curiosities: [
@@ -150,7 +150,7 @@ export const cities: City[] = [
     name: "Libourne",
     region: "Margem direita · Dordogne",
     tagline: "A bastide-porto do vinho da margem direita",
-    heroImage: "https://www.tourisme-libournais.com/uploads/Place_AbelSurchamp_5723-scaled.jpg",
+    heroImage: "https://www.guide-bordeaux-gironde.com/_bibli/articlesPage_rte/127/rte_images/jour-de-marche-a-libourne.jpg?v=preload",
     history:
       "Fundada no século XIII como bastide inglesa por Roger de Leyburn, Libourne floresceu como porto de escoamento dos vinhos de Pomerol e Saint-Émilion rumo à Inglaterra e ao norte da Europa. Sua praça central com arcadas e o mercado dos produtores mantêm viva a alma comercial da cidade, encravada entre os grandes terroirs de Merlot.",
     curiosities: [
