@@ -70,7 +70,7 @@ export function ProgramacaoDays() {
   return (
     <>
       {/* Índice de dias */}
-      <nav className="sticky top-16 z-30 border-b backdrop-blur-md" style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--bg) 85%, transparent)" }}>
+      <nav className="sticky top-16 z-30 backdrop-blur-md" style={{ background: "color-mix(in srgb, var(--bg) 85%, transparent)" }}>
         <div ref={navRef} className="no-scrollbar container-editorial flex gap-2 overflow-x-auto py-2">
           {itinerary.map((d) => (
             <button key={d.n} type="button" onClick={() => openAndFocusDay(d.n)} data-day={d.n}

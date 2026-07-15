@@ -58,8 +58,8 @@ export function SiteChrome({ searchIndex }: { searchIndex: SearchDoc[] }) {
       <ConciergeFab />
       {/* -------- Top bar -------- */}
       <header
-        className="sticky top-0 z-50 border-b backdrop-blur-md"
-        style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--bg) 85%, transparent)" }}
+        className="sticky top-0 z-50 backdrop-blur-md"
+        style={{ background: "color-mix(in srgb, var(--bg) 85%, transparent)" }}
       >
         <div className="container-editorial relative flex h-16 items-center gap-4">
           <Link
