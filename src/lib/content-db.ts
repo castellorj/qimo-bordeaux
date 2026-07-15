@@ -41,6 +41,11 @@ function removeOldLocalPhotos<T>(value: T): T {
   return value;
 }
 
+function isGuideItemHidden(data: any) {
+  const status = String(data?.adminStatus || data?.status || "").trim().toLowerCase();
+  return status === "oculto" || status === "hidden" || status === "encerrado";
+}
+
 async function fetchKind(kind: string): Promise<Row[]> {
   try {
     const res = await fetch(
@@ -55,29 +60,42 @@ async function fetchKind(kind: string): Promise<Row[]> {
 }
 
 // Mescla: itens do banco sobrepõem os do arquivo (por slug); banco pode adicionar novos.
-function merge<T extends { slug: string }>(fileArr: T[], rows: Row[]): T[] {
+function merge<T extends { slug: string }>(fileArr: T[], rows: Row[], kind?: string): T[] {
   if (!rows.length) return fileArr;
   const bySlug = new Map<string, T>();
   fileArr.forEach((f) => bySlug.set(f.slug, f));
+  if (kind === "winery") {
+    return rows
+      .filter((r) => r.published !== false)
+      .map((r) => removeOldLocalPhotos({ ...(bySlug.get(r.slug) || {}), ...r.data } as T))
+      .filter((item) => !isGuideItemHidden(item));
+  }
   rows.forEach((r) => {
     if (r.published === false) {
       bySlug.delete(r.slug);
       return;
     }
-    bySlug.set(r.slug, removeOldLocalPhotos({ ...(bySlug.get(r.slug) || {}), ...r.data } as T));
+    const item = removeOldLocalPhotos({ ...(bySlug.get(r.slug) || {}), ...r.data } as T);
+    if (isGuideItemHidden(item)) {
+      bySlug.delete(r.slug);
+      return;
+    }
+    bySlug.set(r.slug, item);
   });
   // ordena pela ordem do banco quando existir, senão mantém arquivo
   const order = new Map(rows.filter((r) => r.published !== false).map((r, i) => [r.slug, i]));
-  return [...bySlug.values()].sort((a, b) => (order.get(a.slug) ?? 999) - (order.get(b.slug) ?? 999));
+  return [...bySlug.values()]
+    .filter((item) => !isGuideItemHidden(item))
+    .sort((a, b) => (order.get(a.slug) ?? 999) - (order.get(b.slug) ?? 999));
 }
 
-export async function getCities() { return merge(fileCities, await fetchKind("city")); }
-export async function getWineries() { return merge(fileWineries, await fetchKind("winery")); }
-export async function getRestaurants() { return merge(fileRestaurants, await fetchKind("restaurant")); }
-export async function getWines() { return merge(fileWines, await fetchKind("wine")); }
-export async function getGastronomy() { return merge(fileGastronomy, await fetchKind("gastronomy")); }
-export async function getExperiences() { return merge(fileExperiences, await fetchKind("experience")); }
-export async function getShopping() { return merge(fileShopping, await fetchKind("shopping")); }
+export async function getCities() { return merge(fileCities, await fetchKind("city"), "city"); }
+export async function getWineries() { return merge(fileWineries, await fetchKind("winery"), "winery"); }
+export async function getRestaurants() { return merge(fileRestaurants, await fetchKind("restaurant"), "restaurant"); }
+export async function getWines() { return merge(fileWines, await fetchKind("wine"), "wine"); }
+export async function getGastronomy() { return merge(fileGastronomy, await fetchKind("gastronomy"), "gastronomy"); }
+export async function getExperiences() { return merge(fileExperiences, await fetchKind("experience"), "experience"); }
+export async function getShopping() { return merge(fileShopping, await fetchKind("shopping"), "shopping"); }
 
 export async function getCity(slug: string) { return (await getCities()).find((c) => c.slug === slug); }
 export async function getWinery(slug: string) { return (await getWineries()).find((w) => w.slug === slug); }

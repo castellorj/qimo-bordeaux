@@ -31,7 +31,7 @@ const ANON =
 type ByKind = Record<string, { slug: string; data: any; sort: number; published?: boolean }[]>;
 type ContentState = ByKind | null | undefined;
 const Ctx = createContext<ContentState>(undefined);
-const CONTENT_CACHE_KEY = "qimo:content-cache:v3";
+const CONTENT_CACHE_KEY = "qimo:content-cache:v4";
 const CONTENT_CACHE_MAX_AGE = 5 * 60 * 1000;
 
 // Contexto de edição inline (ativo quando o guia roda dentro do preview do painel).
@@ -96,6 +96,11 @@ function mergeActivitiesById(fileActivities: any[] = [], dbActivities: any[] = [
   });
 }
 
+function isGuideItemHidden(data: any) {
+  const status = String(data?.adminStatus || data?.status || "").trim().toLowerCase();
+  return status === "oculto" || status === "hidden" || status === "encerrado";
+}
+
 function mergeDayRows<T>(db: ContentState): T[] {
   const file = (FILES.day || []) as any[];
   if (db === undefined) return [];
@@ -118,6 +123,14 @@ function merged<T extends { slug: string }>(kind: string, db: ContentState): T[]
   if (db === undefined) return [];
   const rows = db?.[kind];
   if (!rows || !rows.length) return removeOldLocalPhotos(file);
+  if (kind === "winery") {
+    const bySlug = new Map<string, T>();
+    file.forEach((f) => bySlug.set(f.slug, f));
+    return rows
+      .filter((r) => r.published !== false)
+      .map((r) => removeOldLocalPhotos({ ...(bySlug.get(r.slug) || {}), ...r.data } as T))
+      .filter((item) => !isGuideItemHidden(item));
+  }
   const bySlug = new Map<string, T>();
   file.forEach((f) => bySlug.set(f.slug, f));
   rows.forEach((r) => {
@@ -125,10 +138,17 @@ function merged<T extends { slug: string }>(kind: string, db: ContentState): T[]
       bySlug.delete(r.slug);
       return;
     }
-    bySlug.set(r.slug, removeOldLocalPhotos({ ...(bySlug.get(r.slug) || {}), ...r.data } as T));
+    const item = removeOldLocalPhotos({ ...(bySlug.get(r.slug) || {}), ...r.data } as T);
+    if (isGuideItemHidden(item)) {
+      bySlug.delete(r.slug);
+      return;
+    }
+    bySlug.set(r.slug, item);
   });
   const order = new Map(rows.filter((r) => r.published !== false).map((r, i) => [r.slug, i]));
-  return [...bySlug.values()].sort((a, b) => (order.get(a.slug) ?? 999) - (order.get(b.slug) ?? 999));
+  return [...bySlug.values()]
+    .filter((item) => !isGuideItemHidden(item))
+    .sort((a, b) => (order.get(a.slug) ?? 999) - (order.get(b.slug) ?? 999));
 }
 
 async function fetchContent(): Promise<ByKind> {
@@ -195,7 +215,12 @@ function guideList<T>(kind: string, db: ContentState): T[] {
   if (db === undefined) return [];
   if (kind === "day") return mergeDayRows<T>(db);
   const rows = db?.[kind];
-  if (rows && rows.length) return rows.filter((r) => r.published !== false).map((r) => removeOldLocalPhotos(r.data as T)); // banco = fonte da verdade (publicados, ordenados)
+  if (rows && rows.length) {
+    return rows
+      .filter((r) => r.published !== false)
+      .map((r) => removeOldLocalPhotos(r.data as T))
+      .filter((item) => !isGuideItemHidden(item)); // banco = fonte da verdade (publicados, ordenados)
+  }
   return removeOldLocalPhotos((FILES[kind] || []) as T[]);
 }
 export function useGuideList<T>(kind: string): T[] {
