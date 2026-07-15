@@ -3,7 +3,7 @@ import type { Appellation } from "@/lib/types";
 export const appellations: Appellation[] = [
   {
     slug: "margaux",
-    heroImage: "https://framerusercontent.com/assets/NrmSAGR3eetbhhi5ciounZb7vk.webp",
+    heroImage: "https://www.bordeaux.com/app/uploads/2025/10/dsc_8445-1920x1080.jpg",
     name: "Margaux",
     bank: "Left",
     color: "Tinto",
@@ -19,7 +19,7 @@ export const appellations: Appellation[] = [
   },
   {
     slug: "pauillac",
-    heroImage: "https://grandpuyducasse.fr/wp-content/uploads/2024/07/facade-de-GPD.jpg",
+    heroImage: "https://www.bordeaux.com/app/uploads/2025/10/chat_gd_puy_lacoste_074-1920x1080.jpg",
     name: "Pauillac",
     bank: "Left",
     color: "Tinto",
@@ -36,7 +36,7 @@ export const appellations: Appellation[] = [
   },
   {
     slug: "saint-julien",
-    heroImage: "https://www.beychevelle.com/wp-content/uploads/2025/09/PAGE-ACCEUIL-TERROIR-1-scaled.webp",
+    heroImage: "https://www.bordeaux.com/app/uploads/2025/10/medoc_saint-julien_chateaulagrange.05.07.17.hdanaka-27.jpg",
     name: "Saint-Julien",
     bank: "Left",
     color: "Tinto",
@@ -52,7 +52,7 @@ export const appellations: Appellation[] = [
   },
   {
     slug: "medoc-haut-medoc",
-    heroImage: "https://www.pichonbaron.com/image/images_site/1/accueil-background-site.jpg?1782288937",
+    heroImage: "https://www.bordeaux.com/app/uploads/2025/10/vueari_1-1.jpg",
     name: "Médoc & Haut-Médoc",
     bank: "Left",
     color: "Tinto",
@@ -69,7 +69,7 @@ export const appellations: Appellation[] = [
   },
   {
     slug: "saint-emilion",
-    heroImage: "https://www.saint-emilion-tourisme.com/media/cache/ogimage/uploads/img/saint-emilion-tourisme-com-65a161889c990278662155.jpg",
+    heroImage: "https://www.bordeaux.com/app/uploads/2025/11/0077_saint_emilion_-_antoine_ollier_photographie-77_web.jpg",
     name: "Saint-Émilion",
     bank: "Right",
     color: "Tinto",
@@ -86,7 +86,7 @@ export const appellations: Appellation[] = [
   },
   {
     slug: "pomerol",
-    heroImage: "https://www.moueix.com/sites/default/files/styles/hero_1280x1280/public/2021-07/slider_daccueil_photo_chai.jpg?itok=aF4MnGCU",
+    heroImage: "https://www.bordeaux.com/app/uploads/2025/11/1182_shooting_des_vignerons_-_antoine_ollier_photographie-69_web-1.jpg",
     name: "Pomerol",
     bank: "Right",
     color: "Tinto",
@@ -103,7 +103,7 @@ export const appellations: Appellation[] = [
   },
   {
     slug: "graves-pessac",
-    heroImage: "https://www.smith-haut-lafitte.com/wp-content/uploads/2021/04/chateau-smith-haut-lafitte-yem.png",
+    heroImage: "https://www.bordeaux.com/app/uploads/2025/11/vue-shl-2-par-deepix.jpg",
     name: "Graves & Pessac-Léognan",
     bank: "Left",
     color: "Tinto/Branco",
@@ -119,7 +119,7 @@ export const appellations: Appellation[] = [
   },
   {
     slug: "sauternes-barsac",
-    heroImage: "https://www.yquem.fr/assets/og--ksNZ63V.jpeg",
+    heroImage: "https://www.bordeaux.com/app/uploads/2025/11/002-barsac-top-2-1000x1080.jpg",
     name: "Sauternes & Barsac",
     bank: "Sauternais",
     color: "Doce",
@@ -136,7 +136,7 @@ export const appellations: Appellation[] = [
   },
   {
     slug: "cotes-blaye-bourg",
-    heroImage: "https://www.guide-bordeaux-gironde.com/_bibli/annonces/4674/hd/citadelle-de-blaye-spiritprod33-adobestock.jpg?v=preload",
+    heroImage: "https://cache.larvf.com/data/photo/w1000_ci/1mo/bordeaux-vignes.jpg",
     name: "Côtes de Blaye & de Bourg",
     bank: "Right",
     color: "Tinto/Branco",
@@ -153,7 +153,7 @@ export const appellations: Appellation[] = [
   },
   {
     slug: "saint-estephe",
-    heroImage: "https://www.estournel.com/wp-content/uploads/2025/05/Cos-dEstournel-Second-Cru-Classe-en-1855-a-Saint-Estephe.jpg",
+    heroImage: "https://www.bordeaux.com/app/uploads/2025/10/stestephe_vignesvisionair-1701x1080.jpg",
     name: "Saint-Estèphe",
     bank: "Left",
     color: "Tinto",
@@ -170,7 +170,7 @@ export const appellations: Appellation[] = [
   },
   {
     slug: "entre-deux-mers",
-    heroImage: "https://www.chateau-cadillac.fr/var/cmn_inter/storage/images/_aliases/header_dropdown_image_webp/2/4/2/0/120050242-1-fre-FR/daa5381ab136-Chateau-Cadillac-c-CMN-visiter.webp.webp",
+    heroImage: "https://www.bordeaux.com/app/uploads/2025/11/entre-deux-mers-et-ses-coteaux_swmw7633-1440x1080.jpg",
     name: "Entre-Deux-Mers",
     bank: "Entre-deux",
     color: "Branco",

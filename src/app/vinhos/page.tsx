@@ -17,7 +17,7 @@ export default function VinhosPage() {
   const appellations = useGuideKind<Appellation>("wine");
   return (
     <>
-      <PageHero section="vinhos" small bgImage="https://framerusercontent.com/assets/NrmSAGR3eetbhhi5ciounZb7vk.webp" />
+      <PageHero section="vinhos" small bgImage="https://www.bordeaux.com/app/uploads/2025/10/dsc_8445-1920x1080.jpg" />
       <div className="container-editorial space-y-14 py-10">
         <Crumb href="/descobrir" label="Voltar para Descobrir" />
         {BANKS.map((bank) => {
