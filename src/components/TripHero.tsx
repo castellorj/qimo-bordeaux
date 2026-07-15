@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from "react";
 import { Countdown } from "./Countdown";
-import { Weather } from "./Weather";
 import { PhotoImg } from "./PhotoImg";
 import { useLocale, useReservations } from "./providers";
 import { TRIP } from "@/content";
@@ -38,7 +37,6 @@ export function TripHero({
   const heroTitle = guestName ? `Olá, ${guestName}` : title || greeting || " ";
 
   return (
-    <>
     <section className="relative overflow-hidden">
       {img ? (
         <PhotoImg src={img} alt="" aria-hidden sizes="100vw" priority className="animate-ken-burns absolute inset-0 h-full w-full object-cover" />
@@ -57,13 +55,5 @@ export function TripHero({
         </div>
       </div>
     </section>
-    <div className="py-3" style={{ background: "var(--bg)" }}>
-      <div className="container-editorial flex justify-center">
-        <div className="inline-flex rounded-full border px-3 py-1.5" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
-          <Weather compact />
-        </div>
-      </div>
-    </div>
-    </>
   );
 }
