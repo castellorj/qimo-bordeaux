@@ -16,7 +16,7 @@ const ANON =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2dnppdHN6ZmNhamZydnpwYWNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzODMyMzIsImV4cCI6MjA5Mzk1OTIzMn0.4tBzaBgyvzwuTEvlX9wSc85c6EKtTVfEidYeeh6aGRw";
 
-type Row = { slug: string; data: any; sort: number };
+type Row = { slug: string; data: any; sort: number; published?: boolean };
 const PHOTO_FIELDS = new Set(["heroImage", "image", "photo", "gallery"]);
 
 function isOldLocalPhoto(value: unknown): value is string {
@@ -44,7 +44,7 @@ function removeOldLocalPhotos<T>(value: T): T {
 async function fetchKind(kind: string): Promise<Row[]> {
   try {
     const res = await fetch(
-      `${URL}/rest/v1/bordeaux_content?select=slug,data,sort&kind=eq.${kind}&published=eq.true&order=sort`,
+      `${URL}/rest/v1/bordeaux_content?select=slug,data,sort,published&kind=eq.${kind}&order=sort`,
       { headers: { apikey: ANON, Authorization: `Bearer ${ANON}` }, cache: "no-store" }
     );
     if (!res.ok) return [];
@@ -59,9 +59,15 @@ function merge<T extends { slug: string }>(fileArr: T[], rows: Row[]): T[] {
   if (!rows.length) return fileArr;
   const bySlug = new Map<string, T>();
   fileArr.forEach((f) => bySlug.set(f.slug, f));
-  rows.forEach((r) => bySlug.set(r.slug, removeOldLocalPhotos({ ...(bySlug.get(r.slug) || {}), ...r.data } as T)));
+  rows.forEach((r) => {
+    if (r.published === false) {
+      bySlug.delete(r.slug);
+      return;
+    }
+    bySlug.set(r.slug, removeOldLocalPhotos({ ...(bySlug.get(r.slug) || {}), ...r.data } as T));
+  });
   // ordena pela ordem do banco quando existir, senão mantém arquivo
-  const order = new Map(rows.map((r, i) => [r.slug, i]));
+  const order = new Map(rows.filter((r) => r.published !== false).map((r, i) => [r.slug, i]));
   return [...bySlug.values()].sort((a, b) => (order.get(a.slug) ?? 999) - (order.get(b.slug) ?? 999));
 }
 

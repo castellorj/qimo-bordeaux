@@ -28,10 +28,10 @@ const ANON =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2dnppdHN6ZmNhamZydnpwYWNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzODMyMzIsImV4cCI6MjA5Mzk1OTIzMn0.4tBzaBgyvzwuTEvlX9wSc85c6EKtTVfEidYeeh6aGRw";
 
-type ByKind = Record<string, { slug: string; data: any; sort: number }[]>;
+type ByKind = Record<string, { slug: string; data: any; sort: number; published?: boolean }[]>;
 type ContentState = ByKind | null | undefined;
 const Ctx = createContext<ContentState>(undefined);
-const CONTENT_CACHE_KEY = "qimo:content-cache:v2";
+const CONTENT_CACHE_KEY = "qimo:content-cache:v3";
 const CONTENT_CACHE_MAX_AGE = 5 * 60 * 1000;
 
 // Contexto de edição inline (ativo quando o guia roda dentro do preview do painel).
@@ -120,13 +120,19 @@ function merged<T extends { slug: string }>(kind: string, db: ContentState): T[]
   if (!rows || !rows.length) return removeOldLocalPhotos(file);
   const bySlug = new Map<string, T>();
   file.forEach((f) => bySlug.set(f.slug, f));
-  rows.forEach((r) => bySlug.set(r.slug, removeOldLocalPhotos({ ...(bySlug.get(r.slug) || {}), ...r.data } as T)));
-  const order = new Map(rows.map((r, i) => [r.slug, i]));
+  rows.forEach((r) => {
+    if (r.published === false) {
+      bySlug.delete(r.slug);
+      return;
+    }
+    bySlug.set(r.slug, removeOldLocalPhotos({ ...(bySlug.get(r.slug) || {}), ...r.data } as T));
+  });
+  const order = new Map(rows.filter((r) => r.published !== false).map((r, i) => [r.slug, i]));
   return [...bySlug.values()].sort((a, b) => (order.get(a.slug) ?? 999) - (order.get(b.slug) ?? 999));
 }
 
 async function fetchContent(): Promise<ByKind> {
-  const r = await fetch(`${URL}/rest/v1/bordeaux_content?select=kind,slug,data,sort&published=eq.true&order=sort`, {
+  const r = await fetch(`${URL}/rest/v1/bordeaux_content?select=kind,slug,data,sort,published&order=sort`, {
     headers: { apikey: ANON, Authorization: `Bearer ${ANON}` },
     cache: "no-store",
   });
@@ -189,7 +195,7 @@ function guideList<T>(kind: string, db: ContentState): T[] {
   if (db === undefined) return [];
   if (kind === "day") return mergeDayRows<T>(db);
   const rows = db?.[kind];
-  if (rows && rows.length) return rows.map((r) => removeOldLocalPhotos(r.data as T)); // banco = fonte da verdade (publicados, ordenados)
+  if (rows && rows.length) return rows.filter((r) => r.published !== false).map((r) => removeOldLocalPhotos(r.data as T)); // banco = fonte da verdade (publicados, ordenados)
   return removeOldLocalPhotos((FILES[kind] || []) as T[]);
 }
 export function useGuideList<T>(kind: string): T[] {
