@@ -50,7 +50,7 @@ function RestaurantCard({ r, priority }: { r: Restaurant; priority?: boolean }) 
   const summary = r.bestFor || r.specialty || r.description;
 
   return (
-    <article className="group overflow-hidden rounded-[20px] bg-black shadow-card">
+    <article className="group overflow-hidden rounded-[6px] border bg-black shadow-card" style={{ borderColor: "var(--line)" }}>
       <Link href={`/restaurantes/${r.slug}`} className="block">
         <div className="relative aspect-[4/3] overflow-hidden">
           <SmartImage src={r.heroImage} alt={r.name} label={r.name} ratio="aspect-[4/3]" priority={priority} />
@@ -58,7 +58,7 @@ function RestaurantCard({ r, priority }: { r: Restaurant; priority?: boolean }) 
           <div className="scrim-strong absolute inset-0" />
 
           <div className="absolute left-4 top-4 flex flex-wrap gap-2">
-            <span className="chip-on-photo !border-gold/50 font-sans text-[10px] font-semibold uppercase tracking-luxe text-gold-soft">
+            <span className="chip-on-photo !rounded-[6px] !border-gold/50 font-sans text-[10px] font-semibold uppercase tracking-luxe text-gold-soft">
               <Icon name="UtensilsCrossed" size={12} /> {category}
             </span>
           </div>
