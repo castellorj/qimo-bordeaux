@@ -47,6 +47,7 @@ function RestaurantCard({ r, priority }: { r: Restaurant; priority?: boolean }) 
     r.bookingUrl ||
     (r.phone ? `tel:${r.phone}` : qimoWhatsApp(`Olá! Gostaria de reservar uma mesa no ${r.name}.`));
   const category = r.category ? t(`rest.cat.${catI18n(r.category)}.s`) : "Restaurante";
+  const summary = r.bestFor || r.specialty || r.description;
 
   return (
     <article className="group overflow-hidden rounded-[20px] bg-black shadow-card">
@@ -67,6 +68,14 @@ function RestaurantCard({ r, priority }: { r: Restaurant; priority?: boolean }) 
           </div>
         </div>
       </Link>
+
+      {summary && (
+        <div className="border-t bg-cream px-5 py-4" style={{ borderColor: "var(--line)" }}>
+          <p className="line-clamp-2 font-sans text-[13px] leading-relaxed text-muted">
+            {summary}
+          </p>
+        </div>
+      )}
 
       <div className="grid grid-cols-[1fr_auto] border-t bg-petrol-600 font-sans text-[11px] font-semibold uppercase tracking-wide text-cream shadow-[inset_0_1px_0_rgba(255,255,255,.16)]" style={{ borderColor: "rgba(255,255,255,.18)" }}>
           <a href={reserveHref} target={reserveHref.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-4 py-3 transition-colors hover:bg-white/10">
