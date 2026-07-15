@@ -46,47 +46,57 @@ function RestaurantCard({ r, priority }: { r: Restaurant; priority?: boolean }) 
   const reserveHref =
     r.bookingUrl ||
     (r.phone ? `tel:${r.phone}` : qimoWhatsApp(`Olá! Gostaria de reservar uma mesa no ${r.name}.`));
+  const meta = [r.neighborhood, r.priceBand].filter(Boolean).join(" · ");
+  const category = r.category ? t(`rest.cat.${catI18n(r.category)}.s`) : "Restaurante";
 
   return (
-    <article className="group overflow-hidden rounded-[8px] border bg-white/70" style={{ borderColor: "var(--line)" }}>
+    <article className="group overflow-hidden rounded-[20px] bg-black shadow-card">
       <Link href={`/restaurantes/${r.slug}`} className="block">
-        <SmartImage src={r.heroImage} alt={r.name} label={r.name} ratio="aspect-[4/3]" priority={priority} />
-      </Link>
-      <div className="p-4">
-        <div className="flex items-start justify-between gap-3">
-          <div className="min-w-0">
-            <p className="font-sans text-[10px] uppercase tracking-wide2 text-gold-deep">
-              {r.category ? t(`rest.cat.${catI18n(r.category)}.s`) : "Restaurante"}
-            </p>
-            <Link href={`/restaurantes/${r.slug}`} className="mt-1 block font-serif text-[22px] font-light leading-tight hover:text-gold-deep">
-              {r.name}
-            </Link>
-            <p className="mt-1 font-sans text-[13px] text-muted">{[r.neighborhood, r.priceBand].filter(Boolean).join(" · ")}</p>
+        <div className="relative aspect-[4/3] overflow-hidden">
+          <SmartImage src={r.heroImage} alt={r.name} label={r.name} ratio="aspect-[4/3]" priority={priority} />
+          <div className="absolute inset-0" style={{ background: "rgba(20,7,11,0.28)" }} />
+          <div className="scrim-strong absolute inset-0" />
+
+          <div className="absolute left-4 top-4 flex flex-wrap gap-2">
+            <span className="chip-on-photo !border-gold/50 font-sans text-[10px] font-semibold uppercase tracking-luxe text-gold-soft">
+              <Icon name="UtensilsCrossed" size={12} /> {category}
+            </span>
+            {(r.michelin || r.stars) && (
+              <span className="chip-on-photo !border-gold/50 font-sans text-[10px] font-semibold uppercase tracking-luxe text-gold-soft">
+                <Icon name="Star" size={11} /> Michelin
+              </span>
+            )}
           </div>
+
           {r.googleRating && (
-            <div className="grid h-12 w-12 shrink-0 place-items-center rounded-full bg-petrol-600 text-center text-cream">
-              <span className="font-sans text-[10px] uppercase leading-none text-cream/70">Google</span>
+            <div className="absolute right-4 top-4 grid h-12 w-12 place-items-center rounded-full border border-white/20 bg-black/35 text-center text-cream backdrop-blur">
+              <span className="font-sans text-[9px] uppercase leading-none text-cream/70">Google</span>
               <span className="font-sans text-[14px] font-semibold leading-none">{r.googleRating.toFixed(1)}</span>
             </div>
           )}
-        </div>
 
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {(r.highlights || []).slice(0, 3).map((item) => (
-            <span key={item} className="rounded-full bg-petrol-600/6 px-2.5 py-1 font-sans text-[11px] text-petrol-700">
-              {item}
-            </span>
-          ))}
+          <div className="absolute inset-x-0 bottom-0 p-5 pb-6" style={{ textShadow: "0 1px 18px rgba(12,4,7,.85), 0 1px 3px rgba(12,4,7,.7)" }}>
+            {r.specialty && <p className="font-sans text-[10px] uppercase tracking-luxe text-gold-soft">{r.specialty}</p>}
+            <h2 className="mt-1 font-serif text-[28px] font-light leading-[1.05] text-cream">{r.name}</h2>
+            {meta && <p className="mt-2 font-sans text-[12px] text-cream/90">{meta}</p>}
+            {(r.highlights || []).length > 0 && (
+              <div className="mt-3 flex flex-wrap gap-1.5">
+                {(r.highlights || []).slice(0, 2).map((item) => (
+                  <span key={item} className="chip-on-photo !px-2.5 !py-1 font-sans text-[10px] text-cream/95">{item}</span>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
+      </Link>
 
-        <div className="mt-4 grid grid-cols-[1fr_auto] gap-2">
-          <a href={reserveHref} target={reserveHref.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer" className="btn-primary !px-3 !py-2.5 text-[12px]">
-            <Icon name="Utensils" size={14} /> {r.bookingUrl ? t("rest.book") : t("rest.contact")}
+      <div className="grid grid-cols-[1fr_auto] border-t bg-petrol-600 font-sans text-[11px] font-semibold uppercase tracking-wide text-cream shadow-[inset_0_1px_0_rgba(255,255,255,.16)]" style={{ borderColor: "rgba(255,255,255,.18)" }}>
+          <a href={reserveHref} target={reserveHref.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-4 py-3 transition-colors hover:bg-white/10">
+            <Icon name="CalendarCheck" size={15} /> {r.bookingUrl ? t("rest.book") : t("rest.contact")}
           </a>
-          <Link href={`/restaurantes/${r.slug}`} className="btn-ghost !px-3 !py-2.5 text-[12px]" aria-label={`Ver detalhes de ${r.name}`}>
-            <Icon name="ArrowRight" size={14} />
+          <Link href={`/restaurantes/${r.slug}`} className="flex items-center justify-center border-l border-white/15 px-4 py-3 transition-colors hover:bg-white/10" aria-label={`Ver detalhes de ${r.name}`}>
+            <Icon name="ArrowRight" size={15} />
           </Link>
-        </div>
       </div>
     </article>
   );
