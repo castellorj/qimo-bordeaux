@@ -7,6 +7,18 @@ export const ship = {
   tagline: "Um château flutuante sobre os rios de Bordeaux",
   intro:
     "Concebido como um verdadeiro château sobre as águas, o SS Bon Voyage navega exclusivamente pela grande Bordeaux — Garonne, Dordogne e o estuário do Gironde. Reinaugurado em 2019 após uma transformação completa, combina arte e antiguidades francesas, suítes amplas, gastronomia autoral e um serviço all-inclusive discreto e impecável. Com apenas 124 hóspedes e 51 tripulantes, oferece uma das mais altas proporções de atenção por hóspede dos rios da Europa.",
+  gallery: [
+    "/photos/ship-exterior.jpg",
+    "/photos/ship-dining.jpg",
+    "/photos/ship-suite.jpg",
+  ],
+  moreInfoTitle: "Detalhes para aproveitar melhor o navio",
+  moreInfoText:
+    "Use este espaco para incluir orientacoes especificas da QIMO: servicos a bordo, horarios importantes, pontos de encontro, funcionamento de bares, dress code ou qualquer informacao operacional confirmada pela equipe.",
+  moreInfoItems: [
+    "Informacoes do navio podem ser atualizadas no painel conforme a operadora confirmar novos detalhes.",
+    "Fotos adicionais aparecem automaticamente nesta pagina quando incluidas na galeria.",
+  ],
   stats: [
     { n: "124", l: "hóspedes" },
     { n: "51", l: "tripulantes" },

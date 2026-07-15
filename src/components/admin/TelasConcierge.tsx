@@ -2,13 +2,13 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/Icon";
-import { conciergeContacts as BASE, conciergeSections as SECTIONS_BASE } from "@/content";
+import { conciergeContacts as BASE, conciergeSections as SECTIONS_BASE, partnerOffers as OFFERS_BASE } from "@/content";
 import {
   uploadImage, upsertSetting, listSettings,
   upsertContent, listContent, deleteContent, setPublished, updateSort,
   type ContentRow,
 } from "@/lib/supabase/content-admin";
-import type { ConciergeContact, ConciergeSection, ConciergeModule } from "@/lib/types";
+import type { ConciergeContact, ConciergeSection, ConciergeModule, PartnerOffer } from "@/lib/types";
 
 const SECTION_MODULES: { v: ConciergeModule; l: string; auto: boolean }[] = [
   { v: "text", l: "Texto livre (Markdown)", auto: false },
@@ -30,12 +30,13 @@ const CONTACT_TYPES = [
   { v: "maps", l: "Mapa / endereço" }, { v: "link", l: "Link / site" }, { v: "instagram", l: "Instagram" }, { v: "info", l: "Informação" },
 ];
 const CONTACT_ICONS = ["MessageCircle", "Phone", "Instagram", "Siren", "Ambulance", "Shield", "Cross", "Landmark", "MapPin", "Globe", "Mail", "Info", "Bell", "Navigation", "Coins", "Car"];
-type EditorTab = "photos" | "sections" | "contacts";
+type EditorTab = "photos" | "sections" | "contacts" | "offers";
 
 const EDITOR_TABS: { id: EditorTab; icon: string; title: string; hint: string }[] = [
   { id: "photos", icon: "Image", title: "Fotos do site", hint: "capas, cards e imagens fixas" },
   { id: "sections", icon: "LayoutGrid", title: "Seções do concierge", hint: "acordeao da tela Concierge" },
   { id: "contacts", icon: "MessageCircle", title: "Contatos do concierge", hint: "balao flutuante e contatos da pagina" },
+  { id: "offers", icon: "BadgePercent", title: "Ofertas de parceiros", hint: "anuncios, cupons e beneficios" },
 ];
 
 export function TelasConcierge() {
@@ -49,7 +50,7 @@ export function TelasConcierge() {
         <p className="mt-1 max-w-2xl font-sans text-[12px] text-muted">
           Escolha uma area. Todas as alteracoes desta tela salvam no banco e aparecem no guia em instantes.
         </p>
-        <div className="mt-4 grid gap-3 md:grid-cols-3">
+        <div className="mt-4 grid gap-3 md:grid-cols-4">
           {EDITOR_TABS.map((item) => {
             const selected = tab === item.id;
             return (
@@ -77,8 +78,10 @@ export function TelasConcierge() {
         <ScreenPhotos />
       ) : tab === "sections" ? (
         <ConciergeSectionsEditor />
-      ) : (
+      ) : tab === "contacts" ? (
         <ConciergeContactsEditor />
+      ) : (
+        <PartnerOffersEditor />
       )}
     </div>
   );
@@ -447,6 +450,246 @@ function ContactRow({ row, onChange, canUp, canDown, onMove }: {
           {busy ? "…" : "Salvar"}
         </button>
         {saved && <span className="font-sans text-[12px] text-olive-deep">✓ Salvo</span>}
+        <button onClick={toggleHide} disabled={busy} className="btn-ghost !px-3 !py-1.5 text-[12px]">
+          <Icon name={row.published ? "EyeOff" : "Eye"} size={13} /> {row.published ? "Ocultar" : "Mostrar"}
+        </button>
+        <button onClick={remove} disabled={busy} className="ml-auto flex items-center gap-1.5 font-sans text-[12px] text-muted hover:text-[#8f2f2f]">
+          <Icon name="X" size={14} /> Excluir
+        </button>
+      </div>
+    </div>
+  );
+}
+
+/* -------------------- Concierge: ofertas de parceiros -------------------- */
+function PartnerOffersEditor() {
+  const [rows, setRows] = useState<ContentRow[] | null>(null);
+  const [seeding, setSeeding] = useState(false);
+
+  const load = useCallback(async () => {
+    let r = await listContent("partner_offer");
+    if (!r.length && OFFERS_BASE.length) {
+      setSeeding(true);
+      for (let i = 0; i < OFFERS_BASE.length; i++) {
+        await upsertContent("partner_offer", OFFERS_BASE[i].slug, OFFERS_BASE[i], i * 10, true);
+      }
+      r = await listContent("partner_offer");
+      setSeeding(false);
+    }
+    setRows(r);
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  const addNew = async () => {
+    const slug = "oferta-" + Math.random().toString(36).slice(2, 7);
+    const sort = (rows?.reduce((m, r) => Math.max(m, r.sort), 0) ?? 0) + 10;
+    await upsertContent("partner_offer", slug, {
+      slug,
+      partner: "Novo parceiro",
+      title: "Nova oferta QIMO",
+      description: "Descreva aqui o beneficio, produto ou servico do parceiro.",
+      benefit: "Condicao especial QIMO",
+      coupon: "",
+      validUntil: "Durante a viagem",
+      image: "",
+      ctaLabel: "Ver oferta",
+      url: "",
+      qimoSelect: true,
+    } satisfies PartnerOffer, sort, false);
+    load();
+  };
+
+  const move = async (idx: number, dir: number) => {
+    if (!rows) return;
+    const a = rows[idx], b = rows[idx + dir];
+    if (!a || !b) return;
+    await Promise.all([updateSort(a.id, b.sort), updateSort(b.id, a.sort)]);
+    load();
+  };
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 className="font-serif text-xl font-light">Editar ofertas de parceiros</h3>
+          <p className="mt-1 max-w-2xl font-sans text-[13px] leading-relaxed text-muted">
+            Crie anuncios de parceiros QIMO para a secao Ofertas do Concierge: foto, beneficio, cupom, validade e botao.
+          </p>
+        </div>
+        <button onClick={addNew} className="btn-primary !px-4 !py-2 text-[12px]"><Icon name="Plus" size={14} /> Adicionar parceiro</button>
+      </div>
+
+      {rows === null ? (
+        <p className="mt-4 text-muted">{seeding ? "Preparando ofertas..." : "Carregando..."}</p>
+      ) : (
+        <div className="mt-4 space-y-3">
+          {rows.map((row, idx) => (
+            <OfferRow key={row.id} row={row} onChange={load}
+              canUp={idx > 0} canDown={idx < rows.length - 1} onMove={(dir) => move(idx, dir)} />
+          ))}
+          {rows.length === 0 && <p className="text-muted">Nenhuma oferta. Use "Adicionar parceiro".</p>}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function OfferRow({ row, onChange, canUp, canDown, onMove }: {
+  row: ContentRow; onChange: () => void; canUp: boolean; canDown: boolean; onMove: (dir: number) => void;
+}) {
+  const d = (row.data || {}) as PartnerOffer;
+  const [partner, setPartner] = useState(d.partner || "");
+  const [title, setTitle] = useState(d.title || "");
+  const [description, setDescription] = useState(d.description || "");
+  const [benefit, setBenefit] = useState(d.benefit || "");
+  const [coupon, setCoupon] = useState(d.coupon || "");
+  const [validUntil, setValidUntil] = useState(d.validUntil || "");
+  const [image, setImage] = useState(d.image || "");
+  const [ctaLabel, setCtaLabel] = useState(d.ctaLabel || "Ver oferta");
+  const [url, setUrl] = useState(d.url || "");
+  const [qimoSelect, setQimoSelect] = useState(d.qimoSelect !== false);
+  const [busy, setBusy] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const dirty =
+    partner !== (d.partner || "") ||
+    title !== (d.title || "") ||
+    description !== (d.description || "") ||
+    benefit !== (d.benefit || "") ||
+    coupon !== (d.coupon || "") ||
+    validUntil !== (d.validUntil || "") ||
+    image !== (d.image || "") ||
+    ctaLabel !== (d.ctaLabel || "Ver oferta") ||
+    url !== (d.url || "") ||
+    qimoSelect !== (d.qimoSelect !== false);
+
+  const save = async () => {
+    setBusy(true);
+    await upsertContent("partner_offer", row.slug, {
+      ...d,
+      slug: row.slug,
+      partner,
+      title,
+      description,
+      benefit,
+      coupon,
+      validUntil,
+      image,
+      ctaLabel,
+      url,
+      qimoSelect,
+    } satisfies PartnerOffer, row.sort, row.published);
+    setBusy(false); setSaved(true); setTimeout(() => setSaved(false), 1500); onChange();
+  };
+
+  const pick = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setBusy(true);
+    try { setImage(await uploadImage(file)); } catch { alert("Nao foi possivel enviar a foto."); }
+    setBusy(false);
+    if (fileRef.current) fileRef.current.value = "";
+  };
+
+  const toggleHide = async () => { setBusy(true); await setPublished(row.id, !row.published); setBusy(false); onChange(); };
+  const remove = async () => {
+    if (!confirm(`Excluir a oferta "${d.title || row.slug}"? Ela some do Concierge.`)) return;
+    setBusy(true); await deleteContent(row.id); setBusy(false); onChange();
+  };
+
+  return (
+    <div className={clsx("card p-4", !row.published && "opacity-60")}>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-black/[0.04] text-gold-deep"><Icon name="BadgePercent" size={15} /></span>
+          <span className="font-sans text-[11px] uppercase tracking-wide2 text-muted">{row.slug}</span>
+          {qimoSelect && <span className="rounded-full bg-gold/15 px-2 py-0.5 font-sans text-[10px] uppercase tracking-wide2 text-gold-deep">selecao QIMO</span>}
+          {!row.published && <span className="rounded-full bg-black/[0.06] px-2 py-0.5 font-sans text-[10px] uppercase tracking-wide2 text-muted">oculta</span>}
+        </div>
+        <div className="flex items-center gap-1">
+          <button onClick={() => onMove(-1)} disabled={!canUp} aria-label="Subir" className="grid h-7 w-7 place-items-center rounded-md text-muted hover:text-petrol-600 disabled:opacity-30"><Icon name="ChevronDown" size={15} className="rotate-180" /></button>
+          <button onClick={() => onMove(1)} disabled={!canDown} aria-label="Descer" className="grid h-7 w-7 place-items-center rounded-md text-muted hover:text-petrol-600 disabled:opacity-30"><Icon name="ChevronDown" size={15} /></button>
+        </div>
+      </div>
+
+      <div className="mt-4 grid gap-4 lg:grid-cols-[180px_1fr]">
+        <div>
+          <div className="relative aspect-[4/3] overflow-hidden rounded-[10px] bg-black/5">
+            {image ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={image} alt="" className="h-full w-full object-cover" />
+            ) : (
+              <div className="grid h-full w-full place-items-center text-muted"><Icon name="Image" size={22} /></div>
+            )}
+          </div>
+          <button type="button" onClick={() => fileRef.current?.click()} disabled={busy} className="btn-ghost mt-2 w-full !px-3 !py-1.5 text-[12px]">
+            <Icon name="Camera" size={13} /> Trocar foto
+          </button>
+          <input ref={fileRef} type="file" accept="image/*" onChange={pick} className="hidden" />
+          <input value={image} onChange={(e) => setImage(e.target.value)} placeholder="URL da imagem"
+            className="mt-2 w-full rounded-[8px] border bg-transparent px-3 py-1.5 font-sans text-[11px] text-muted outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+        </div>
+
+        <div className="grid gap-3">
+          <div className="grid gap-2 sm:grid-cols-2">
+            <label className="block">
+              <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Parceiro</span>
+              <input value={partner} onChange={(e) => setPartner(e.target.value)}
+                className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+            </label>
+            <label className="block">
+              <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Titulo da oferta</span>
+              <input value={title} onChange={(e) => setTitle(e.target.value)}
+                className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+            </label>
+          </div>
+          <label className="block">
+            <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Descricao comercial</span>
+            <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3}
+              className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm leading-relaxed outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+          </label>
+          <div className="grid gap-2 sm:grid-cols-3">
+            <label className="block">
+              <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Beneficio</span>
+              <input value={benefit} onChange={(e) => setBenefit(e.target.value)} placeholder="10% off, brinde..."
+                className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+            </label>
+            <label className="block">
+              <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Cupom</span>
+              <input value={coupon} onChange={(e) => setCoupon(e.target.value)}
+                className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+            </label>
+            <label className="block">
+              <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Validade</span>
+              <input value={validUntil} onChange={(e) => setValidUntil(e.target.value)}
+                className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+            </label>
+          </div>
+          <div className="grid gap-2 sm:grid-cols-[180px_1fr]">
+            <label className="block">
+              <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Texto do botao</span>
+              <input value={ctaLabel} onChange={(e) => setCtaLabel(e.target.value)}
+                className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+            </label>
+            <label className="block">
+              <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Link do botao</span>
+              <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="https://..."
+                className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+            </label>
+          </div>
+          <label className="flex items-center gap-2 font-sans text-[12px] text-muted">
+            <input type="checkbox" checked={qimoSelect} onChange={(e) => setQimoSelect(e.target.checked)} className="h-4 w-4 accent-[color:var(--petrol,#3d5a5c)]" />
+            Mostrar selo Selecao QIMO
+          </label>
+        </div>
+      </div>
+
+      <div className="mt-4 flex flex-wrap items-center gap-2">
+        <button onClick={save} disabled={!dirty || busy} className={clsx("btn-primary !px-4 !py-1.5 text-[12px]", (!dirty || busy) && "opacity-50")}>
+          {busy ? "Salvando..." : "Salvar oferta"}
+        </button>
+        {saved && <span className="font-sans text-[12px] text-olive-deep">Salvo</span>}
         <button onClick={toggleHide} disabled={busy} className="btn-ghost !px-3 !py-1.5 text-[12px]">
           <Icon name={row.published ? "EyeOff" : "Eye"} size={13} /> {row.published ? "Ocultar" : "Mostrar"}
         </button>

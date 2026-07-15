@@ -23,6 +23,8 @@ export default function BarcoPage() {
   // Navio editável no painel (aba Fichas → Navio); cai no arquivo enquanto não editado.
   const ship = (useGuideItem<any>("ship", "ss-bon-voyage") ?? fileShip) as typeof fileShip;
   const img = (key: string, def: string) => cleanSiteImage(cfg(key)) || (settingsReady ? cleanSiteImage(def) : undefined);
+  const shipGallery = Array.isArray((ship as any).gallery) ? ((ship as any).gallery.filter(Boolean) as string[]) : [];
+  const moreInfoItems = Array.isArray((ship as any).moreInfoItems) ? ((ship as any).moreInfoItems.filter(Boolean) as string[]) : [];
 
   return (
     <>
@@ -53,6 +55,22 @@ export default function BarcoPage() {
         </div>
 
         {/* Ficha rápida */}
+        {shipGallery.length > 0 && (
+          <section className="mt-10">
+            <div className="flex items-center gap-3">
+              <Icon name="Images" size={20} className="text-gold" />
+              <h2 className="display text-2xl sm:text-3xl">Galeria do navio</h2>
+            </div>
+            <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              {shipGallery.map((src, i) => (
+                <div key={`${src}-${i}`} className="card overflow-hidden">
+                  <SmartImage src={src} alt={`${ship.name} ${i + 1}`} ratio="aspect-[4/3]" />
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
         <div className="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {ship.facts.map((f) => (
             <div key={f.label} className="card p-5">
@@ -197,6 +215,26 @@ export default function BarcoPage() {
                 </Link>
               ))}
             </div>
+          </section>
+        )}
+
+        {((ship as any).moreInfoTitle || (ship as any).moreInfoText || moreInfoItems.length > 0) && (
+          <section className="mt-16 rounded-[3px] border p-8 sm:p-10" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
+            <p className="kicker">Informacoes QIMO</p>
+            {(ship as any).moreInfoTitle && <h2 className="display mt-3 text-2xl sm:text-3xl">{(ship as any).moreInfoTitle}</h2>}
+            {(ship as any).moreInfoText && <p className="prose-luxe mt-5 max-w-3xl">{(ship as any).moreInfoText}</p>}
+            {moreInfoItems.length > 0 && (
+              <div className="mt-6 grid gap-3 md:grid-cols-2">
+                {moreInfoItems.map((item, i) => (
+                  <div key={i} className="flex items-start gap-3 rounded-[10px] border bg-white/35 p-4" style={{ borderColor: "var(--line)" }}>
+                    <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-gold/12 text-gold-deep">
+                      <Icon name="Info" size={14} />
+                    </span>
+                    <p className="font-sans text-[13px] leading-relaxed text-muted">{item}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </section>
         )}
 
