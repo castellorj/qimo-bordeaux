@@ -46,7 +46,6 @@ function RestaurantCard({ r, priority }: { r: Restaurant; priority?: boolean }) 
   const reserveHref =
     r.bookingUrl ||
     (r.phone ? `tel:${r.phone}` : qimoWhatsApp(`Olá! Gostaria de reservar uma mesa no ${r.name}.`));
-  const meta = [r.neighborhood, r.priceBand].filter(Boolean).join(" · ");
   const category = r.category ? t(`rest.cat.${catI18n(r.category)}.s`) : "Restaurante";
 
   return (
@@ -61,31 +60,10 @@ function RestaurantCard({ r, priority }: { r: Restaurant; priority?: boolean }) 
             <span className="chip-on-photo !border-gold/50 font-sans text-[10px] font-semibold uppercase tracking-luxe text-gold-soft">
               <Icon name="UtensilsCrossed" size={12} /> {category}
             </span>
-            {(r.michelin || r.stars) && (
-              <span className="chip-on-photo !border-gold/50 font-sans text-[10px] font-semibold uppercase tracking-luxe text-gold-soft">
-                <Icon name="Star" size={11} /> Michelin
-              </span>
-            )}
           </div>
 
-          {r.googleRating && (
-            <div className="absolute right-4 top-4 grid h-12 w-12 place-items-center rounded-full border border-white/20 bg-black/35 text-center text-cream backdrop-blur">
-              <span className="font-sans text-[9px] uppercase leading-none text-cream/70">Google</span>
-              <span className="font-sans text-[14px] font-semibold leading-none">{r.googleRating.toFixed(1)}</span>
-            </div>
-          )}
-
           <div className="absolute inset-x-0 bottom-0 p-5 pb-6" style={{ textShadow: "0 1px 18px rgba(12,4,7,.85), 0 1px 3px rgba(12,4,7,.7)" }}>
-            {r.specialty && <p className="font-sans text-[10px] uppercase tracking-luxe text-gold-soft">{r.specialty}</p>}
-            <h2 className="mt-1 font-serif text-[28px] font-light leading-[1.05] text-cream">{r.name}</h2>
-            {meta && <p className="mt-2 font-sans text-[12px] text-cream/90">{meta}</p>}
-            {(r.highlights || []).length > 0 && (
-              <div className="mt-3 flex flex-wrap gap-1.5">
-                {(r.highlights || []).slice(0, 2).map((item) => (
-                  <span key={item} className="chip-on-photo !px-2.5 !py-1 font-sans text-[10px] text-cream/95">{item}</span>
-                ))}
-              </div>
-            )}
+            <h2 className="font-serif text-[30px] font-light leading-[1.05] text-cream">{r.name}</h2>
           </div>
         </div>
       </Link>
