@@ -3,7 +3,7 @@
 import { SmartImage } from "@/components/SmartImage";
 import { Icon } from "@/components/Icon";
 import { QimoSeal, Crumb, Pill } from "@/components/ui";
-import { useGuideItem } from "@/components/GuideContent";
+import { useGuideItem, useGuideLoading } from "@/components/GuideContent";
 import { Editable } from "@/components/Editable";
 import type { Appellation } from "@/lib/types";
 
@@ -22,6 +22,8 @@ function Spec({ icon, label, value }: { icon: string; label: string; value?: str
 
 export function WineView({ slug }: { slug: string }) {
   const a = useGuideItem<Appellation>("wine", slug);
+  const loading = useGuideLoading();
+  if (loading) return <div className="container-editorial py-20 text-center text-muted">Carregando...</div>;
   if (!a) return <div className="container-editorial py-20 text-center text-muted">Vinho não encontrado.</div>;
 
   const bankLabel = a.bank === "Left" ? "Margem esquerda" : a.bank === "Right" ? "Margem direita" : a.bank === "Entre-deux" ? "Entre-deux-Mers" : "Sauternais";

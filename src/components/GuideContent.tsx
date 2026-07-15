@@ -29,8 +29,10 @@ const ANON =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2dnppdHN6ZmNhamZydnpwYWNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzODMyMzIsImV4cCI6MjA5Mzk1OTIzMn0.4tBzaBgyvzwuTEvlX9wSc85c6EKtTVfEidYeeh6aGRw";
 
 type ByKind = Record<string, { slug: string; data: any; sort: number }[]>;
-const Ctx = createContext<ByKind | null>(null);
+type ContentState = ByKind | null | undefined;
+const Ctx = createContext<ContentState>(undefined);
 const CONTENT_CACHE_KEY = "qimo:content-cache:v2";
+const CONTENT_CACHE_MAX_AGE = 5 * 60 * 1000;
 
 // Contexto de edição inline (ativo quando o guia roda dentro do preview do painel).
 const EditCtx = createContext<{ editMode: boolean }>({ editMode: false });
@@ -53,22 +55,26 @@ function removeOldLocalPhotos<T>(value: T): T {
   return value;
 }
 
-function readContentCache(): ByKind | null {
+function readContentCache(): ByKind | undefined {
   try {
-    if (typeof window === "undefined") return null;
-    const raw = sessionStorage.getItem(CONTENT_CACHE_KEY) || localStorage.getItem(CONTENT_CACHE_KEY);
+    if (typeof window === "undefined") return undefined;
+    const raw = sessionStorage.getItem(CONTENT_CACHE_KEY);
     const parsed = raw ? JSON.parse(raw) : null;
-    return parsed && typeof parsed === "object" ? parsed : null;
+    if (!parsed || typeof parsed !== "object") return undefined;
+    if ("data" in parsed && "ts" in parsed) {
+      return Date.now() - Number(parsed.ts) < CONTENT_CACHE_MAX_AGE ? parsed.data : undefined;
+    }
+    return undefined;
   } catch {
-    return null;
+    return undefined;
   }
 }
 
 function writeContentCache(db: ByKind) {
   try {
-    const raw = JSON.stringify(db);
+    const raw = JSON.stringify({ ts: Date.now(), data: db });
     sessionStorage.setItem(CONTENT_CACHE_KEY, raw);
-    localStorage.setItem(CONTENT_CACHE_KEY, raw);
+    localStorage.removeItem(CONTENT_CACHE_KEY);
   } catch {}
 }
 
@@ -83,8 +89,9 @@ function mergeActivitiesById(fileActivities: any[] = [], dbActivities: any[] = [
   });
 }
 
-function mergeDayRows<T>(db: ByKind | null): T[] {
+function mergeDayRows<T>(db: ContentState): T[] {
   const file = (FILES.day || []) as any[];
+  if (db === undefined) return [];
   const rows = db?.day;
   if (!rows || !rows.length) return removeOldLocalPhotos(file) as T[];
   const fileBySlug = new Map(file.map((day) => [day.slug, day]));
@@ -99,8 +106,9 @@ function mergeDayRows<T>(db: ByKind | null): T[] {
 }
 
 // Mescla conteúdo do banco (ao vivo) sobre os arquivos (base instantânea/offline).
-function merged<T extends { slug: string }>(kind: string, db: ByKind | null): T[] {
+function merged<T extends { slug: string }>(kind: string, db: ContentState): T[] {
   const file = (FILES[kind] || []) as T[];
+  if (db === undefined) return [];
   const rows = db?.[kind];
   if (!rows || !rows.length) return removeOldLocalPhotos(file);
   const bySlug = new Map<string, T>();
@@ -124,14 +132,14 @@ async function fetchContent(): Promise<ByKind> {
 }
 
 export function GuideContentProvider({ children }: { children: React.ReactNode }) {
-  const [db, setDb] = useState<ByKind | null>(() => readContentCache());
+  const [db, setDb] = useState<ContentState>(() => readContentCache());
   const [editMode, setEditMode] = useState(false);
 
   useEffect(() => {
     const refresh = () => fetchContent().then((next) => {
       setDb(next);
       writeContentCache(next);
-    }).catch(() => {});
+    }).catch(() => setDb((current) => current === undefined ? null : current));
     refresh();
 
     // Modo edição: ativado via query (?qimoedit=1) quando dentro do preview do painel.
@@ -170,7 +178,8 @@ export function useGuideKind<T extends { slug: string }>(kind: string): T[] {
 // Lista 100% gerida pelo banco (add/editar/ocultar/excluir/ordenar no painel).
 // Enquanto não houver nenhum registro no banco, usa o arquivo como semente.
 // Ideal para listas onde a equipe controla tudo (ex.: Concierge).
-function guideList<T>(kind: string, db: ByKind | null): T[] {
+function guideList<T>(kind: string, db: ContentState): T[] {
+  if (db === undefined) return [];
   if (kind === "day") return mergeDayRows<T>(db);
   const rows = db?.[kind];
   if (rows && rows.length) return rows.map((r) => removeOldLocalPhotos(r.data as T)); // banco = fonte da verdade (publicados, ordenados)
@@ -181,4 +190,7 @@ export function useGuideList<T>(kind: string): T[] {
 }
 export function useGuideItem<T extends { slug: string }>(kind: string, slug: string): T | undefined {
   return merged<T>(kind, useContext(Ctx)).find((x) => x.slug === slug);
+}
+export function useGuideLoading() {
+  return useContext(Ctx) === undefined;
 }

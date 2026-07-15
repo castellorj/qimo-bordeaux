@@ -23,13 +23,13 @@ export function PageHero({
   kickerOnly?: boolean;
   imageOnly?: boolean;
 }) {
-  const { t, cfg } = useLocale();
+  const { t, cfg, settingsReady } = useLocale();
   const k = section ? t(`hero.${section}.k`) : kicker;
   // título explícito (prop) vence; senão usa o nome da seção
   const ti = title ?? (section ? t(`nav.${section}`) : undefined);
   const i = section ? t(`hero.${section}.i`) : intro;
   // Foto do topo editável no painel (chave img.sec.<seção>), com fallback ao bgImage local.
-  const bg = cleanSiteImage(section ? cfg(`img.sec.${section}`) : undefined) || cleanSiteImage(bgImage);
+  const bg = cleanSiteImage(section ? cfg(`img.sec.${section}`) : undefined) || (settingsReady ? cleanSiteImage(bgImage) : undefined);
 
   return (
     <section className="relative overflow-hidden border-b" style={{ borderColor: "var(--line)" }}>

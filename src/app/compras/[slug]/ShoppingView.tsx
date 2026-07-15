@@ -3,11 +3,13 @@
 import { SmartImage } from "@/components/SmartImage";
 import { Icon } from "@/components/Icon";
 import { QimoSeal, Crumb, Pill } from "@/components/ui";
-import { useGuideItem } from "@/components/GuideContent";
+import { useGuideItem, useGuideLoading } from "@/components/GuideContent";
 import type { ShoppingItem } from "@/lib/types";
 
 export function ShoppingView({ slug }: { slug: string }) {
   const s = useGuideItem<ShoppingItem>("shopping", slug);
+  const loading = useGuideLoading();
+  if (loading) return <div className="container-editorial py-20 text-center text-muted">Carregando...</div>;
   if (!s) return <div className="container-editorial py-20 text-center text-muted">Item não encontrado.</div>;
 
   return (

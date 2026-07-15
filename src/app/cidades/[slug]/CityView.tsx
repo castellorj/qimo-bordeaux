@@ -5,7 +5,7 @@ import { SmartImage } from "@/components/SmartImage";
 import { Icon } from "@/components/Icon";
 import { Crumb, Pill } from "@/components/ui";
 import { ReadMore } from "@/components/ReadMore";
-import { useGuideItem } from "@/components/GuideContent";
+import { useGuideItem, useGuideLoading } from "@/components/GuideContent";
 import { Editable } from "@/components/Editable";
 import { Section } from "@/components/Section";
 import type { City } from "@/lib/types";
@@ -41,6 +41,8 @@ function List({ title, icon, items, slug, field }: { title: string; icon: string
 
 export function CityView({ slug }: { slug: string }) {
   const c = useGuideItem<City>("city", slug);
+  const loading = useGuideLoading();
+  if (loading) return <div className="container-editorial py-20 text-center text-muted">Carregando...</div>;
   if (!c) return <div className="container-editorial py-20 text-center text-muted">Cidade não encontrada.</div>;
 
   const mapUrl = c.coords

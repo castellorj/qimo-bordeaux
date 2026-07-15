@@ -69,8 +69,8 @@ export function WelcomeSheet() {
   const [leaving, setLeaving] = useState(false);
   const restoring = useRef(false);
   const router = useRouter();
-  const { cfg } = useLocale();
-  const gateImg = cleanSiteImage(cfg("img.hero.gate")) || siteImageDef("img.hero.gate");
+  const { cfg, settingsReady } = useLocale();
+  const gateImg = cleanSiteImage(cfg("img.hero.gate")) || (settingsReady ? siteImageDef("img.hero.gate") : "");
 
   useEffect(() => {
     if (restoring.current) return;

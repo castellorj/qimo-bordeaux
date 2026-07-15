@@ -22,7 +22,7 @@ export function TripHero({
   defaultImage: string;
   title?: string; // se omitido, mostra a saudação (Bom dia/Boa tarde/Boa noite)
 }) {
-  const { t, cfg } = useLocale();
+  const { t, cfg, settingsReady } = useLocale();
   const { guest } = useReservations();
   const [greeting, setGreeting] = useState("");
   const [today, setToday] = useState("");
@@ -33,7 +33,7 @@ export function TripHero({
     setToday(fullDate(new Date().toISOString().slice(0, 10)));
   }, [t]);
 
-  const img = cfg(imageKey)?.trim() || defaultImage;
+  const img = cfg(imageKey)?.trim() || (settingsReady ? defaultImage : "");
   const guestName = (guest?.name || "").trim().split(/\s+/).filter(Boolean).slice(0, 2).join(" ");
   const heroTitle = guestName ? `Olá, ${guestName}` : title || greeting || " ";
 

@@ -7,7 +7,7 @@ import { QimoSeal, Crumb, Pill } from "@/components/ui";
 import { ReadMore } from "@/components/ReadMore";
 import { ActionBar } from "@/components/ActionBar";
 import { wineryActions } from "@/lib/reserve";
-import { useGuideItem } from "@/components/GuideContent";
+import { useGuideItem, useGuideLoading } from "@/components/GuideContent";
 import { Editable } from "@/components/Editable";
 import { Section } from "@/components/Section";
 import { chateauDossiers } from "@/content/chateaux-dossiers";
@@ -92,6 +92,8 @@ function normalizedWinery(w: Winery, dossier?: string): Winery {
 
 export function WineryView({ slug }: { slug: string }) {
   const source = useGuideItem<Winery>("winery", slug);
+  const loading = useGuideLoading();
+  if (loading) return <div className="container-editorial py-20 text-center text-muted">Carregando...</div>;
   if (!source) return <div className="container-editorial py-20 text-center text-muted">Vinícola não encontrada.</div>;
 
   const dossier = source.dossier || chateauDossiers[source.slug];

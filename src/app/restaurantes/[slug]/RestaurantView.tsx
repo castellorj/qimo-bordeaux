@@ -6,7 +6,7 @@ import { Icon } from "@/components/Icon";
 import { QimoSeal, Crumb, Pill } from "@/components/ui";
 import { ActionBar } from "@/components/ActionBar";
 import { restaurantActions, mapsUrl, qimoWhatsApp } from "@/lib/reserve";
-import { useGuideItem, useGuideKind } from "@/components/GuideContent";
+import { useGuideItem, useGuideKind, useGuideLoading } from "@/components/GuideContent";
 import type { Restaurant } from "@/lib/types";
 
 const categoryLabel: Record<string, string> = {
@@ -31,7 +31,9 @@ function Spec({ icon, label, value }: { icon: string; label: string; value?: str
 
 export function RestaurantView({ slug }: { slug: string }) {
   const r = useGuideItem<Restaurant>("restaurant", slug);
+  const loading = useGuideLoading();
   const all = useGuideKind<Restaurant>("restaurant");
+  if (loading) return <div className="container-editorial py-20 text-center text-muted">Carregando...</div>;
   if (!r) return <div className="container-editorial py-20 text-center text-muted">Restaurante não encontrado.</div>;
 
   const hasPublishedChef = r.chef && r.chef !== "Informação não divulgada oficialmente.";

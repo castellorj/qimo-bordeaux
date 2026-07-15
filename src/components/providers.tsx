@@ -20,7 +20,8 @@ const LocaleCtx = createContext<{
   setLocale: (l: Locale) => void;
   t: (key: string) => string;
   cfg: (key: string) => string | undefined;
-}>({ locale: DEFAULT_LOCALE, setLocale: () => {}, t: (k) => k, cfg: () => undefined });
+  settingsReady: boolean;
+}>({ locale: DEFAULT_LOCALE, setLocale: () => {}, t: (k) => k, cfg: () => undefined, settingsReady: false });
 
 /* ---------------- Reservas (atividades, via Supabase) ---------------- */
 export interface Guest { name?: string | null; phone?: string | null; room?: string | null }
@@ -47,6 +48,7 @@ const LOCALE_KEY = "qimo:locale";
 const LOCAL_RES_LS = "qimo:local-reservations";
 const LOCAL_ACTIVITY_PREFIX = "local:";
 const SETTINGS_CACHE_KEY = "qimo:settings-cache:v2";
+const SETTINGS_CACHE_MAX_AGE = 5 * 60 * 1000;
 
 function readGuest(): Guest | null {
   try {
@@ -66,9 +68,13 @@ function readGuest(): Guest | null {
 function readSettingsCache(): UiOverrides {
   try {
     if (typeof window === "undefined") return {};
-    const raw = localStorage.getItem(SETTINGS_CACHE_KEY);
+    const raw = sessionStorage.getItem(SETTINGS_CACHE_KEY);
     const parsed = raw ? JSON.parse(raw) : {};
-    return parsed && typeof parsed === "object" ? parsed : {};
+    if (!parsed || typeof parsed !== "object") return {};
+    if ("data" in parsed && "ts" in parsed) {
+      return Date.now() - Number(parsed.ts) < SETTINGS_CACHE_MAX_AGE ? parsed.data : {};
+    }
+    return {};
   } catch {
     return {};
   }
@@ -76,7 +82,8 @@ function readSettingsCache(): UiOverrides {
 
 function writeSettingsCache(overrides: UiOverrides) {
   try {
-    localStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify(overrides));
+    sessionStorage.setItem(SETTINGS_CACHE_KEY, JSON.stringify({ ts: Date.now(), data: overrides }));
+    localStorage.removeItem(SETTINGS_CACHE_KEY);
   } catch {}
 }
 
@@ -172,6 +179,7 @@ function removeLocalReservation(owner: string, activityId: string) {
 export function Providers({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE);
   const [overrides, setOverrides] = useState<UiOverrides>(() => readSettingsCache());
+  const [settingsReady, setSettingsReady] = useState(false);
   const [ready, setReady] = useState(false);
 
   // reservas
@@ -224,9 +232,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
         const m: UiOverrides = {};
         rows.forEach((r) => (m[r.key] = { pt: r.pt, en: r.en, es: r.es }));
         setOverrides(m);
+        setSettingsReady(true);
         writeSettingsCache(m);
       })
-      .catch(() => {});
+      .catch(() => setSettingsReady(true));
   }, []);
 
   useEffect(() => {
@@ -330,7 +339,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   const cfg = useCallback((key: string) => overrides[key]?.pt, [overrides]);
 
   return (
-    <LocaleCtx.Provider value={{ locale, setLocale, t, cfg }}>
+    <LocaleCtx.Provider value={{ locale, setLocale, t, cfg, settingsReady }}>
       <ReservationsCtx.Provider
         value={{ ready, guest, guestParty, setGuestRoom, reservableByKey, mine, count: mineArr.length, refresh, reserve, cancel }}
       >

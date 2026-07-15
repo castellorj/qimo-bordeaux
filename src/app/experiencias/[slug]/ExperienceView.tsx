@@ -6,7 +6,7 @@ import { Icon } from "@/components/Icon";
 import { QimoSeal, Crumb } from "@/components/ui";
 import { ActionBar } from "@/components/ActionBar";
 import { experienceActions } from "@/lib/reserve";
-import { useGuideItem } from "@/components/GuideContent";
+import { useGuideItem, useGuideLoading } from "@/components/GuideContent";
 import type { Experience } from "@/lib/types";
 
 function Spec({ icon, label, value }: { icon: string; label: string; value?: string }) {
@@ -24,6 +24,8 @@ function Spec({ icon, label, value }: { icon: string; label: string; value?: str
 
 export function ExperienceView({ slug }: { slug: string }) {
   const e = useGuideItem<Experience>("experience", slug);
+  const loading = useGuideLoading();
+  if (loading) return <div className="container-editorial py-20 text-center text-muted">Carregando...</div>;
   if (!e) return <div className="container-editorial py-20 text-center text-muted">Experiência não encontrada.</div>;
 
   return (

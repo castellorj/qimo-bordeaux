@@ -19,10 +19,10 @@ const onboard = itinerary.flatMap((d) =>
 );
 
 export default function BarcoPage() {
-  const { t, cfg } = useLocale();
+  const { t, cfg, settingsReady } = useLocale();
   // Navio editável no painel (aba Fichas → Navio); cai no arquivo enquanto não editado.
   const ship = (useGuideItem<any>("ship", "ss-bon-voyage") ?? fileShip) as typeof fileShip;
-  const img = (key: string, def: string) => cleanSiteImage(cfg(key)) || cleanSiteImage(def);
+  const img = (key: string, def: string) => cleanSiteImage(cfg(key)) || (settingsReady ? cleanSiteImage(def) : undefined);
 
   return (
     <>
@@ -130,8 +130,12 @@ export default function BarcoPage() {
             <h2 className="display text-2xl sm:text-3xl">{t("ship.dining")}</h2>
           </div>
           <div className="relative mt-6 h-48 overflow-hidden rounded-[3px] sm:h-60">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={img("img.barco.dining", "/photos/ship-dining.jpg")} alt="Gastronomia a bordo" className="h-full w-full object-cover" loading="lazy" />
+            {img("img.barco.dining", "/photos/ship-dining.jpg") ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={img("img.barco.dining", "/photos/ship-dining.jpg")} alt="Gastronomia a bordo" className="h-full w-full object-cover" loading="lazy" />
+            ) : (
+              <div className="photo-placeholder h-full w-full opacity-[0.18]" />
+            )}
             <div className="absolute inset-0 bg-gradient-to-t from-petrol-950/50 to-transparent" />
           </div>
           <div className="mt-6 grid gap-5 md:grid-cols-3">

@@ -16,7 +16,7 @@ export interface HubItem {
 
 // Card grande com foto (usado em Descobrir)
 export function HubGridPhotos({ items, orderKey }: { items: HubItem[]; orderKey?: string }) {
-  const { t, cfg } = useLocale();
+  const { t, cfg, settingsReady } = useLocale();
   const visible = orderByKeys(items, orderKey ? cfg(`navorder.${orderKey}`) : undefined).filter((it) => cfg(`navhide.${it.key}`) !== "1");
   return (
     <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
@@ -24,7 +24,7 @@ export function HubGridPhotos({ items, orderKey }: { items: HubItem[]; orderKey?
         <Link key={it.href} href={it.href} className="card card-hover group relative overflow-hidden">
           <div className="relative h-44 overflow-hidden sm:h-52">
             <PhotoImg
-              src={cleanSiteImage(cfg(`img.hub.${it.key}`)) || cleanSiteImage(it.image)}
+              src={cleanSiteImage(cfg(`img.hub.${it.key}`)) || (settingsReady ? cleanSiteImage(it.image) : undefined)}
               alt={t(`nav.${it.key}`)}
               sizes="(min-width:640px) 50vw, 100vw"
               className="h-full w-full object-cover transition-transform duration-700 ease-luxe group-hover:scale-105"
