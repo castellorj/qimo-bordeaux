@@ -4,7 +4,7 @@ export const wineries: Winery[] = [
   {
     slug: "grand-puy-ducasse",
     name: "Château Grand-Puy-Ducasse",
-    heroImage: "/photos/cellar-barrels.jpg",
+    heroImage: "https://grandpuyducasse.fr/wp-content/uploads/2024/07/facade-de-GPD.jpg",
     appellation: "Pauillac",
     classification: "5º Grand Cru Classé (1855)",
     family: "CA Grands Crus (Grupo Crédit Agricole), desde 2004",
@@ -39,7 +39,7 @@ export const wineries: Winery[] = [
   {
     slug: "pedesclaux",
     name: "Château Pédesclaux",
-    heroImage: "/photos/hero-vignoble.jpg",
+    heroImage: "https://www.chateau-pedesclaux.com/wp-content/uploads/2020/09/ete-1.jpg",
     appellation: "Pauillac",
     classification: "5º Grand Cru Classé (1855)",
     family: "Família Lorenzetti",
@@ -73,7 +73,7 @@ export const wineries: Winery[] = [
   {
     slug: "sauternes-cadillac",
     name: "Sauternes — o brinde de Cadillac",
-    heroImage: "/photos/wine-glass.jpg",
+    heroImage: "https://www.chateaudecazeneuve.com/medias/images/bandeau/accueil-3.jpg",
     appellation: "Sauternes",
     classification: "Vinho doce botritizado",
     history:
@@ -104,7 +104,7 @@ export const wineries: Winery[] = [
   {
     slug: "remy-martin",
     name: "Maison Rémy Martin",
-    heroImage: "/photos/cellar-barrels.jpg",
+    heroImage: "https://static-prod.remymartin.com/app/uploads/sites/2/2026/05/Remy-Chais-Francis-2-600x600.webp",
     appellation: "Cognac",
     classification: "Fine Champagne Cognac",
     family: "Casa fundada em 1724",
@@ -134,7 +134,7 @@ export const wineries: Winery[] = [
   {
     slug: "saint-emilion-grand-cru",
     name: "Grand Cru de Saint-Émilion",
-    heroImage: "/photos/hero-saint-emilion.jpg",
+    heroImage: "https://www.saint-emilion-tourisme.com/media/cache/ogimage/uploads/img/saint-emilion-tourisme-com-65a161889c990278662155.jpg",
     appellation: "Saint-Émilion Grand Cru",
     classification: "Grand Cru Classé",
     history:
