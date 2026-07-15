@@ -86,7 +86,6 @@ function RestaurantCard({ r, priority }: { r: Restaurant; priority?: boolean }) 
             aria-label={`Ver detalhes de ${r.name}`}
           >
             Detalhes
-            <Icon name="ArrowRight" size={14} />
           </Link>
           <a
             href={reserveHref}
