@@ -77,12 +77,24 @@ function RestaurantCard({ r, priority }: { r: Restaurant; priority?: boolean }) 
         </div>
       )}
 
-      <div className="grid grid-cols-2 border-t bg-petrol-600 font-sans text-[11px] font-semibold uppercase tracking-wide text-cream shadow-[inset_0_1px_0_rgba(255,255,255,.16)]" style={{ borderColor: "rgba(255,255,255,.18)" }}>
-          <Link href={`/restaurantes/${r.slug}`} className="flex min-h-[48px] items-center justify-center gap-2 px-3 py-3 text-center transition-colors hover:bg-white/10" aria-label={`Ver detalhes de ${r.name}`}>
-            <Icon name="ArrowRight" size={15} /> Detalhes
+      <div className="flex items-center gap-3 border-t bg-cream px-5 py-4 font-sans" style={{ borderColor: "var(--line)" }}>
+          <Link
+            href={`/restaurantes/${r.slug}`}
+            className="flex min-h-[42px] flex-1 items-center justify-center gap-2 rounded-[6px] border bg-white/55 px-3 text-center text-[11px] font-semibold uppercase tracking-wide text-foreground transition-colors hover:border-gold hover:bg-white"
+            style={{ borderColor: "var(--line)" }}
+            aria-label={`Ver detalhes de ${r.name}`}
+          >
+            Detalhes
+            <Icon name="ArrowRight" size={14} />
           </Link>
-          <a href={reserveHref} target={reserveHref.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer" className="flex min-h-[48px] items-center justify-center gap-2 border-l border-white/15 px-3 py-3 text-center transition-colors hover:bg-white/10">
-            <Icon name="CalendarCheck" size={15} /> {r.bookingUrl ? t("rest.book") : t("rest.contact")}
+          <a
+            href={reserveHref}
+            target={reserveHref.startsWith("http") ? "_blank" : undefined}
+            rel="noopener noreferrer"
+            className="flex min-h-[42px] flex-[1.25] items-center justify-center gap-2 rounded-[6px] bg-petrol-600 px-3 text-center text-[11px] font-semibold uppercase tracking-wide text-cream shadow-[0_8px_18px_rgba(92,23,42,.18)] transition-colors hover:bg-petrol-500"
+          >
+            <Icon name="CalendarCheck" size={14} />
+            {r.bookingUrl ? t("rest.book") : t("rest.contact")}
           </a>
       </div>
     </article>
