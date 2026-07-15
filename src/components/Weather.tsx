@@ -70,10 +70,10 @@ export function Weather({
 
   if (compact) {
     return (
-      <div className="flex items-center gap-2 text-cream/90 notranslate" translate="no">
-        <Icon name={cond?.icon || "Sun"} size={16} className="text-gold-soft" />
+      <div className="flex items-center gap-2 text-petrol-900 notranslate" translate="no">
+        <Icon name={cond?.icon || "Sun"} size={15} className="text-gold-deep" />
         <span className="font-sans text-sm tabular-nums">{wx ? `${wx.temp}°` : err ? "—" : "··"}</span>
-        <span className="font-sans text-[11px] text-cream/50">{place}</span>
+        <span className="font-sans text-[11px] text-muted">{place}</span>
       </div>
     );
   }

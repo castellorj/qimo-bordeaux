@@ -38,6 +38,7 @@ export function TripHero({
   const heroTitle = guestName ? `Olá, ${guestName}` : title || greeting || " ";
 
   return (
+    <>
     <section className="relative overflow-hidden">
       {img ? (
         <PhotoImg src={img} alt="" aria-hidden sizes="100vw" priority className="animate-ken-burns absolute inset-0 h-full w-full object-cover" />
@@ -51,14 +52,18 @@ export function TripHero({
         <h1 className="display mt-4 text-4xl text-cream sm:text-5xl">{heroTitle}</h1>
         <p className="mt-2 font-sans text-[13px] text-cream/70">{today}</p>
 
-        <div className="mx-auto mt-40 flex max-w-md items-center justify-center rounded-full border border-cream/20 bg-petrol-950/40 px-5 py-3 backdrop-blur-sm sm:mt-44">
-          <Weather compact />
-        </div>
-
-        <div className="mt-10">
+        <div className="mt-52 sm:mt-56">
           <Countdown iso={TRIP.boardingISO} label={t("boardingLabel")} />
         </div>
       </div>
     </section>
+    <div className="py-3" style={{ background: "var(--bg)" }}>
+      <div className="container-editorial flex justify-center">
+        <div className="inline-flex rounded-full border px-3 py-1.5" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
+          <Weather compact />
+        </div>
+      </div>
+    </div>
+    </>
   );
 }
