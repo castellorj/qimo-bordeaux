@@ -13,10 +13,18 @@ export function normalizePhone(value?: string | null): string {
 export function phoneVariants(value?: string | null): string[] {
   const normalized = normalizePhone(value);
   const raw = phoneDigits(value);
+  const withoutFranceCode = raw.startsWith("33") ? raw.slice(2) : "";
+  const franceNational = withoutFranceCode ? `0${withoutFranceCode}` : "";
   return Array.from(new Set([
     normalized,
     raw,
     normalized ? `55${normalized}` : "",
     normalized ? `+55${normalized}` : "",
+    raw ? `33${raw}` : "",
+    raw ? `+33${raw}` : "",
+    withoutFranceCode,
+    franceNational,
+    withoutFranceCode ? `33${withoutFranceCode}` : "",
+    withoutFranceCode ? `+33${withoutFranceCode}` : "",
   ].filter(Boolean)));
 }
