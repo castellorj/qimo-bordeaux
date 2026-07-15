@@ -3,7 +3,7 @@ import type { Appellation } from "@/lib/types";
 export const appellations: Appellation[] = [
   {
     slug: "margaux",
-    heroImage: "/photos/hero-margaux.jpg",
+    heroImage: "https://framerusercontent.com/assets/NrmSAGR3eetbhhi5ciounZb7vk.webp",
     name: "Margaux",
     bank: "Left",
     color: "Tinto",
@@ -19,7 +19,7 @@ export const appellations: Appellation[] = [
   },
   {
     slug: "pauillac",
-    heroImage: "/photos/hero-lafite.jpg",
+    heroImage: "https://grandpuyducasse.fr/wp-content/uploads/2024/07/facade-de-GPD.jpg",
     name: "Pauillac",
     bank: "Left",
     color: "Tinto",
@@ -36,7 +36,7 @@ export const appellations: Appellation[] = [
   },
   {
     slug: "saint-julien",
-    heroImage: "/photos/wine-saint-julien.jpg",
+    heroImage: "https://www.beychevelle.com/wp-content/uploads/2025/09/PAGE-ACCEUIL-TERROIR-1-scaled.webp",
     name: "Saint-Julien",
     bank: "Left",
     color: "Tinto",
@@ -52,7 +52,7 @@ export const appellations: Appellation[] = [
   },
   {
     slug: "medoc-haut-medoc",
-    heroImage: "/photos/hero-medoc.jpg",
+    heroImage: "https://www.pichonbaron.com/image/images_site/1/accueil-background-site.jpg?1782288937",
     name: "Médoc & Haut-Médoc",
     bank: "Left",
     color: "Tinto",
@@ -69,7 +69,7 @@ export const appellations: Appellation[] = [
   },
   {
     slug: "saint-emilion",
-    heroImage: "/photos/hero-saint-emilion.jpg",
+    heroImage: "https://www.saint-emilion-tourisme.com/media/cache/ogimage/uploads/img/saint-emilion-tourisme-com-65a161889c990278662155.jpg",
     name: "Saint-Émilion",
     bank: "Right",
     color: "Tinto",
@@ -86,7 +86,7 @@ export const appellations: Appellation[] = [
   },
   {
     slug: "pomerol",
-    heroImage: "/photos/wine-pomerol.jpg",
+    heroImage: "https://www.moueix.com/sites/default/files/styles/hero_1280x1280/public/2021-07/slider_daccueil_photo_chai.jpg?itok=aF4MnGCU",
     name: "Pomerol",
     bank: "Right",
     color: "Tinto",
@@ -103,7 +103,7 @@ export const appellations: Appellation[] = [
   },
   {
     slug: "graves-pessac",
-    heroImage: "/photos/wine-graves.jpg",
+    heroImage: "https://www.smith-haut-lafitte.com/wp-content/uploads/2021/04/chateau-smith-haut-lafitte-yem.png",
     name: "Graves & Pessac-Léognan",
     bank: "Left",
     color: "Tinto/Branco",
@@ -119,7 +119,7 @@ export const appellations: Appellation[] = [
   },
   {
     slug: "sauternes-barsac",
-    heroImage: "/photos/wine-sauternes.jpg",
+    heroImage: "https://www.yquem.fr/assets/og--ksNZ63V.jpeg",
     name: "Sauternes & Barsac",
     bank: "Sauternais",
     color: "Doce",
@@ -136,7 +136,7 @@ export const appellations: Appellation[] = [
   },
   {
     slug: "cotes-blaye-bourg",
-    heroImage: "/photos/city-bourg.jpg",
+    heroImage: "https://www.guide-bordeaux-gironde.com/_bibli/annonces/4674/hd/citadelle-de-blaye-spiritprod33-adobestock.jpg?v=preload",
     name: "Côtes de Blaye & de Bourg",
     bank: "Right",
     color: "Tinto/Branco",
@@ -153,7 +153,7 @@ export const appellations: Appellation[] = [
   },
   {
     slug: "saint-estephe",
-    heroImage: "/photos/hero-medoc.jpg",
+    heroImage: "https://www.estournel.com/wp-content/uploads/2025/05/Cos-dEstournel-Second-Cru-Classe-en-1855-a-Saint-Estephe.jpg",
     name: "Saint-Estèphe",
     bank: "Left",
     color: "Tinto",
@@ -170,7 +170,7 @@ export const appellations: Appellation[] = [
   },
   {
     slug: "entre-deux-mers",
-    heroImage: "/photos/hero-vignoble.jpg",
+    heroImage: "https://www.chateau-cadillac.fr/var/cmn_inter/storage/images/_aliases/header_dropdown_image_webp/2/4/2/0/120050242-1-fre-FR/daa5381ab136-Chateau-Cadillac-c-CMN-visiter.webp.webp",
     name: "Entre-Deux-Mers",
     bank: "Entre-deux",
     color: "Branco",
