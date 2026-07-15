@@ -77,13 +77,13 @@ function RestaurantCard({ r, priority }: { r: Restaurant; priority?: boolean }) 
         </div>
       )}
 
-      <div className="grid grid-cols-[1fr_auto] border-t bg-petrol-600 font-sans text-[11px] font-semibold uppercase tracking-wide text-cream shadow-[inset_0_1px_0_rgba(255,255,255,.16)]" style={{ borderColor: "rgba(255,255,255,.18)" }}>
-          <a href={reserveHref} target={reserveHref.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-4 py-3 transition-colors hover:bg-white/10">
+      <div className="grid grid-cols-2 border-t bg-petrol-600 font-sans text-[11px] font-semibold uppercase tracking-wide text-cream shadow-[inset_0_1px_0_rgba(255,255,255,.16)]" style={{ borderColor: "rgba(255,255,255,.18)" }}>
+          <Link href={`/restaurantes/${r.slug}`} className="flex min-h-[48px] items-center justify-center gap-2 px-3 py-3 text-center transition-colors hover:bg-white/10" aria-label={`Ver detalhes de ${r.name}`}>
+            <Icon name="ArrowRight" size={15} /> Detalhes
+          </Link>
+          <a href={reserveHref} target={reserveHref.startsWith("http") ? "_blank" : undefined} rel="noopener noreferrer" className="flex min-h-[48px] items-center justify-center gap-2 border-l border-white/15 px-3 py-3 text-center transition-colors hover:bg-white/10">
             <Icon name="CalendarCheck" size={15} /> {r.bookingUrl ? t("rest.book") : t("rest.contact")}
           </a>
-          <Link href={`/restaurantes/${r.slug}`} className="flex items-center justify-center border-l border-white/15 px-4 py-3 transition-colors hover:bg-white/10" aria-label={`Ver detalhes de ${r.name}`}>
-            <Icon name="ArrowRight" size={15} />
-          </Link>
       </div>
     </article>
   );
