@@ -51,7 +51,7 @@ export function RestaurantView({ slug }: { slug: string }) {
         <div className="absolute inset-0 bg-gradient-to-r from-petrol-950/90 via-petrol-950/58 to-petrol-950/25" />
         <div className="absolute inset-0 bg-gradient-to-t from-petrol-950/92 via-petrol-950/35 to-transparent" />
         <div className="text-on-photo container-editorial absolute inset-x-0 bottom-0 z-10 pb-8">
-          <Crumb href="/restaurantes" label="Restaurantes" />
+          <Crumb href="/restaurantes" label="Voltar" />
           <div className="mt-3 flex flex-wrap items-end justify-between gap-4">
             <div className="max-w-5xl">
               <div className="flex flex-wrap items-center gap-3">

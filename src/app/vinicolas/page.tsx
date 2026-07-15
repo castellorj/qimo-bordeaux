@@ -12,7 +12,7 @@ export default function VinicolasPage() {
     <>
       <PageHero section="vinicolas" small bgImage="/photos/hero-lafite.jpg" />
       <div className="container-editorial py-10">
-        <Crumb href="/descobrir" label="Voltar para Descobrir" />
+        <Crumb href="/descobrir" label="Voltar" />
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {wineries.map((w, i) => (
             <EditorialCard

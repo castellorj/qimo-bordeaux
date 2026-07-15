@@ -12,7 +12,7 @@ export default function CidadesPage() {
     <>
       <PageHero section="cidades" small bgImage="https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Place_de_la_Bourse%2C_Bordeaux%2C_France.jpg/1280px-Place_de_la_Bourse%2C_Bordeaux%2C_France.jpg" />
       <div className="container-editorial py-10">
-        <Crumb href="/descobrir" label="Voltar para Descobrir" />
+        <Crumb href="/descobrir" label="Voltar" />
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {cities.map((c, i) => (
             <EditorialCard

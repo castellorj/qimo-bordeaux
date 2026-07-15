@@ -132,7 +132,7 @@ export default function RestaurantesPage() {
     <>
       <PageHero section="restaurantes" small bgImage="/photos/food-entrecote.jpg" />
       <main className="container-editorial py-10">
-        <Crumb href="/descobrir" label="Voltar para Descobrir" />
+        <Crumb href="/descobrir" label="Voltar" />
 
         <section>
           <div>

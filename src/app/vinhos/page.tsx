@@ -19,7 +19,7 @@ export default function VinhosPage() {
     <>
       <PageHero section="vinhos" small bgImage="https://www.bordeaux.com/app/uploads/2025/10/dsc_8445-1920x1080.jpg" />
       <div className="container-editorial space-y-14 py-10">
-        <Crumb href="/descobrir" label="Voltar para Descobrir" />
+        <Crumb href="/descobrir" label="Voltar" />
         {BANKS.map((bank) => {
           const list = appellations.filter((a) => a.bank === bank.key);
           if (!list.length) return null;
