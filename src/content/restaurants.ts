@@ -25,8 +25,10 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Grand Théâtre",
     category: "michelin",
-    heroImage: "/photos/food-entrecote.jpg",
-    gallery: ["/photos/food-entrecote.jpg", "/photos/wine-glass.jpg", "/photos/food-foiegras.jpg"],
+    heroImage: "https://bordeaux.intercontinental.com/wp-content/uploads/sites/4/2022/10/InterContinental-Bordeaux-Gordon-Ramsay-Pressoir-Argent-Salle.jpg",
+    gallery: [
+      "https://bordeaux.intercontinental.com/wp-content/uploads/sites/4/2022/10/InterContinental-Bordeaux-Gordon-Ramsay-Pressoir-Argent-Salle.jpg",
+    ],
     description:
       "No primeiro andar do InterContinental Bordeaux, o Le Pressoir d'Argent é uma das mesas mais cerimoniais da cidade. A experiência combina serviço de hotelaria de luxo, sala elegante e uma cozinha de alta precisão ligada ao repertório de Gordon Ramsay. O ritual da prensa de lagosta em prata maciça segue como assinatura da casa, ao lado de produtos nobres do Atlântico, trufas, foie gras e uma adega ampla para explorar Bordeaux em profundidade. É uma escolha natural para um jantar especial, com ritmo de menu degustação e ambiente mais formal.",
     chef: "Gordon Ramsay; chef executivo local não divulgado oficialmente.",
@@ -78,8 +80,8 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Chartrons",
     category: "michelin",
-    heroImage: "/photos/food-foiegras.jpg",
-    gallery: ["/photos/food-foiegras.jpg", "/photos/wine-saint-julien.jpg"],
+    heroImage: "https://maison-nouvelle.fr/wp-content/uploads/2025/03/lieu-3.jpg",
+    gallery: ["https://maison-nouvelle.fr/wp-content/uploads/2025/03/lieu-3.jpg"],
     description:
       "A Maison Nouvelle marca a fase mais autoral de Philippe Etchebest em Bordeaux. Instalada nos Chartrons, a casa trabalha menus gastronômicos de alta precisão, com linguagem contemporânea e serviço cuidado sem perder a energia bordalesa do bairro. Para o viajante brasileiro que acompanha chefs franceses, é também uma mesa de referência pela personalidade do chef e pela evolução recente no Guia Michelin. A experiência pede tempo, reserva antecipada e atenção ao vinho: o formato de menu degustação favorece harmonizações elegantes, sobretudo com rótulos de Bordeaux menos óbvios.",
     chef: "Philippe Etchebest",
@@ -129,7 +131,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Place de la Bourse",
     category: "michelin",
-    heroImage: "/photos/food-queijos.jpg",
+    heroImage: "https://www.teritoria.com/wp-content/uploads/2023/11/3115b.jpg",
     description:
       "No edifício histórico do Gabriel, de frente para a Place de la Bourse, L'Observatoire ocupa o registro mais gastronômico da casa. É uma experiência de Bordeaux em chave monumental: vista urbana, serviço de grande ocasião e cozinha moderna com ambição de destino. Para quem busca uma noite memorável sem sair do coração da cidade, a localização é imbatível. A visita funciona melhor no jantar, quando a praça e o Miroir d'Eau criam um cenário raro para chegar ou sair a pé.",
     chef: "Bertrand Noeureuil",
@@ -179,7 +181,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Barrière du Médoc",
     category: "michelin",
-    heroImage: "/photos/food-magret.jpg",
+    heroImage: "https://lepavillondesboulevards.fr/wp-content/uploads/2025/01/IMG_0880-scaled.jpg",
     description:
       "Um endereço discreto e refinado fora do eixo mais turístico, o Le Pavillon des Boulevards oferece uma Bordeaux gastronômica mais residencial. A casa é indicada para quem prefere serviço clássico, cozinha precisa e uma atmosfera menos cenográfica que os restaurantes de hotel. É uma boa escolha para almoço ou jantar de alta gastronomia quando a ideia é conversar com calma e deixar o vinho conduzir parte da experiência. A presença Michelin reforça o nível técnico, mas a sensação é de casa madura, estável e elegante.",
     chef: "Thomas Morel",
@@ -228,7 +230,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Saint-Seurin",
     category: "michelin",
-    heroImage: "/photos/food-ostras.jpg",
+    heroImage: "https://ugc.zenchef.com/3/4/1/9/0/0/1/5/1/9/1/0/4/1759163915_442/ec20a959b911db1d3d1467d88e997804.website.jpg",
     description:
       "L'Oiseau Bleu é uma das mesas contemporâneas mais consistentes de Bordeaux para quem deseja Michelin sem o peso de uma sala excessivamente formal. A cozinha trabalha técnica, produto e apresentação com bom senso, em um ambiente elegante e urbano. É uma opção interessante para casais ou pequenos grupos que querem jantar muito bem e ainda manter uma noite leve. A carta permite explorar Bordeaux com menos ostentação e mais curiosidade, especialmente em denominações que ficam fora do circuito dos rótulos mais célebres.",
     chef: "Informação não divulgada oficialmente.",
@@ -276,7 +278,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Saint-Seurin",
     category: "michelin",
-    heroImage: "/photos/food-mercado.jpg",
+    heroImage: "https://prod-pics.guide.michelin.com/api/public/content/e9f13b9cfd2344a0853303d0fb2234a6.jpg?format=webp",
     description:
       "Ressources representa uma Bordeaux gastronômica mais íntima e contemporânea, com cozinha focada em produto, precisão e sensibilidade de estação. É uma mesa para quem gosta de restaurantes menores, com narrativa culinária clara e menos aparato de luxo. A experiência conversa bem com viajantes que já fizeram grandes clássicos e procuram algo atual, autoral e muito bordalês. Por ter escala mais contida, a reserva deve ser tratada com atenção; a recompensa é uma refeição de ritmo elegante e leitura moderna dos produtos do Sudoeste.",
     chef: "Tanguy Laviale",
@@ -325,7 +327,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Chartrons",
     category: "contemporary",
-    heroImage: "/photos/food-magret.jpg",
+    heroImage: "https://cent33.com/wp-content/uploads/2019/11/bannerfb.jpg",
     description:
       "No coração dos Chartrons, o Cent33 combina energia contemporânea, cozinha aberta e uma leitura muito atual da gastronomia bordalesa. É uma escolha excelente para quem quer Michelin com atmosfera menos solene, sem abrir mão de técnica e bons vinhos. O salão tem presença, o bairro convida a caminhar antes ou depois, e o menu costuma funcionar tanto para um jantar especial quanto para uma noite sofisticada entre amigos. Para brasileiros que valorizam experiência visual e serviço atento, é um dos endereços mais completos da cidade.",
     chef: "Fabien Beaufour",
@@ -374,7 +376,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Grand Théâtre",
     category: "michelin",
-    heroImage: "/photos/food-canele.jpg",
+    heroImage: "https://quatrieme-mur.com/wp-content/uploads/2025/12/1_DSC0918-SD-2.jpg",
     description:
       "Dentro do universo do Le Quatrième Mur, no Grand Théâtre, La Table d'Hôtes é a experiência mais exclusiva ligada a Philippe Etchebest. O formato aproxima o cliente da cozinha e transforma a refeição em encontro gastronômico, com número limitado de lugares e clima de bastidor sofisticado. É uma opção preciosa para quem quer uma experiência Michelin em endereço central e simbólico, especialmente se a viagem combina cultura, ópera, arquitetura e gastronomia. A logística é simples, mas a reserva costuma exigir planejamento.",
     chef: "Philippe Etchebest",
@@ -422,7 +424,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Triangle d'Or",
     category: "bistro",
-    heroImage: "/photos/food-foiegras.jpg",
+    heroImage: "https://ugc.zenchef.com/3/5/1/8/6/1/1/5/0/6/5/8/6/1726652607_328/57e2e21bc05df2d2c24b033790a726f5.website.jpg",
     description:
       "Fundado em 1825, o Le Chapon Fin é uma peça da memória gastronômica de Bordeaux. Seu salão em gruta rococó cria um cenário raro, quase teatral, ideal para viajantes que gostam de restaurantes com história. Hoje a visita vale menos pela busca de vanguarda e mais pela combinação de patrimônio, cozinha francesa, carta de vinhos e localização central. É um endereço interessante para almoço elegante ou jantar clássico, especialmente para quem quer sentir a continuidade das grandes mesas burguesas da cidade.",
     chef: NAO_DIVULGADO,
@@ -468,7 +470,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Saint-Michel",
     category: "bistro",
-    heroImage: "/photos/food-magret.jpg",
+    heroImage: "https://cdn.prod.website-files.com/66d8a8282153c381a88b3e34/66d8a8e08ef13e7302a3f5dc_Los%20Andes%20Agency3586.jpg",
     description:
       "La Tupina é uma instituição do Sudoeste francês: lareira acesa, produtos regionais, pato, carnes, batatas na gordura e uma atmosfera calorosa que contrasta com a formalidade das mesas Michelin. Para brasileiros, é talvez o melhor endereço para entender a cozinha bordalesa de raiz em uma refeição franca e generosa. A casa funciona muito bem para almoço de domingo, jantar entre amigos ou uma noite de sabores regionais depois de dias de degustação em châteaux. Reserve, porque o nome continua muito procurado.",
     chef: "Fundada por Jean-Pierre Xiradakis; chef atual não divulgado oficialmente.",
@@ -515,7 +517,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Triangle d'Or",
     category: "bistro",
-    heroImage: "/photos/food-mercado.jpg",
+    heroImage: "https://assets2.justacote.com/photos_entreprises/le-bouchon-bordelais-bordeaux-14589073900.jpg",
     description:
       "Pequeno, central e muito procurado, o Le Bouchon Bordelais traduz a cozinha regional em formato de bistrô contemporâneo. É uma excelente escolha para quem quer uma refeição francesa sem entrar no ritual longo da alta gastronomia. O menu muda conforme a estação e costuma privilegiar produtos locais, pratos de sabor claro e boa relação com a carta de vinhos. Por estar perto das áreas mais elegantes do centro, encaixa bem em um dia de compras, passeio arquitetônico ou noite mais descontraída.",
     chef: NAO_DIVULGADO,
@@ -561,7 +563,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Hôtel de Ville",
     category: "bistro",
-    heroImage: "/photos/food-queijos.jpg",
+    heroImage: "https://www.bo-tannique.com/media/cache/resolve/l1200/websites/9b8c5a4f39efed2620297d5ac9cb07b5/img/la-salle-le-bar-et-la_20221006155414.jpg",
     description:
       "Bo-Tannique é um bistrô atual, sazonal e muito útil para quem quer comer bem no centro sem transformar a refeição em evento formal. A cozinha valoriza produto, frescor e pratos bem acabados, com atmosfera local e bom encaixe para almoço. É uma boa recomendação para viajantes que apreciam restaurantes de bairro com ambição, serviço simpático e carta de vinhos interessante. Funciona especialmente bem entre visitas culturais, compras e caminhadas pelo miolo histórico.",
     chef: NAO_DIVULGADO,
@@ -607,7 +609,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Triangle d'Or",
     category: "wine-bar",
-    heroImage: "/photos/wine-glass.jpg",
+    heroImage: "https://www.bordeaux.com/app/uploads/2025/12/bar-a-vin_gbonnaud_civb2021-21-1-1.jpg",
     description:
       "Administrado pelo Conseil Interprofessionnel du Vin de Bordeaux, o Bar à Vin é a porta de entrada mais didática para entender a diversidade da região. O ambiente é elegante, os preços costumam ser convidativos e a seleção permite provar taças de diferentes denominações sem compromisso de jantar completo. É ideal para o primeiro dia na cidade, antes de visitar châteaux, ou para calibrar preferências entre margem esquerda, margem direita, brancos secos e doces. Não substitui um grande restaurante, mas cumpre muito bem a função de introdução ao vinho bordalês.",
     chef: "Não se aplica.",
@@ -653,7 +655,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Grosse Cloche",
     category: "wine-bar",
-    heroImage: "/photos/wine-pomerol.jpg",
+    heroImage: "https://winemoretime.fr/wp-content/uploads/2020/11/IMG_6326-2048x1150.jpg",
     description:
       "Wine More Time é um wine bar descontraído e inteligente, perfeito para quem quer sair do circuito mais formal e provar garrafas com curadoria. A localização perto da Grosse Cloche favorece uma parada no fim da tarde, com tábuas, queijos, charcuterie e uma conversa mais solta sobre produtores. Para o público QIMO, funciona bem como experiência leve entre almoço e jantar ou como noite informal depois de um dia de visitas. O interesse está na descoberta e na hospitalidade, não no luxo clássico.",
     chef: "Não se aplica.",
@@ -699,7 +701,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Saint-Pierre",
     category: "wine-bar",
-    heroImage: "/photos/wine-graves.jpg",
+    heroImage: "https://www.complanterra.fr/web/image/11842-ad4d8cbe/2bb55bc2-34ee-40bb-8394-c54afddc9bf7.JPG",
     description:
       "ComplanTerra é uma boa parada para viajantes curiosos por vinhos orgânicos, biodinâmicos e produtores de menor escala. O ambiente é mais informal e contemporâneo, com foco em descoberta e conversa, e combina bem com uma noite leve no centro histórico. Em vez de procurar rótulos consagrados, vale deixar a equipe guiar a seleção por estilo, região e energia do vinho. Para quem já conhece os grandes nomes de Bordeaux, é um contraponto interessante e menos previsível.",
     chef: "Não se aplica.",
@@ -745,7 +747,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Chartrons",
     category: "wine-bar",
-    heroImage: "/photos/wine-sauternes.jpg",
+    heroImage: "https://privateaser-media.s3.eu-west-1.amazonaws.com/etab_photos/51356/750x375/608691.jpg",
     description:
       "Couleurs du Vin combina loja, degustação e conversa especializada, com uma abordagem útil para quem quer comprar garrafas em Bordeaux sem depender apenas de nomes famosos. A experiência é menos restaurante e mais curadoria de vinho: boa para uma pausa nos Chartrons, bairro historicamente ligado ao comércio vinícola. Para hóspedes que pretendem levar garrafas ou entender melhor denominações, vale pedir uma seleção por orçamento, ocasião e capacidade de guarda.",
     chef: "Não se aplica.",
@@ -790,7 +792,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Capucins",
     category: "contemporary",
-    heroImage: "/photos/food-mercado.jpg",
+    heroImage: "https://image.jimcdn.com/app/cms/image/transf/none/path/sa6549607c78f5c11/image/iac0c115f7b8dde59/version/1452877405/image.jpg",
     description:
       "O Marché des Capucins é a experiência gastronômica mais autêntica de Bordeaux para quem gosta de mercados. Ostras, queijos, pães, produtos bascos, cafés e balcões informais formam um retrato vivo da cidade fora dos salões gastronômicos. Não é um restaurante único, mas um conjunto de bancas e pequenos endereços que funcionam melhor pela manhã ou no almoço. Para a QIMO, é uma parada excelente para sentir o cotidiano local, provar ostras com vinho branco e comprar produtos regionais.",
     chef: "Não se aplica.",
@@ -837,7 +839,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Quais",
     category: "contemporary",
-    heroImage: "/photos/food-ostras.jpg",
+    heroImage: "https://symbiose-bordeaux.com/images/symbiose-restaurant.jpg",
     description:
       "Symbiose une coquetelaria, cozinha contemporânea e clima urbano perto dos quais. É uma alternativa interessante para quem já teve dias de grandes menus e quer uma noite mais livre, com bons drinques, pratos criativos e atmosfera jovem sem perder qualidade. A casa conversa com a Bordeaux atual: menos formal, mais social, ainda ligada ao produto e ao prazer à mesa. Para hóspedes 40+, funciona melhor como jantar descontraído ou parada antes de uma caminhada à beira do Garonne.",
     chef: NAO_DIVULGADO,
@@ -882,7 +884,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Saint-Seurin",
     category: "contemporary",
-    heroImage: "/photos/food-queijos.jpg",
+    heroImage: "https://prod-pics.guide.michelin.com/api/public/content/00df0fe3f9464c72b0d3e3fb798ca065.jpg?format=webp",
     description:
       "Soléna é uma mesa gastronômica moderna que combina técnica, delicadeza e ambiente acolhedor. O restaurante é uma boa alternativa para quem deseja alta qualidade sem a cerimônia dos grandes hotéis. A cozinha favorece menus trabalhados, bom produto e uma leitura contemporânea que se mantém acessível para quem aprecia sofisticação discreta. Por estar fora do circuito mais óbvio do centro turístico, pode ser uma escolha acertada para um jantar de casal ou pequenos grupos que valorizam calma e consistência.",
     chef: "Victor Ostronzec",
@@ -930,7 +932,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Chartrons",
     category: "contemporary",
-    heroImage: "/photos/food-canele.jpg",
+    heroImage: "https://tentazioni-bordeaux.com/wp-content/uploads/2024/10/tentazioni-10.jpg",
     description:
       "Tentazioni oferece um desvio italiano de alto nível dentro da cena gastronômica de Bordeaux. A casa é interessante para viajantes que já fizeram muitos menus franceses e querem uma noite sofisticada, mas com outra matriz culinária. A cozinha italiana contemporânea, quando bem executada, conversa muito bem com Bordeaux: acidez, massas, mar, queijos e molhos pedem escolhas de vinho mais precisas. É uma opção elegante para alternar o repertório da viagem sem perder padrão de serviço e curadoria.",
     chef: NAO_DIVULGADO,

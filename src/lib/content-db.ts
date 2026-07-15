@@ -17,6 +17,29 @@ const ANON =
   "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZ2dnppdHN6ZmNhamZydnpwYWNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgzODMyMzIsImV4cCI6MjA5Mzk1OTIzMn0.4tBzaBgyvzwuTEvlX9wSc85c6EKtTVfEidYeeh6aGRw";
 
 type Row = { slug: string; data: any; sort: number };
+const PHOTO_FIELDS = new Set(["heroImage", "image", "photo", "gallery"]);
+
+function isOldLocalPhoto(value: unknown): value is string {
+  return typeof value === "string" && value.trim().startsWith("/photos/");
+}
+
+function removeOldLocalPhotos<T>(value: T): T {
+  if (isOldLocalPhoto(value)) return "" as T;
+  if (Array.isArray(value)) {
+    return value.map((item) => removeOldLocalPhotos(item)).filter((item) => item !== "") as T;
+  }
+  if (value && typeof value === "object") {
+    const entries = Object.entries(value).flatMap(([key, item]) => {
+      const cleaned = removeOldLocalPhotos(item);
+      const shouldDropPhotoField =
+        PHOTO_FIELDS.has(key) &&
+        (cleaned === "" || (Array.isArray(cleaned) && cleaned.length === 0));
+      return shouldDropPhotoField ? [] : [[key, cleaned]];
+    });
+    return Object.fromEntries(entries) as T;
+  }
+  return value;
+}
 
 async function fetchKind(kind: string): Promise<Row[]> {
   try {
@@ -36,7 +59,7 @@ function merge<T extends { slug: string }>(fileArr: T[], rows: Row[]): T[] {
   if (!rows.length) return fileArr;
   const bySlug = new Map<string, T>();
   fileArr.forEach((f) => bySlug.set(f.slug, f));
-  rows.forEach((r) => bySlug.set(r.slug, { ...(bySlug.get(r.slug) || {}), ...r.data } as T));
+  rows.forEach((r) => bySlug.set(r.slug, removeOldLocalPhotos({ ...(bySlug.get(r.slug) || {}), ...r.data } as T)));
   // ordena pela ordem do banco quando existir, senão mantém arquivo
   const order = new Map(rows.map((r, i) => [r.slug, i]));
   return [...bySlug.values()].sort((a, b) => (order.get(a.slug) ?? 999) - (order.get(b.slug) ?? 999));

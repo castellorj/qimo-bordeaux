@@ -42,15 +42,22 @@ function isOldLocalPhoto(value: unknown): value is string {
   return typeof value === "string" && value.trim().startsWith("/photos/");
 }
 
+const PHOTO_FIELDS = new Set(["heroImage", "image", "photo", "gallery"]);
+
 function removeOldLocalPhotos<T>(value: T): T {
   if (isOldLocalPhoto(value)) return "" as T;
   if (Array.isArray(value)) {
     return value.map((item) => removeOldLocalPhotos(item)).filter((item) => item !== "") as T;
   }
   if (value && typeof value === "object") {
-    return Object.fromEntries(
-      Object.entries(value).map(([key, item]) => [key, removeOldLocalPhotos(item)])
-    ) as T;
+    const entries = Object.entries(value).flatMap(([key, item]) => {
+      const cleaned = removeOldLocalPhotos(item);
+      const shouldDropPhotoField =
+        PHOTO_FIELDS.has(key) &&
+        (cleaned === "" || (Array.isArray(cleaned) && cleaned.length === 0));
+      return shouldDropPhotoField ? [] : [[key, cleaned]];
+    });
+    return Object.fromEntries(entries) as T;
   }
   return value;
 }
