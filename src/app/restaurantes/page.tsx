@@ -6,6 +6,7 @@ import clsx from "clsx";
 import { PageHero } from "@/components/PageHero";
 import { SmartImage } from "@/components/SmartImage";
 import { Icon } from "@/components/Icon";
+import { Crumb } from "@/components/ui";
 import { useGuideKind } from "@/components/GuideContent";
 import { useLocale } from "@/components/providers";
 import { qimoWhatsApp } from "@/lib/reserve";
@@ -132,6 +133,8 @@ export default function RestaurantesPage() {
     <>
       <PageHero section="restaurantes" small bgImage="/photos/food-entrecote.jpg" />
       <main className="container-editorial py-10">
+        <Crumb href="/descobrir" label="Voltar para Descobrir" />
+
         <section>
           <div>
             <h1 className="kicker text-[13px]">{t("rest.kicker")}</h1>
