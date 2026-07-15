@@ -6,7 +6,7 @@ export const cities: City[] = [
     name: "Bordeaux",
     region: "Gironde · Nova Aquitânia",
     tagline: "A Bela Adormecida que despertou em pedra dourada",
-    heroImage: "/photos/hero-dordogne-sunset.jpg",
+    heroImage: "https://www.travelonatimebudget.co.uk/wp-content/uploads/2023/03/Place-de-la-Bourse-Bordeaux.jpg",
     history:
       "Porto romano fundado como Burdigala, Bordeaux enriqueceu com o comércio de vinho a partir da Idade Média, quando esteve sob domínio inglês por três séculos. O século XVIII lhe deu sua feição atual: uma cidade de fachadas de pedra calcária clara, alinhadas ao longo do rio Garonne em forma de meia-lua — o 'Port de la Lune'. Todo o centro histórico é Patrimônio Mundial da UNESCO, o maior conjunto urbano do mundo com essa distinção.",
     curiosities: [
@@ -43,7 +43,7 @@ export const cities: City[] = [
     name: "Pauillac",
     region: "Médoc · Margem esquerda",
     tagline: "A capital mundial do Cabernet Sauvignon",
-    heroImage: "/photos/hero-lafite.jpg",
+    heroImage: "https://www.guide-bordeaux-gironde.com/_bibli/articlesPage/236/images/facede-fluviale-de-pauillac.jpg?v=preload",
     history:
       "Pequena cidade portuária às margens do Gironde, Pauillac é o coração do Médoc e detém uma concentração de prestígio sem paralelo: três dos cinco Premiers Grands Crus Classés de 1855 — Lafite Rothschild, Latour e Mouton Rothschild — nascem em seu solo de cascalho. É o terroir por excelência do Cabernet Sauvignon.",
     curiosities: [
@@ -67,7 +67,7 @@ export const cities: City[] = [
     name: "Cussac-Fort-Médoc",
     region: "Médoc · Margem esquerda",
     tagline: "Vauban à beira do estuário",
-    heroImage: "/photos/hero-medoc.jpg",
+    heroImage: "https://www.guide-bordeaux-gironde.com/_bibli/articlesPage/205/images/fort-medoc-3.jpg?v=preload",
     history:
       "Vila do Médoc conhecida pelo Fort Médoc, fortaleza projetada por Vauban no fim do século XVII para proteger Bordeaux junto com a Cidadela de Blaye, na outra margem. Hoje é ponto de parada tranquilo entre os grandes vinhedos, com forte tradição de ostras e frutos do mar do Atlântico próximo.",
     curiosities: [
@@ -85,7 +85,7 @@ export const cities: City[] = [
     name: "Cadillac",
     region: "Entre-deux-Mers · Sauternais",
     tagline: "O château dos duques e o ouro de Sauternes",
-    heroImage: "/photos/hero-vignoble.jpg",
+    heroImage: "https://www.chateau-cadillac.fr/var/cmn_inter/storage/images/_aliases/header_dropdown_image_webp/2/4/2/0/120050242-1-fre-FR/daa5381ab136-Chateau-Cadillac-c-CMN-visiter.webp.webp",
     history:
       "Bastide fortificada do século XIII à margem direita da Garonne, Cadillac é dominada pelo imponente Château des Ducs d'Épernon, erguido no início do século XVII. A região produz vinhos doces botritizados na órbita de Sauternes e Barsac — os célebres 'ouro líquido'. E sim: o nome batizou a marca de automóveis, via o explorador Antoine de la Mothe, senhor de Cadillac, fundador de Detroit.",
     curiosities: [
@@ -109,7 +109,7 @@ export const cities: City[] = [
     name: "Blaye",
     region: "Côtes de Blaye · Margem direita",
     tagline: "A cidadela de Vauban sobre o estuário",
-    heroImage: "/photos/city-blaye.jpg",
+    heroImage: "https://www.guide-bordeaux-gironde.com/_bibli/annonces/4674/hd/citadelle-de-blaye-spiritprod33-adobestock.jpg?v=preload",
     history:
       "Debruçada sobre o maior estuário da Europa, Blaye é guardada por uma cidadela monumental construída por Vauban no fim do século XVII — hoje Patrimônio Mundial da UNESCO. Suas Côtes produzem tintos redondos e acessíveis à base de Merlot. A Route de la Corniche Fleurie, à beira d'água, é uma das estradas mais pitorescas da Gironde.",
     curiosities: [
@@ -132,7 +132,7 @@ export const cities: City[] = [
     name: "Bourg-sur-Gironde",
     region: "Côtes de Bourg · Margem direita",
     tagline: "Um balcão medieval sobre dois rios",
-    heroImage: "/photos/city-bourg.jpg",
+    heroImage: "https://www.canaldes2mersavelo.com/sites/canaldes2mers/files/styles/slider_iti/public/medias/images/bourg-village-medievale-gironde.png.webp?h=827069f2&itok=HU8Rq5Fj",
     history:
       "Cidadezinha medieval empoleirada sobre um promontório calcário, na confluência da Dordogne com a Garonne. Suas ruas em degraus, a cidade alta e a cidade baixa, e o casario de pedra clara guardam o charme de um antigo porto fluvial. As Côtes de Bourg, 'a pequena Suíça girondina', produzem tintos encorpados de Merlot e Malbec.",
     curiosities: [
@@ -150,7 +150,7 @@ export const cities: City[] = [
     name: "Libourne",
     region: "Margem direita · Dordogne",
     tagline: "A bastide-porto do vinho da margem direita",
-    heroImage: "/photos/city-libourne.jpg",
+    heroImage: "https://www.tourisme-libournais.com/uploads/Place_AbelSurchamp_5723-scaled.jpg",
     history:
       "Fundada no século XIII como bastide inglesa por Roger de Leyburn, Libourne floresceu como porto de escoamento dos vinhos de Pomerol e Saint-Émilion rumo à Inglaterra e ao norte da Europa. Sua praça central com arcadas e o mercado dos produtores mantêm viva a alma comercial da cidade, encravada entre os grandes terroirs de Merlot.",
     curiosities: [
@@ -170,7 +170,7 @@ export const cities: City[] = [
     name: "Saint-Émilion",
     region: "Margem direita · Grand Cru",
     tagline: "Uma vila medieval esculpida na rocha e no vinho",
-    heroImage: "/photos/hero-saint-emilion.jpg",
+    heroImage: "https://www.saint-emilion-tourisme.com/media/cache/ogimage/uploads/img/saint-emilion-tourisme-com-65a161889c990278662155.jpg",
     history:
       "Nascida ao redor da ermida do monge Émilion no século VIII, Saint-Émilion é uma das vilas mais bonitas da França e a primeira paisagem vitícola inscrita como Patrimônio Mundial da UNESCO. Sua igreja monolítica — escavada inteira na rocha — e as ruelas íngremes de pedra calcária guardam adegas subterrâneas onde envelhecem os grandes Merlots da margem direita.",
     curiosities: [
