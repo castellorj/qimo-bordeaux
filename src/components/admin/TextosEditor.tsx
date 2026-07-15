@@ -7,6 +7,7 @@ import clsx from "clsx";
 
 const FEATURED_GROUPS = [
   { name: "Menu", icon: "Menu", hint: "abas e navegacao" },
+  { name: "Compartilhamento do link", icon: "Link", hint: "titulo e descricao do WhatsApp" },
   { name: "Tela de entrada", icon: "Smartphone", hint: "primeiro acesso do hospede" },
   { name: "ProgramaÃ§Ã£o", icon: "CalendarDays", hint: "botoes do roteiro" },
   { name: "Restaurantes", icon: "Utensils", hint: "titulos, filtros e chamadas" },

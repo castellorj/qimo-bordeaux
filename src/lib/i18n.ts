@@ -31,6 +31,13 @@ type Dict = Record<string, LStr>;
 export const ui: Dict = {
   // marca
   brandSub: { pt: "Bordeaux Experience", en: "Bordeaux Experience", es: "Bordeaux Experience" },
+  // compartilhamento do link
+  "share.title": { pt: "QIMO \u00b7 Bordeaux Experience", en: "QIMO \u00b7 Bordeaux Experience", es: "QIMO \u00b7 Bordeaux Experience" },
+  "share.description": {
+    pt: "Concierge digital de luxo para o cruzeiro QIMO em Bordeaux.",
+    en: "Luxury digital concierge for the QIMO cruise in Bordeaux.",
+    es: "Concierge digital de lujo para el crucero QIMO en Bordeaux.",
+  },
   // navegação
   "nav.home": { pt: "Início", en: "Home", es: "Inicio" },
   "nav.programacao": { pt: "Programação", en: "Itinerary", es: "Programa" },
@@ -424,6 +431,7 @@ export function makeT(locale: Locale, overrides?: UiOverrides) {
 
 // Chaves editáveis pela equipe (rótulos de botões e seções principais)
 export const EDITABLE_LABELS: { key: string; grp: string }[] = [
+  { key: "share.title", grp: "Compartilhamento do link" }, { key: "share.description", grp: "Compartilhamento do link" },
   { key: "nav.viagem", grp: "Menu" }, { key: "nav.descobrir", grp: "Menu" },
   { key: "nav.reservas", grp: "Menu" }, { key: "nav.mais", grp: "Menu" },
   { key: "nav.programacao", grp: "Menu" }, { key: "nav.barco", grp: "Menu" }, { key: "nav.mapa", grp: "Menu" },
