@@ -41,6 +41,17 @@ function removeOldLocalPhotos<T>(value: T): T {
   return value;
 }
 
+function removeOldPhotoFields<T>(value: T): T {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+  const entries = Object.entries(value).filter(([key, item]) => {
+    if (!PHOTO_FIELDS.has(key)) return true;
+    if (isOldLocalPhoto(item)) return false;
+    if (Array.isArray(item) && item.every(isOldLocalPhoto)) return false;
+    return true;
+  });
+  return Object.fromEntries(entries) as T;
+}
+
 function isGuideItemHidden(data: any) {
   const status = String(data?.adminStatus || data?.status || "").trim().toLowerCase();
   return status === "oculto" || status === "hidden" || status === "encerrado";
@@ -67,7 +78,7 @@ function merge<T extends { slug: string }>(fileArr: T[], rows: Row[], kind?: str
   if (kind === "winery") {
     return rows
       .filter((r) => r.published !== false)
-      .map((r) => removeOldLocalPhotos({ ...(bySlug.get(r.slug) || {}), ...r.data } as T))
+      .map((r) => removeOldLocalPhotos({ ...(bySlug.get(r.slug) || {}), ...removeOldPhotoFields(r.data) } as T))
       .filter((item) => !isGuideItemHidden(item));
   }
   rows.forEach((r) => {
@@ -75,7 +86,7 @@ function merge<T extends { slug: string }>(fileArr: T[], rows: Row[], kind?: str
       bySlug.delete(r.slug);
       return;
     }
-    const item = removeOldLocalPhotos({ ...(bySlug.get(r.slug) || {}), ...r.data } as T);
+    const item = removeOldLocalPhotos({ ...(bySlug.get(r.slug) || {}), ...removeOldPhotoFields(r.data) } as T);
     if (isGuideItemHidden(item)) {
       bySlug.delete(r.slug);
       return;

@@ -44,6 +44,17 @@ function isOldLocalPhoto(value: unknown): value is string {
 
 const PHOTO_FIELDS = new Set(["heroImage", "image", "photo", "gallery"]);
 
+function removeOldPhotoFields<T>(value: T): T {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return value;
+  const entries = Object.entries(value).filter(([key, item]) => {
+    if (!PHOTO_FIELDS.has(key)) return true;
+    if (isOldLocalPhoto(item)) return false;
+    if (Array.isArray(item) && item.every(isOldLocalPhoto)) return false;
+    return true;
+  });
+  return Object.fromEntries(entries) as T;
+}
+
 function removeOldLocalPhotos<T>(value: T): T {
   if (isOldLocalPhoto(value)) return "" as T;
   if (Array.isArray(value)) {
@@ -128,7 +139,7 @@ function merged<T extends { slug: string }>(kind: string, db: ContentState): T[]
     file.forEach((f) => bySlug.set(f.slug, f));
     return rows
       .filter((r) => r.published !== false)
-      .map((r) => removeOldLocalPhotos({ ...(bySlug.get(r.slug) || {}), ...r.data } as T))
+      .map((r) => removeOldLocalPhotos({ ...(bySlug.get(r.slug) || {}), ...removeOldPhotoFields(r.data) } as T))
       .filter((item) => !isGuideItemHidden(item));
   }
   const bySlug = new Map<string, T>();
@@ -138,7 +149,7 @@ function merged<T extends { slug: string }>(kind: string, db: ContentState): T[]
       bySlug.delete(r.slug);
       return;
     }
-    const item = removeOldLocalPhotos({ ...(bySlug.get(r.slug) || {}), ...r.data } as T);
+    const item = removeOldLocalPhotos({ ...(bySlug.get(r.slug) || {}), ...removeOldPhotoFields(r.data) } as T);
     if (isGuideItemHidden(item)) {
       bySlug.delete(r.slug);
       return;

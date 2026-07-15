@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { SmartImage } from "@/components/SmartImage";
 import { Icon } from "@/components/Icon";
-import { QimoSeal, Crumb, Pill } from "@/components/ui";
+import { QimoSeal, Pill } from "@/components/ui";
 import { ReadMore } from "@/components/ReadMore";
 import { ActionBar } from "@/components/ActionBar";
 import { wineryActions } from "@/lib/reserve";
@@ -100,12 +100,16 @@ export function WineryView({ slug }: { slug: string }) {
   const w = normalizedWinery(source, dossier);
 
   const Hero = (
-    <section className="relative">
-      <SmartImage src={w.heroImage} alt={w.name} label={w.appellation} ratio="aspect-[16/9] sm:aspect-[21/9]" priority />
-      <div className="absolute inset-0 bg-gradient-to-t from-petrol-950/85 via-petrol-950/25 to-transparent" />
-      <div className="text-on-photo container-editorial absolute inset-x-0 bottom-0 z-10 pb-8">
-        <Crumb href="/vinicolas" label="Voltar" />
-        <div className="mt-3 flex items-end justify-between gap-4">
+    <section className="relative bg-petrol-950">
+      <SmartImage src={w.heroImage} alt={w.name} label={w.appellation} ratio="aspect-[16/10] sm:aspect-[21/9]" priority />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(10,24,26,.58)_0%,rgba(10,24,26,.18)_34%,rgba(10,24,26,.42)_58%,rgba(10,24,26,.92)_100%)]" />
+      <div className="text-on-photo container-editorial absolute inset-x-0 bottom-0 z-10 pb-7 pt-10 [text-shadow:0_2px_16px_rgba(0,0,0,.65)]">
+        <div className="mb-5">
+          <Link href="/vinicolas" className="inline-flex rounded-full bg-petrol-950/45 px-3.5 py-2 font-sans text-[11px] font-semibold uppercase tracking-luxe text-gold-soft backdrop-blur-md transition-colors hover:text-cream">
+            Voltar
+          </Link>
+        </div>
+        <div className="flex items-end justify-between gap-4">
           <div>
             <div className="flex items-center gap-3">
               <Editable as="p" kind="winery" slug={w.slug} field="appellation" value={w.appellation} label="Denominação" className="font-sans text-[11px] uppercase tracking-luxe text-gold-soft">{w.appellation}</Editable>

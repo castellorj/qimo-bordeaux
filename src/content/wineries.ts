@@ -39,7 +39,7 @@ export const wineries: Winery[] = [
   {
     slug: "pedesclaux",
     name: "Château Pédesclaux",
-    heroImage: "https://www.chateau-pedesclaux.com/wp-content/uploads/2020/09/ete-1.jpg",
+    heroImage: "https://www.chateau-pedesclaux.com/wp-content/uploads/2020/08/9ddd0758c4d343179e20a10d70be874c-1920x1280.jpeg",
     appellation: "Pauillac",
     classification: "5º Grand Cru Classé (1855)",
     family: "Família Lorenzetti",
