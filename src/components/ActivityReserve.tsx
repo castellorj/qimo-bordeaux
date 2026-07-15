@@ -151,7 +151,7 @@ function ReserveSheet({
 
         <div className="mt-5">
           <p className="font-sans text-[11px] uppercase tracking-wide2 text-muted">Quem vai a este passeio</p>
-          <p className="mt-0.5 font-sans text-[12px] text-muted">Você só pode reservar para você e para o par cadastrado na mesma cabine.</p>
+          <p className="mt-0.5 font-sans text-[12px] text-muted">Você só pode reservar para você e para o par vinculado ao mesmo Grupo Bordeaux.</p>
           <div className="mt-3 space-y-2">
             {allowedNames.map((name, i) => (
               <label key={`${name}-${i}`} className="flex cursor-pointer items-center gap-2 rounded-[12px] border px-3 py-2.5" style={{ borderColor: names.includes(name) ? "var(--gold)" : "var(--line)", background: names.includes(name) ? "color-mix(in srgb, var(--gold) 8%, transparent)" : "transparent" }}>

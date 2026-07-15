@@ -37,6 +37,30 @@ export interface GuestPassenger {
   family: string | null;
 }
 
+function groupNumber(value?: string | null) {
+  return (value || "").match(/\d+/)?.[0] || "";
+}
+
+function groupVariants(value?: string | null) {
+  const family = (value || "").trim();
+  const number = groupNumber(family);
+  const padded = number ? number.padStart(3, "0") : "";
+  return Array.from(new Set([
+    family,
+    number,
+    padded,
+    number ? `Grupo Bordeaux ${number}` : "",
+    padded ? `Grupo Bordeaux ${padded}` : "",
+  ].filter(Boolean)));
+}
+
+function sameGroup(a?: string | null, b?: string | null) {
+  const na = groupNumber(a);
+  const nb = groupNumber(b);
+  if (na && nb) return Number(na) === Number(nb);
+  return (a || "").trim().toLowerCase() === (b || "").trim().toLowerCase();
+}
+
 export async function fetchReservable(): Promise<Reservable[]> {
   const { data, error } = await supabase().rpc("bordeaux_reservable");
   if (error || !data) return [];
@@ -88,11 +112,12 @@ export async function fetchGuestParty(phone: string): Promise<GuestPassenger[]> 
   const clean = normalizePhone(phone);
   if (!clean) return [];
   const sb = supabase();
-  const { data: owner } = await sb
+  const { data: owners } = await sb
     .from("bordeaux_participants")
     .select("id,full_name,phone,family")
     .in("phone", phoneVariants(clean))
-    .maybeSingle();
+    .limit(1);
+  const owner = owners?.[0];
 
   if (!owner) return [];
   if (!owner.family) {
@@ -107,10 +132,21 @@ export async function fetchGuestParty(phone: string): Promise<GuestPassenger[]> 
   const { data } = await sb
     .from("bordeaux_participants")
     .select("id,full_name,phone,family")
-    .eq("family", owner.family)
+    .in("family", groupVariants(owner.family))
     .order("full_name");
 
-  return ((data?.length ? data : [owner]) as any[]).map((p) => ({
+  let party = (data?.length ? data : [owner]) as any[];
+  if (party.length <= 1) {
+    const { data: all } = await sb
+      .from("bordeaux_participants")
+      .select("id,full_name,phone,family")
+      .not("family", "is", null)
+      .order("full_name");
+    const byGroup = (all || []).filter((p: any) => sameGroup(p.family, owner.family));
+    if (byGroup.length) party = byGroup;
+  }
+
+  return party.map((p) => ({
     id: p.id,
     fullName: p.full_name,
     phone: p.phone,

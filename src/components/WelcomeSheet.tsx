@@ -103,6 +103,7 @@ export function WelcomeSheet() {
   const enter = (guestName?: string) => {
     // Guarda nome E telefone (E.164) — o telefone identifica as reservas do convidado.
     try { localStorage.setItem(GUEST_LS, JSON.stringify({ name: guestName ?? null, phone: normalizePhone(phone) || null })); } catch {}
+    try { window.dispatchEvent(new Event("qimo-guest-updated")); } catch {}
     setLeaving(true);
     const onHome = typeof window !== "undefined" && window.location.pathname === "/";
     setTimeout(() => {

@@ -263,11 +263,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
       if (e.data?.source === "qimo-admin" && e.data?.type === "qimo-refresh") refreshLiveData();
     };
     window.addEventListener("focus", refreshLiveData);
+    window.addEventListener("qimo-guest-updated", refreshLiveData);
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("message", onMsg);
     return () => {
       window.clearInterval(stockTimer);
       window.removeEventListener("focus", refreshLiveData);
+      window.removeEventListener("qimo-guest-updated", refreshLiveData);
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("message", onMsg);
     };
