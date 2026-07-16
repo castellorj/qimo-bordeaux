@@ -33,6 +33,13 @@ const filters = [
   { label: "Acima de €100", match: (r: Restaurant) => r.priceBand === "Acima de €100" },
 ];
 
+const visibleFilters = [
+  { label: "Alta gastronomia", match: (r: Restaurant) => r.category === "michelin" },
+  { label: "Bistrô", match: (r: Restaurant) => r.category === "bistro" },
+  { label: "Wine bar", match: (r: Restaurant) => r.category === "wine-bar" },
+  { label: "Contemporâneo", match: (r: Restaurant) => r.category === "contemporary" },
+];
+
 type Sort = "thomas" | "sophisticated" | "value" | "near" | "price";
 
 function priceRank(price?: Restaurant["priceBand"]) {
@@ -108,7 +115,7 @@ export default function RestaurantesPage() {
   const [sort, setSort] = useState<Sort>("thomas");
 
   const filtered = useMemo(() => {
-    const picked = filters.find((f) => f.label === activeFilter);
+    const picked = visibleFilters.find((f) => f.label === activeFilter);
     const list = picked ? restaurants.filter(picked.match) : restaurants;
     return [...list].sort((a, b) => {
       if (sort === "sophisticated") return (b.qimoScores?.exclusivity ?? 0) - (a.qimoScores?.exclusivity ?? 0);
@@ -142,7 +149,7 @@ export default function RestaurantesPage() {
 
         <section className="sticky top-0 z-20 -mx-4 mt-8 border-y bg-cream/95 px-4 py-3 backdrop-blur" style={{ borderColor: "var(--line)" }}>
           <div className="flex gap-2 overflow-x-auto pb-1">
-            {["Todos", ...filters.map((f) => f.label)].map((label) => (
+            {["Todos", ...visibleFilters.map((f) => f.label)].map((label) => (
               <button
                 key={label}
                 onClick={() => setActiveFilter(label)}
