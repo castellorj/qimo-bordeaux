@@ -517,7 +517,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Triangle d'Or",
     category: "bistro",
-    heroImage: "https://assets2.justacote.com/photos_entreprises/le-bouchon-bordelais-bordeaux-14589073900.jpg",
+    heroImage: "https://www.bouchon-bordelais.com/includes/images/zones-3-photos/resto-01.jpg",
     description:
       "Pequeno, central e muito procurado, o Le Bouchon Bordelais traduz a cozinha regional em formato de bistrô contemporâneo. É uma excelente escolha para quem quer uma refeição francesa sem entrar no ritual longo da alta gastronomia. O menu muda conforme a estação e costuma privilegiar produtos locais, pratos de sabor claro e boa relação com a carta de vinhos. Por estar perto das áreas mais elegantes do centro, encaixa bem em um dia de compras, passeio arquitetônico ou noite mais descontraída.",
     chef: NAO_DIVULGADO,
@@ -563,7 +563,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Hôtel de Ville",
     category: "bistro",
-    heroImage: "https://www.bo-tannique.com/media/cache/resolve/l1200/websites/9b8c5a4f39efed2620297d5ac9cb07b5/img/la-salle-le-bar-et-la_20221006155414.jpg",
+    heroImage: "https://www.bo-tannique.com/media/cache/resolve/l1920/websites/9b8c5a4f39efed2620297d5ac9cb07b5/slides/botanniqueheader%201_20221006161308.jpg",
     description:
       "Bo-Tannique é um bistrô atual, sazonal e muito útil para quem quer comer bem no centro sem transformar a refeição em evento formal. A cozinha valoriza produto, frescor e pratos bem acabados, com atmosfera local e bom encaixe para almoço. É uma boa recomendação para viajantes que apreciam restaurantes de bairro com ambição, serviço simpático e carta de vinhos interessante. Funciona especialmente bem entre visitas culturais, compras e caminhadas pelo miolo histórico.",
     chef: NAO_DIVULGADO,
@@ -792,7 +792,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Capucins",
     category: "contemporary",
-    heroImage: "https://image.jimcdn.com/app/cms/image/transf/none/path/sa6549607c78f5c11/image/iac0c115f7b8dde59/version/1452877405/image.jpg",
+    heroImage: "https://www.bougerabordeaux.com/wp-content/uploads/2023/07/JMC05586-2048x1365.jpg",
     description:
       "O Marché des Capucins é a experiência gastronômica mais autêntica de Bordeaux para quem gosta de mercados. Ostras, queijos, pães, produtos bascos, cafés e balcões informais formam um retrato vivo da cidade fora dos salões gastronômicos. Não é um restaurante único, mas um conjunto de bancas e pequenos endereços que funcionam melhor pela manhã ou no almoço. Para a QIMO, é uma parada excelente para sentir o cotidiano local, provar ostras com vinho branco e comprar produtos regionais.",
     chef: "Não se aplica.",
@@ -839,7 +839,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Quais",
     category: "contemporary",
-    heroImage: "https://symbiose-bordeaux.com/images/symbiose-restaurant.jpg",
+    heroImage: "https://symbiose-bordeaux.com/images/bg_home.jpg",
     description:
       "Symbiose une coquetelaria, cozinha contemporânea e clima urbano perto dos quais. É uma alternativa interessante para quem já teve dias de grandes menus e quer uma noite mais livre, com bons drinques, pratos criativos e atmosfera jovem sem perder qualidade. A casa conversa com a Bordeaux atual: menos formal, mais social, ainda ligada ao produto e ao prazer à mesa. Para hóspedes 40+, funciona melhor como jantar descontraído ou parada antes de uma caminhada à beira do Garonne.",
     chef: NAO_DIVULGADO,
@@ -884,7 +884,7 @@ export const restaurants: Restaurant[] = [
     city: "Bordeaux",
     neighborhood: "Saint-Seurin",
     category: "contemporary",
-    heroImage: "https://prod-pics.guide.michelin.com/api/public/content/00df0fe3f9464c72b0d3e3fb798ca065.jpg?format=webp",
+    heroImage: "https://solena-restaurant.com/wp-content/uploads/2016/12/LE-SOLENA-2.jpg",
     description:
       "Soléna é uma mesa gastronômica moderna que combina técnica, delicadeza e ambiente acolhedor. O restaurante é uma boa alternativa para quem deseja alta qualidade sem a cerimônia dos grandes hotéis. A cozinha favorece menus trabalhados, bom produto e uma leitura contemporânea que se mantém acessível para quem aprecia sofisticação discreta. Por estar fora do circuito mais óbvio do centro turístico, pode ser uma escolha acertada para um jantar de casal ou pequenos grupos que valorizam calma e consistência.",
     chef: "Victor Ostronzec",
