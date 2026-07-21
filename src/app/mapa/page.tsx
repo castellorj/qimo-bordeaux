@@ -51,24 +51,40 @@ export default function MapaPage() {
     });
   };
 
-  // Bounding box aproximado da região de Bordeaux para o mapa OSM
-  const bbox = "-1.05,44.55,0.05,45.35";
-
   return (
     <>
       <PageHero section="mapa" small />
 
       <div className="container-editorial py-14">
-        {/* Mapa OSM */}
-        <div className="card overflow-hidden">
-          <iframe
-            title="Mapa da região de Bordeaux"
-            className="h-[380px] w-full sm:h-[460px]"
-            loading="lazy"
-            src={`https://www.openstreetmap.org/export/embed.html?bbox=${bbox}&layer=mapnik`}
-            style={{ border: 0 }}
-          />
-        </div>
+        <section className="mb-8">
+          <div className="mb-4">
+            <p className="kicker">Mapa da rota</p>
+            <h2 className="mt-2 font-serif text-3xl font-light">A navegação do Bordeaux Experience</h2>
+          </div>
+          <div className="card overflow-hidden bg-[#f6e7bd]">
+            <img
+              src="/photos/route-map-full.png"
+              alt="Mapa da rota Bordeaux Experience"
+              className="w-full"
+              loading="eager"
+            />
+          </div>
+        </section>
+
+        <section>
+          <div className="mb-4">
+            <p className="kicker">Mapa complementar</p>
+            <h2 className="mt-2 font-serif text-3xl font-light">Bordeaux Wine Central</h2>
+          </div>
+          <div className="card overflow-hidden bg-[#f6e7bd]">
+            <img
+              src="/photos/route-map-wine-central.png"
+              alt="Mapa ilustrado de Bordeaux Wine Central"
+              className="w-full"
+              loading="lazy"
+            />
+          </div>
+        </section>
 
         <div className="mt-6 flex flex-wrap items-center justify-between gap-4">
           <div className="flex gap-2">
@@ -94,13 +110,14 @@ export default function MapaPage() {
           </button>
         </div>
 
-        {/* Lista de pontos */}
         <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {filtered.map((p) => (
             <div key={p.name} className="card card-hover flex items-center gap-3 p-4">
               <Link href={p.href} className="flex min-w-0 flex-1 items-center gap-3">
                 <span
-                  className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border ${p.kind === "Vinícola" ? "text-olive" : "text-gold"}`}
+                  className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border ${
+                    p.kind === "Vinícola" ? "text-olive" : "text-gold"
+                  }`}
                   style={{ borderColor: "var(--line)" }}
                 >
                   <Icon name={p.icon} size={17} />

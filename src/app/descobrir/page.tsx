@@ -2,7 +2,7 @@ import { PageHero } from "@/components/PageHero";
 import { HubGridPhotos, type HubItem } from "@/components/Hub";
 
 const items: HubItem[] = [
-  { href: "/mapa", icon: "Map", key: "mapa-rota", image: "/photos/route-map-card.svg" },
+  { href: "/mapa", icon: "Map", key: "mapa-rota", image: "/photos/route-map-card.png" },
   { href: "/vinicolas", icon: "Grape", key: "vinicolas", image: "/photos/hero-lafite.jpg" },
   { href: "/restaurantes", icon: "UtensilsCrossed", key: "restaurantes", image: "/photos/food-entrecote.jpg" },
   { href: "/vinhos", icon: "Wine", key: "vinhos", image: "https://www.bordeaux.com/app/uploads/2025/10/dsc_8445-1920x1080.jpg" },
