@@ -18,6 +18,16 @@ const onboard = itinerary.flatMap((d) =>
     .map((a) => ({ ...a, dayN: d.n }))
 );
 
+const routeStops = [
+  { day: "Dia 1", place: "Bordeaux", note: "Embarque", x: 42, y: 52, align: "right" },
+  { day: "Dia 2", place: "Pauillac", note: "Medoc", x: 48, y: 20, align: "right" },
+  { day: "Dia 3", place: "Cadillac", note: "Sauternes", x: 50, y: 78, align: "right" },
+  { day: "Dia 4", place: "Blaye", note: "Estuario", x: 55, y: 32, align: "left" },
+  { day: "Dia 4", place: "Bourg-sur-Gironde", note: "Dordogne", x: 61, y: 43, align: "left" },
+  { day: "Dia 5", place: "Libourne", note: "Saint-Emilion", x: 72, y: 55, align: "left" },
+  { day: "Dia 7", place: "Bordeaux", note: "Retorno", x: 42, y: 52, align: "right" },
+];
+
 export default function BarcoPage() {
   const { t, cfg, settingsReady } = useLocale();
   // Navio editável no painel (aba Fichas → Navio); cai no arquivo enquanto não editado.
@@ -53,6 +63,98 @@ export default function BarcoPage() {
             </div>
           ))}
         </div>
+
+        {/* Rota do cruzeiro */}
+        <section className="mt-16 overflow-hidden rounded-[3px] border" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
+          <div className="grid gap-0 lg:grid-cols-[0.95fr_1.35fr]">
+            <div className="border-b p-7 sm:p-9 lg:border-b-0 lg:border-r" style={{ borderColor: "var(--line)" }}>
+              <p className="kicker">Mapa da rota</p>
+              <h2 className="display mt-3 text-2xl sm:text-3xl">Bordeaux pelo rio</h2>
+              <div className="gold-rule mt-5" />
+              <p className="prose-luxe mt-5">
+                Uma leitura redesenhada do percurso do SS Bon Voyage pelos rios Garonne e Dordogne,
+                com retorno ao estuario da Gironde e paradas-chave do roteiro QIMO.
+              </p>
+              <div className="mt-7 grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
+                {[
+                  { icon: "Navigation", title: "Garonne", text: "Bordeaux a Cadillac" },
+                  { icon: "Anchor", title: "Gironde", text: "Medoc, Pauillac e Blaye" },
+                  { icon: "MapPin", title: "Dordogne", text: "Bourg, Libourne e Saint-Emilion" },
+                ].map((item) => (
+                  <div key={item.title} className="flex items-center gap-3 rounded-[3px] border bg-white/35 p-3" style={{ borderColor: "var(--line)" }}>
+                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gold/12 text-gold-deep">
+                      <Icon name={item.icon} size={16} />
+                    </span>
+                    <div>
+                      <p className="font-sans text-[12px] font-semibold uppercase tracking-wide2 text-gold">{item.title}</p>
+                      <p className="font-sans text-[12px] text-muted">{item.text}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="relative min-h-[520px] overflow-hidden bg-[#f8f4ed] p-5 sm:p-8">
+              <div className="absolute inset-0 opacity-[0.42]" style={{
+                backgroundImage:
+                  "radial-gradient(circle at 18% 35%, rgba(195,168,96,0.18), transparent 24%), radial-gradient(circle at 72% 50%, rgba(54,75,68,0.10), transparent 28%)",
+              }} />
+              <div className="relative h-[500px] rounded-[3px] border bg-white/60 shadow-sm" style={{ borderColor: "var(--line)" }}>
+                <svg className="absolute inset-0 h-full w-full" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                  <path d="M15 16 C22 28 27 38 35 46 C42 54 47 62 49 84" fill="none" stroke="rgba(91,111,103,0.18)" strokeWidth="1.2" />
+                  <path d="M49 84 C43 72 40 62 42 52 C44 40 49 30 48 20" fill="none" stroke="rgba(91,111,103,0.22)" strokeWidth="1.1" />
+                  <path d="M42 52 C53 48 58 42 61 43 C66 45 68 53 73 55 C77 57 82 55 88 51" fill="none" stroke="rgba(91,111,103,0.20)" strokeWidth="1.1" />
+                  <path d="M42 52 C46 46 51 39 48 20" fill="none" stroke="#9f3b50" strokeWidth="0.9" strokeLinecap="round" strokeDasharray="0.1 1.8" />
+                  <path d="M42 52 C47 63 49 72 50 78" fill="none" stroke="#9f3b50" strokeWidth="0.9" strokeLinecap="round" strokeDasharray="0.1 1.8" />
+                  <path d="M48 20 C50 27 53 31 55 32 C57 34 58 39 61 43 C65 47 67 52 72 55" fill="none" stroke="#9f3b50" strokeWidth="0.9" strokeLinecap="round" strokeDasharray="0.1 1.8" />
+                  <path d="M72 55 C65 51 55 47 42 52" fill="none" stroke="#9f3b50" strokeWidth="0.9" strokeLinecap="round" strokeDasharray="0.1 1.8" />
+                </svg>
+
+                <span className="absolute left-[8%] top-[12%] rounded-full bg-[#cfe6ef] px-4 py-2 font-sans text-[11px] font-semibold uppercase tracking-wide2 text-petrol-600">Atlantico</span>
+                <span className="absolute left-[14%] top-[42%] font-serif text-2xl italic text-muted/70">Medoc</span>
+                <span className="absolute left-[64%] top-[64%] font-serif text-2xl italic text-muted/70">Dordogne</span>
+                <span className="absolute left-[43%] top-[87%] font-serif text-2xl italic text-muted/70">Garonne</span>
+
+                {routeStops.map((stop, index) => {
+                  const isReturn = index === routeStops.length - 1;
+                  return (
+                    <div
+                      key={`${stop.day}-${stop.place}-${index}`}
+                      className="absolute"
+                      style={{ left: `${stop.x}%`, top: `${stop.y}%`, transform: "translate(-50%, -50%)" }}
+                    >
+                      <span className={isReturn ? "block h-3 w-3 rounded-full border-2 border-gold bg-petrol-600" : "block h-4 w-4 rounded-full border-2 border-white bg-[#9f3b50] shadow"} />
+                      {!isReturn && (
+                        <div
+                          className={`absolute top-1/2 min-w-[136px] -translate-y-1/2 rounded-[3px] border bg-white/90 px-3 py-2 shadow-sm ${
+                            stop.align === "right" ? "right-5 text-right" : "left-5"
+                          }`}
+                          style={{ borderColor: "var(--line)" }}
+                        >
+                          <p className="font-sans text-[10px] font-semibold uppercase tracking-wide2 text-gold">{stop.day}</p>
+                          <p className="font-serif text-[18px] font-light leading-tight text-petrol-700">{stop.place}</p>
+                          <p className="mt-0.5 font-sans text-[11px] text-muted">{stop.note}</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="relative mt-4 flex flex-wrap gap-2 font-sans text-[11px] text-muted">
+                <span className="inline-flex items-center gap-1.5 rounded-full border bg-white/70 px-3 py-1.5" style={{ borderColor: "var(--line)" }}>
+                  <span className="h-2 w-2 rounded-full bg-[#9f3b50]" /> Navegacao
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border bg-white/70 px-3 py-1.5" style={{ borderColor: "var(--line)" }}>
+                  <Icon name="MapPin" size={12} className="text-gold" /> Paradas do roteiro
+                </span>
+                <span className="inline-flex items-center gap-1.5 rounded-full border bg-white/70 px-3 py-1.5" style={{ borderColor: "var(--line)" }}>
+                  <Icon name="Landmark" size={12} className="text-gold" /> Saint-Emilion e Blaye, areas UNESCO
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* Ficha rápida */}
         {shipGallery.length > 0 && (
