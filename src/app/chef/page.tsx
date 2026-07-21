@@ -26,6 +26,8 @@ export default function ChefPage() {
           <p className="mx-auto mt-5 max-w-xl font-sans text-[16px] leading-relaxed text-muted sm:text-[17px]">{t("hero.chef.i")}</p>
         </div>
 
+        <ThomasTroisgrosSection />
+
         <div className="space-y-6">
           {items.map((item, i) => (
             <ChefExperienceCard
@@ -43,6 +45,79 @@ export default function ChefPage() {
         </div>
       </div>
     </>
+  );
+}
+
+function ThomasTroisgrosSection() {
+  const recognitions = [
+    {
+      icon: "Star",
+      label: "1 estrela Michelin",
+      text: "Chef à frente do Oseille, no Rio de Janeiro, reconhecido pelo Guia Michelin com uma estrela.",
+    },
+    {
+      icon: "Sparkles",
+      label: "Hot List 2024",
+      text: "Oseille foi destacado pela Condé Nast Traveller entre os melhores novos restaurantes do mundo em 2024.",
+    },
+    {
+      icon: "CircleCheck",
+      label: "The Best Chef Awards",
+      text: "Thomas recebeu a distinção One Knife, categoria Excellent, no The Best Chef Awards.",
+    },
+    {
+      icon: "TrendingUp",
+      label: "50 Best",
+      text: "O Olympe, onde Thomas consolidou sua cozinha autoral, figurou em edições do Latin America's 50 Best Restaurants.",
+    },
+    {
+      icon: "UtensilsCrossed",
+      label: "Dinastia Troisgros",
+      text: "Quarta geração de uma família que marcou a nouvelle cuisine e mantém três estrelas Michelin na França desde 1968.",
+    },
+  ];
+
+  return (
+    <section className="mb-12 overflow-hidden rounded-[3px] border" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
+      <div className="grid gap-0 lg:grid-cols-[0.95fr_1.25fr]">
+        <div className="border-b p-7 sm:p-9 lg:border-b-0 lg:border-r" style={{ borderColor: "var(--line)" }}>
+          <p className="kicker">Sobre o chef</p>
+          <h2 className="display mt-3 text-3xl sm:text-4xl">Thomas Troisgros</h2>
+          <div className="gold-rule mt-5" />
+          <p className="prose-luxe mt-5">
+            Herdeiro da quarta geração Troisgros, Thomas traduz a técnica francesa da família em uma cozinha
+            contemporânea, brasileira e autoral. No Rio, está à frente do Oseille, restaurante intimista de menu-degustação
+            reconhecido com uma estrela Michelin.
+          </p>
+          <p className="mt-5 font-sans text-[13px] leading-relaxed text-muted">
+            Sua trajetória passa pelo Culinary Institute of America, por Daniel Boulud em Nova York e por casas de referência
+            como Mugaritz e Arzak, antes de assumir projetos da família no Brasil e criar seus próprios restaurantes.
+          </p>
+        </div>
+
+        <div className="p-7 sm:p-9">
+          <p className="kicker-muted">Reconhecimentos</p>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2">
+            {recognitions.map((item) => (
+              <div key={item.label} className="rounded-[3px] border bg-white/35 p-4" style={{ borderColor: "var(--line)" }}>
+                <div className="flex items-center gap-3">
+                  <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gold/12 text-gold-deep">
+                    <Icon name={item.icon} size={16} />
+                  </span>
+                  <p className="font-sans text-[12px] font-semibold uppercase tracking-wide2 text-petrol-700">{item.label}</p>
+                </div>
+                <p className="mt-3 font-sans text-[13px] leading-relaxed text-muted">{item.text}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-5 rounded-[3px] border bg-[#fbf7f0] p-4" style={{ borderColor: "var(--line)" }}>
+            <p className="font-serif text-[19px] font-light leading-snug text-petrol-700">
+              A curadoria QIMO nasce desse encontro: precisão francesa, alma carioca e uma leitura de Bordeaux feita para poucos convidados.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
   );
 }
 
