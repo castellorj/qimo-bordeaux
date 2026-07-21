@@ -246,6 +246,26 @@ export interface ChefExperience {
   qimoSelect?: boolean;
 }
 
+export interface ChefProfile {
+  slug: string;
+  name: string;
+  kicker: string;
+  title: string;
+  lead: string;
+  body: string;
+  closingQuote: string;
+  michelinLabel: string;
+  michelinText: string;
+  hotListLabel: string;
+  hotListText: string;
+  bestChefLabel: string;
+  bestChefText: string;
+  fiftyBestLabel: string;
+  fiftyBestText: string;
+  lineageLabel: string;
+  lineageText: string;
+}
+
 export interface ConciergeContact {
   slug: string;
   label: string;

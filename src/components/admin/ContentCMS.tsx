@@ -15,7 +15,7 @@ import clsx from "clsx";
 const LONG = 70;
 const KIND_GROUPS = [
   { title: "Principais", kinds: ["city", "winery", "restaurant", "document_category"] },
-  { title: "Descobrir", kinds: ["wine", "gastronomy", "experience", "shopping", "chef"] },
+  { title: "Descobrir", kinds: ["wine", "gastronomy", "experience", "shopping", "chef", "chef_profile"] },
   { title: "Utilidades", kinds: ["ship", "partner_offer", "info_fact", "etiquette_tip", "french_phrase"] },
 ];
 const FEATURED_KINDS: Record<string, { icon: string; title: string; hint: string }> = {
@@ -26,6 +26,7 @@ const FEATURED_KINDS: Record<string, { icon: string; title: string; hint: string
   document_category: { icon: "FileText", title: "Documentos", hint: "categorias, icones e descricoes" },
   info_fact: { icon: "Info", title: "Info uteis", hint: "moeda, idioma, fuso, tomadas e etiqueta" },
   ship: { icon: "Ship", title: "Navio", hint: "pagina do SS Bon Voyage" },
+  chef_profile: { icon: "UtensilsCrossed", title: "Perfil do Chef", hint: "bio, Michelin, premios e reconhecimentos" },
 };
 
 // Rótulos amigáveis (PT) — o usuário nunca vê o nome técnico do campo.

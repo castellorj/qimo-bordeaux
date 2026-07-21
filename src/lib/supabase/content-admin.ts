@@ -2,7 +2,7 @@
 
 import { supabase } from "./client";
 import {
-  cities, wineries, restaurants, appellations, gastronomy, experiences, shopping, chefExperiences,
+  cities, wineries, restaurants, appellations, gastronomy, experiences, shopping, chefExperiences, chefProfile,
   infoFacts, etiquetteTips, frenchPhrases, ship, documentCategories,
   partnerOffers,
 } from "@/content";
@@ -20,6 +20,7 @@ export const CONTENT_KINDS = [
   { kind: "experience", label: "Experiências", file: experiences },
   { kind: "shopping", label: "Compras", file: shopping },
   { kind: "chef", label: "Chef (Troisgros)", file: chefExperiences },
+  { kind: "chef_profile", label: "Perfil do Chef", file: [chefProfile] },
   { kind: "partner_offer", label: "Ofertas", file: partnerOffers },
   { kind: "ship", label: "Navio", file: [shipRecord] },
   { kind: "info_fact", label: "Info úteis", file: infoFacts },

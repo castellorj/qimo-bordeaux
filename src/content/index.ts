@@ -11,7 +11,7 @@ import { experiences } from "./experiences";
 import { shopping, taxFreeGuide } from "./shopping";
 import { conciergeContacts, frenchPhrases, etiquette } from "./concierge";
 import { conciergeSections } from "./conciergeSections";
-import { chefExperiences } from "./chef";
+import { chefExperiences, chefProfile } from "./chef";
 import { ship } from "./ship";
 import { restaurants } from "./restaurants";
 import { infoFacts, etiquetteTips } from "./info";
@@ -38,6 +38,7 @@ export const content = {
   etiquetteTips,
   documentCategories,
   chefExperiences,
+  chefProfile,
   partnerOffers,
 };
 
@@ -67,6 +68,7 @@ export {
   etiquetteTips,
   documentCategories,
   chefExperiences,
+  chefProfile,
   partnerOffers,
 };
 

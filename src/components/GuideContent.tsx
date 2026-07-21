@@ -7,13 +7,14 @@ import {
   conciergeContacts as fConcierge, itinerary as fItinerary, chefExperiences as fChef,
   infoFacts as fInfoFacts, etiquetteTips as fEtiquetteTips, conciergeSections as fConciergeSections,
   frenchPhrases as fFrenchPhrases, ship as fShip, documentCategories as fDocumentCategories,
-  partnerOffers as fPartnerOffers,
+  partnerOffers as fPartnerOffers, chefProfile as fChefProfile,
 } from "@/content";
 
 const FILES: Record<string, any[]> = {
   city: fCities, winery: fWineries, restaurant: fRestaurants,
   wine: fWines, gastronomy: fGastro, experience: fExp, shopping: fShop,
   concierge: fConcierge, chef: fChef,
+  chef_profile: [fChefProfile],
   info_fact: fInfoFacts, etiquette_tip: fEtiquetteTips,
   french_phrase: fFrenchPhrases,
   document_category: fDocumentCategories,

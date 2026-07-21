@@ -1,4 +1,27 @@
-import type { ChefExperience } from "@/lib/types";
+import type { ChefExperience, ChefProfile } from "@/lib/types";
+
+export const chefProfile: ChefProfile = {
+  slug: "thomas-troisgros",
+  name: "Thomas Troisgros",
+  kicker: "Sobre o chef",
+  title: "Thomas Troisgros",
+  lead:
+    "Herdeiro da quarta geração Troisgros, Thomas traduz a técnica francesa da família em uma cozinha contemporânea, brasileira e autoral. No Rio, está à frente do Oseille, restaurante intimista de menu-degustação reconhecido com uma estrela Michelin.",
+  body:
+    "Sua trajetória passa pelo Culinary Institute of America, por Daniel Boulud em Nova York e por casas de referência como Mugaritz e Arzak, antes de assumir projetos da família no Brasil e criar seus próprios restaurantes.",
+  closingQuote:
+    "A curadoria QIMO nasce desse encontro: precisão francesa, alma carioca e uma leitura de Bordeaux feita para poucos convidados.",
+  michelinLabel: "1 estrela Michelin",
+  michelinText: "Chef à frente do Oseille, no Rio de Janeiro, reconhecido pelo Guia Michelin com uma estrela.",
+  hotListLabel: "Hot List 2024",
+  hotListText: "Oseille foi destacado pela Condé Nast Traveler entre os melhores novos restaurantes do mundo em 2024.",
+  bestChefLabel: "The Best Chef Awards",
+  bestChefText: "Thomas recebeu a distinção One Knife, categoria Excellent, no The Best Chef Awards.",
+  fiftyBestLabel: "50 Best",
+  fiftyBestText: "O Olympe, onde Thomas consolidou sua cozinha autoral, figurou em edições do Latin America's 50 Best Restaurants.",
+  lineageLabel: "Dinastia Troisgros",
+  lineageText: "Quarta geração de uma família que marcou a nouvelle cuisine e mantém três estrelas Michelin na França desde 1968.",
+};
 
 // Seção "Chef" — experiências extras de gastronomia (cross-sell), com curadoria de
 // Thomas Troisgros. Conteúdo inicial editável no painel (aba Conteúdo → "Chef").
