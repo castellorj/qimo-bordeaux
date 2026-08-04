@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import {
   cities as fCities, wineries as fWineries, restaurants as fRestaurants,
   appellations as fWines, gastronomy as fGastro, experiences as fExp, shopping as fShop,
-  conciergeContacts as fConcierge, itinerary as fItinerary, chefExperiences as fChef,
+  conciergeContacts as fConcierge, itinerary as fItinerary,
   infoFacts as fInfoFacts, etiquetteTips as fEtiquetteTips, conciergeSections as fConciergeSections,
   frenchPhrases as fFrenchPhrases, ship as fShip, documentCategories as fDocumentCategories,
   partnerOffers as fPartnerOffers, chefProfile as fChefProfile,
@@ -13,7 +13,11 @@ import {
 const FILES: Record<string, any[]> = {
   city: fCities, winery: fWineries, restaurant: fRestaurants,
   wine: fWines, gastronomy: fGastro, experience: fExp, shopping: fShop,
-  concierge: fConcierge, chef: fChef,
+  concierge: fConcierge,
+  // "chef" NÃO tem fallback de arquivo de propósito: a lista de experiências do
+  // Chef é 100% gerida pelo painel (banco). Assim, excluir no admin realmente
+  // remove, e a seção pode ficar vazia. O arquivo segue como semente do botão
+  // "Importar conteúdo do guia" (via CONTENT_KINDS), não como piso do guia.
   chef_profile: [fChefProfile],
   info_fact: fInfoFacts, etiquette_tip: fEtiquetteTips,
   french_phrase: fFrenchPhrases,
