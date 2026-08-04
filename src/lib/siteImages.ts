@@ -35,6 +35,7 @@ export const SITE_IMAGES: SiteImage[] = [
   { key: "img.hub.experiencias", label: "Card Experiências", group: "Cards do Descobrir", def: "/photos/wine-glass.jpg" },
   { key: "img.hub.compras", label: "Card Compras", group: "Cards do Descobrir", def: "/photos/shop-laguiole.jpg" },
   { key: "img.hub.cidades", label: "Card Cidades", group: "Cards do Descobrir", def: "/photos/hero-saint-emilion.jpg" },
+  { key: "img.hub.mapa-rota", label: "Card Mapa da rota", group: "Cards do Descobrir", def: "/photos/route-map-card.png" },
 
   // ---- Concierge · "Sua viagem" ----
   { key: "img.viagem.barco", label: "Card O Navio", group: "Concierge · Sua viagem", def: "/photos/ship-exterior.jpg" },
