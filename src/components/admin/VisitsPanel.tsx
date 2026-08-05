@@ -13,6 +13,37 @@ function fmt(iso?: string) {
   }
 }
 
+function fmtFull(iso?: string) {
+  if (!iso) return "";
+  try {
+    return new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });
+  } catch {
+    return "";
+  }
+}
+
+// Escapa um campo para CSV (aspas, vírgulas, quebras de linha).
+function csvCell(v: string | number) {
+  const s = String(v ?? "");
+  return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+}
+
+function downloadVisitsCsv(rows: VisitSummary[]) {
+  const header = ["Hospede", "Telefone", "Acessos", "Primeiro acesso", "Ultimo acesso"];
+  const lines = rows.map((r) => [r.name || "", r.phone || "", r.visits, fmtFull(r.first_seen), fmtFull(r.last_seen)].map(csvCell).join(";"));
+  // BOM (﻿) + ; como separador → abre certinho no Excel em PT-BR, com acentos.
+  const csv = "﻿" + [header.join(";"), ...lines].join("\r\n");
+  const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `acessos-qimo-bordeaux-${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 export function VisitsPanel() {
   const [rows, setRows] = useState<VisitSummary[] | null>(null);
   const [totals, setTotals] = useState<VisitTotals | null>(null);
@@ -56,7 +87,13 @@ export function VisitsPanel() {
             Quem abriu o guia e quantas vezes. Cada sessão do navegador conta como um acesso; o hóspede é identificado pelo nome/telefone do login.
           </p>
         </div>
-        <button onClick={load} className="btn-ghost !px-3 !py-2 text-[12px]"><Icon name="ArrowRight" size={14} /> Atualizar</button>
+        <div className="flex items-center gap-2">
+          <button onClick={() => downloadVisitsCsv(visible)} disabled={!rows || rows.length === 0}
+            className="btn-ghost !px-3 !py-2 text-[12px] disabled:opacity-40">
+            <Icon name="Download" size={14} /> Exportar CSV
+          </button>
+          <button onClick={load} className="btn-ghost !px-3 !py-2 text-[12px]"><Icon name="ArrowRight" size={14} /> Atualizar</button>
+        </div>
       </div>
 
       {error ? (
