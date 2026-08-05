@@ -126,3 +126,10 @@ export async function reserve(
 export async function cancelReservation(id: string) {
   return supabase().from("bordeaux_reservations").update({ status: "cancelled", updated_at: new Date().toISOString() }).eq("id", id);
 }
+// Transforma uma reserva numa reserva de par: N lugares (adults) + party com os nomes.
+// Usado no admin para "vincular par" (mescla dois solos numa linha só, como os demais casais).
+export async function setReservationParty(id: string, names: string[]) {
+  return supabase().from("bordeaux_reservations")
+    .update({ adults: Math.max(1, names.length), children: 0, party: names, updated_at: new Date().toISOString() })
+    .eq("id", id);
+}

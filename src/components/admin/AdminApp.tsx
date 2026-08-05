@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase/client";
 import {
   fetchActivities, fetchParticipants, fetchReservations,
   updateCapacity, setHidden, deleteParticipant,
-  reserve, cancelReservation, upsertParticipantByPhone, updateParticipant,
+  reserve, cancelReservation, setReservationParty, upsertParticipantByPhone, updateParticipant,
   type BxActivityFull, type BxParticipant, type BxReservation,
 } from "@/lib/supabase/bordeaux";
 import { Icon } from "@/components/Icon";
@@ -608,7 +608,7 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
 
   // Nome cru (o que a pessoa digitou no login/reserva)
   const rawLabel = (r: BxReservation) => (r.source === "guest" && r.party && r.party.length ? r.party[0] : (r.participant?.full_name || r.guest_name || "—"));
-  const companionsRaw = (r: BxReservation) => (r.source === "guest" && r.party ? r.party.slice(1) : []);
+  const companionsRaw = (r: BxReservation) => (r.party && r.party.length > 1 ? r.party.slice(1) : []);
 
   const participantByName = (name?: string | null) => {
     const nk = normOf(name);
@@ -641,47 +641,69 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
     if (!me || !gk) return undefined;
     return parts.find((p) => p.id !== me.id && groupKeyOf(p.family) === gk);
   };
-  // Já existe reserva dessa pessoa neste passeio? (por id, nome ou telefone)
-  const isReservedFor = (activityId: string, person: BxParticipant) =>
-    res.some((r2) =>
-      r2.activity_id === activityId && r2.status !== "cancelled" && (
-        r2.participant_id === person.id ||
-        (digitsOf(r2.guest_phone).length >= 8 && digitsOf(r2.guest_phone) === digitsOf(person.phone)) ||
-        [rawLabel(r2), ...companionsRaw(r2)].some((n) => flOf(normOf(n)) === flOf(normOf(person.full_name)))
+  // Reserva (não cancelada) do parceiro no mesmo passeio, se existir (por id, telefone ou nome)
+  const partnerReservation = (activityId: string, r: BxReservation, partner: BxParticipant) =>
+    res.find((x) =>
+      x.activity_id === activityId && x.status !== "cancelled" && x.id !== r.id && (
+        x.participant_id === partner.id ||
+        (digitsOf(x.guest_phone).length >= 8 && digitsOf(x.guest_phone) === digitsOf(partner.phone)) ||
+        flOf(normOf(rawLabel(x))) === flOf(normOf(partner.full_name))
       )
     );
-  const addPartner = async (activityId: string, partner: BxParticipant) => {
-    setAddBusy(activityId + partner.id);
-    const { error } = await reserve(activityId, partner.id, null, 1, 0, null);
+  // O parceiro já é o titular de um par (2+ lugares) que inclui ESTA pessoa? → r é duplicata, não se vincula
+  const partnerHostsMe = (activityId: string, r: BxReservation, partner: BxParticipant) => {
+    const meKey = flOf(normOf(participantForReservation(r)?.full_name || rawLabel(r)));
+    return res.some((x) =>
+      x.activity_id === activityId && x.status !== "cancelled" && x.id !== r.id && (x.seats ?? 1) >= 2 &&
+      (x.participant_id === partner.id || (digitsOf(x.guest_phone).length >= 8 && digitsOf(x.guest_phone) === digitsOf(partner.phone)) || flOf(normOf(rawLabel(x))) === flOf(normOf(partner.full_name))) &&
+      [rawLabel(x), ...companionsRaw(x)].some((n) => flOf(normOf(n)) === meKey)
+    );
+  };
+  // Vincular par = transformar ESTA reserva-solo numa reserva de par (2 lugares, os dois nomes)
+  // e absorver/cancelar a reserva separada do parceiro, se houver. Resultado: uma linha só.
+  const linkPair = async (r: BxReservation, partner: BxParticipant) => {
+    setAddBusy("link:" + r.id);
+    const myName = participantForReservation(r)?.full_name || rawLabel(r);
+    const other = partnerReservation(r.activity_id, r, partner);
+    const { error } = await setReservationParty(r.id, [myName, partner.full_name]);
+    if (error) { setAddBusy(null); alert("Não foi possível vincular o par: " + error.message); return; }
+    if (other) {
+      const { error: e2 } = await cancelReservation(other.id);
+      if (e2) { setAddBusy(null); alert("Par vinculado, mas não consegui remover a reserva separada do parceiro: " + e2.message); await onChange(); return; }
+    }
     setAddBusy(null);
-    if (error) { alert("Não foi possível adicionar o par: " + error.message); return; }
     await onChange();
   };
-  // Pares que faltam num passeio (reservas solo cujo parceiro ainda não está reservado)
-  const missingPartners = (activityId: string, list: BxReservation[]) => {
-    const out: BxParticipant[] = [];
+  // Reservas-solo deste passeio que podem virar par (um por casal)
+  const linkableInActivity = (activityId: string, list: BxReservation[]) => {
+    const out: { r: BxReservation; partner: BxParticipant }[] = [];
     const seen = new Set<string>();
     for (const r of list) {
       const partner = partnerOf(r);
-      if (partner && (r.seats ?? 1) <= 1 && !isReservedFor(activityId, partner) && !seen.has(partner.id)) {
-        seen.add(partner.id); out.push(partner);
-      }
+      if (!partner || (r.seats ?? 1) > 1 || partnerHostsMe(activityId, r, partner)) continue;
+      const gk = groupKeyOf(partner.family);
+      if (seen.has(gk)) continue; // um por casal (evita mesclar os dois lados)
+      seen.add(gk); out.push({ r, partner });
     }
     return out;
   };
-  const addAllPartners = async (activityId: string, list: BxReservation[]) => {
-    const toAdd = missingPartners(activityId, list);
-    if (!toAdd.length) return;
-    if (!confirm(`Reservar ${toAdd.length} parceiro(s) neste passeio? (respeita a capacidade)`)) return;
+  const linkAllPairs = async (activityId: string, list: BxReservation[]) => {
+    const todo = linkableInActivity(activityId, list);
+    if (!todo.length) return;
+    if (!confirm(`Vincular ${todo.length} par(es) neste passeio? Cada reserva-solo vira uma reserva de par (2 lugares).`)) return;
     setAddBusy("all:" + activityId);
     let ok = 0, fail = 0;
-    for (const p of toAdd) {
-      const { error } = await reserve(activityId, p.id, null, 1, 0, null);
-      if (error) fail++; else ok++;
+    for (const { r, partner } of todo) {
+      const myName = participantForReservation(r)?.full_name || rawLabel(r);
+      const other = partnerReservation(activityId, r, partner);
+      const { error } = await setReservationParty(r.id, [myName, partner.full_name]);
+      if (error) { fail++; continue; }
+      if (other) await cancelReservation(other.id);
+      ok++;
     }
     setAddBusy(null);
     await onChange();
-    if (fail) alert(`${ok} adicionado(s); ${fail} não couberam ou deram erro (veja a lista de espera).`);
+    if (fail) alert(`${ok} par(es) vinculado(s); ${fail} deram erro.`);
   };
   const q = query.trim().toLowerCase();
   const visibleGroups = filteredGroups.filter(({ a, list }) => {
@@ -863,10 +885,10 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
                   <p className="font-serif text-[17px] font-light leading-tight">{a.title}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  {missingPartners(a.id, list).length > 0 && (
-                    <button onClick={() => addAllPartners(a.id, list)} disabled={addBusy === "all:" + a.id}
-                      className="btn-ghost whitespace-nowrap !px-3 !py-1.5 text-[11px] disabled:opacity-50" title="Reservar o par de cada reserva-solo deste passeio">
-                      <Icon name="UserPlus" size={13} /> {addBusy === "all:" + a.id ? "…" : `Completar ${missingPartners(a.id, list).length} par(es)`}
+                  {linkableInActivity(a.id, list).length > 0 && (
+                    <button onClick={() => linkAllPairs(a.id, list)} disabled={addBusy === "all:" + a.id}
+                      className="btn-ghost whitespace-nowrap !px-3 !py-1.5 text-[11px] disabled:opacity-50" title="Vincular o par de cada reserva-solo deste passeio (vira uma linha, 2 lugares)">
+                      <Icon name="UserPlus" size={13} /> {addBusy === "all:" + a.id ? "…" : `Vincular ${linkableInActivity(a.id, list).length} par(es)`}
                     </button>
                   )}
                   <span className="max-w-full whitespace-normal rounded-full bg-petrol-600/10 px-3 py-1 text-center font-sans text-[12px] font-medium leading-tight text-petrol-600">
@@ -881,8 +903,8 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
                 {list.map((r) => {
                   const comps = companions(r);
                   const partner = partnerOf(r);
-                  // só oferece nas reservas SOLO (1 lugar); 2+ já têm o par
-                  const showAdd = partner && (r.seats ?? 1) <= 1 && !isReservedFor(a.id, partner);
+                  // só oferece nas reservas SOLO (1 lugar) cujo par ainda não é o titular de um par com esta pessoa
+                  const showAdd = partner && (r.seats ?? 1) <= 1 && !partnerHostsMe(a.id, r, partner);
                   return (
                     <div key={r.id} className="flex items-start gap-3 px-5 py-3">
                       <div className="min-w-0 flex-1">
@@ -907,9 +929,9 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
                         )}
                       </div>
                       {showAdd && (
-                        <button onClick={() => addPartner(a.id, partner!)} disabled={addBusy === a.id + partner!.id}
-                          className="btn-ghost shrink-0 whitespace-nowrap !px-3 !py-1.5 text-[11px] disabled:opacity-50" title={`Reservar o par ${partner!.full_name} neste passeio`}>
-                          <Icon name="UserPlus" size={13} /> {addBusy === a.id + partner!.id ? "…" : `+ ${partner!.full_name.split(" ")[0]}`}
+                        <button onClick={() => linkPair(r, partner!)} disabled={addBusy === "link:" + r.id}
+                          className="btn-ghost shrink-0 whitespace-nowrap !px-3 !py-1.5 text-[11px] disabled:opacity-50" title={`Vincular ${partner!.full_name} como par (vira uma linha, 2 lugares)`}>
+                          <Icon name="UserPlus" size={13} /> {addBusy === "link:" + r.id ? "…" : `Vincular ${partner!.full_name.split(" ")[0]}`}
                         </button>
                       )}
                       <button onClick={async () => { await cancelReservation(r.id); onChange(); }} aria-label="Cancelar" className="shrink-0 text-muted hover:text-[#8f2f2f]"><Icon name="X" size={16} /></button>
