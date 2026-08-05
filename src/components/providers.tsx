@@ -8,6 +8,7 @@ import {
   type Reservable, type MyReservation, type GuestPassenger,
 } from "@/lib/supabase/reservations";
 import { normalizePhone } from "@/lib/phone";
+import { logVisit } from "@/lib/supabase/visits";
 
 const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://vvvzitszfcajfrvzpace.supabase.co";
 const SB_ANON =
@@ -247,6 +248,8 @@ export function Providers({ children }: { children: React.ReactNode }) {
     refresh();
     // Rótulos de botões/menus editados no painel (aplicados sem rebuild)
     refreshSettings();
+    // Registra o acesso (1x por sessão) — para o painel "Acessos".
+    logVisit();
 
     const refreshLiveData = () => {
       refresh();
@@ -264,12 +267,15 @@ export function Providers({ children }: { children: React.ReactNode }) {
     };
     window.addEventListener("focus", refreshLiveData);
     window.addEventListener("qimo-guest-updated", refreshLiveData);
+    // Quando o hóspede entra pelo portão, registra o acesso já identificado.
+    window.addEventListener("qimo-guest-updated", logVisit);
     document.addEventListener("visibilitychange", onVisible);
     window.addEventListener("message", onMsg);
     return () => {
       window.clearInterval(stockTimer);
       window.removeEventListener("focus", refreshLiveData);
       window.removeEventListener("qimo-guest-updated", refreshLiveData);
+      window.removeEventListener("qimo-guest-updated", logVisit);
       document.removeEventListener("visibilitychange", onVisible);
       window.removeEventListener("message", onMsg);
     };

@@ -19,9 +19,10 @@ import { OperationsCenter } from "./OperationsCenter";
 import { PreviewPane } from "./PreviewPane";
 import { PublishModal } from "./PublishModal";
 import { EditabilityAudit } from "./EditabilityAudit";
+import { VisitsPanel } from "./VisitsPanel";
 import clsx from "clsx";
 
-type Tab = "inicio" | "roteiro" | "passeios" | "participantes" | "reservas" | "conteudo" | "telas" | "paginas" | "textos" | "preview" | "cobertura";
+type Tab = "inicio" | "roteiro" | "passeios" | "participantes" | "reservas" | "acessos" | "conteudo" | "telas" | "paginas" | "textos" | "preview" | "cobertura";
 
 type TabMeta = {
   key: Tab;
@@ -36,6 +37,7 @@ const TAB_META: Record<Tab, TabMeta> = {
   passeios: { key: "passeios", label: "Vagas dos passeios", icon: "Ticket", desc: "Ajuste vagas, disponibilidade e o que aparece para o hospede reservar." },
   reservas: { key: "reservas", label: "Reservas", icon: "Check", desc: "Veja quem reservou cada passeio e inclua reservas feitas pela equipe." },
   participantes: { key: "participantes", label: "Clientes", icon: "Users", desc: "Cadastre os participantes e os dados de contato da viagem." },
+  acessos: { key: "acessos", label: "Acessos", icon: "TrendingUp", desc: "Veja quem abriu o guia e quantas vezes." },
   conteudo: { key: "conteudo", label: "Fichas do guia", icon: "LayoutGrid", desc: "Edite cidades, vinicolas, restaurantes, vinhos, experiencias, compras e documentos." },
   telas: { key: "telas", label: "Fotos e concierge", icon: "Smartphone", desc: "Troque fotos fixas do site e edite os contatos do concierge." },
   paginas: { key: "paginas", label: "Paginas extras", icon: "BookOpen", desc: "Crie paginas novas com blocos prontos e publique no guia." },
@@ -47,6 +49,7 @@ const TAB_META: Record<Tab, TabMeta> = {
 const NAV_GROUPS: { title: string; items: Tab[] }[] = [
   { title: "Editar o guia", items: ["inicio", "roteiro", "conteudo", "textos", "telas", "paginas", "preview"] },
   { title: "Reservas", items: ["passeios", "reservas", "participantes"] },
+  { title: "Relatorios", items: ["acessos"] },
   { title: "Avancado", items: ["cobertura"] },
 ];
 
@@ -205,7 +208,7 @@ function Shell({ email }: { email?: string }) {
       })()}
 
       <div className="py-8">
-        {loading && tab !== "preview" && tab !== "conteudo" && tab !== "textos" && tab !== "telas" && tab !== "roteiro" ? (
+        {loading && tab !== "preview" && tab !== "conteudo" && tab !== "textos" && tab !== "telas" && tab !== "roteiro" && tab !== "acessos" && tab !== "cobertura" ? (
           <p className="text-center text-muted">Carregando dados…</p>
         ) : tab === "inicio" ? (
           <OperationsCenter acts={acts} parts={parts} res={res} publishing={false}
@@ -233,6 +236,8 @@ function Shell({ email }: { email?: string }) {
           <PreviewPane />
         ) : tab === "cobertura" ? (
           <EditabilityAudit />
+        ) : tab === "acessos" ? (
+          <VisitsPanel />
         ) : (
           <Reservas acts={acts} parts={parts} res={res} onChange={reload} />
         )}
