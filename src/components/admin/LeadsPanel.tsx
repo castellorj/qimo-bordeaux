@@ -3,7 +3,8 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { fetchVisitsSummary, type VisitSummary } from "@/lib/supabase/visits";
-import { addParticipant, type BxParticipant } from "@/lib/supabase/bordeaux";
+import type { BxParticipant } from "@/lib/supabase/bordeaux";
+import { CadastroClienteModal } from "./CadastroClienteModal";
 
 const norm = (s?: string | null) =>
   (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z ]/g, "").replace(/\s+/g, " ").trim();
@@ -23,30 +24,7 @@ export function LeadsPanel({ parts, onChange }: { parts: BxParticipant[]; onChan
   const [query, setQuery] = useState("");
   const [done, setDone] = useState<Set<string>>(new Set());
   const [editing, setEditing] = useState<VisitSummary | null>(null);
-  const [form, setForm] = useState({ full_name: "", phone: "", family: "", email: "" });
-  const [saving, setSaving] = useState(false);
-
   const keyOf = (l: VisitSummary) => digits(l.phone) || norm(l.name);
-  const openForm = (l: VisitSummary) => {
-    setEditing(l);
-    setForm({ full_name: l.name || "", phone: l.phone || "", family: "", email: "" });
-  };
-  const saveForm = async () => {
-    if (!editing) return;
-    setSaving(true);
-    try {
-      await addParticipant({
-        full_name: form.full_name.trim() || "(sem nome)",
-        phone: form.phone.trim() || null,
-        family: form.family.trim() || null,
-        email: form.email.trim() || null,
-      });
-      setDone((s) => new Set(s).add(keyOf(editing)));
-      setEditing(null);
-      onChange?.(); // recarrega os clientes -> o lead sai da lista
-    } catch { alert("Não foi possível cadastrar. Tente de novo."); }
-    setSaving(false);
-  };
 
   const load = useCallback(async () => {
     setError(false);
@@ -148,7 +126,7 @@ export function LeadsPanel({ parts, onChange }: { parts: BxParticipant[]; onChan
                       {done.has(keyOf(l)) ? (
                         <span className="inline-flex items-center gap-1.5 font-sans text-[12px] text-olive-deep"><Icon name="CircleCheck" size={13} /> Cadastrado</span>
                       ) : (
-                        <button onClick={() => openForm(l)} className="btn-ghost !px-3 !py-1.5 text-[12px]">
+                        <button onClick={() => setEditing(l)} className="btn-ghost !px-3 !py-1.5 text-[12px]">
                           <Icon name="UserPlus" size={13} /> Cadastrar
                         </button>
                       )}
@@ -161,39 +139,11 @@ export function LeadsPanel({ parts, onChange }: { parts: BxParticipant[]; onChan
         </>
       )}
 
-      {editing && (
-        <div className="fixed inset-0 z-[80] flex items-center justify-center p-4" style={{ background: "rgba(20,7,11,.5)" }} onClick={() => setEditing(null)}>
-          <div className="w-full max-w-md rounded-[16px] bg-paper p-6 shadow-float" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between">
-              <h4 className="font-serif text-lg font-light">Cadastrar como cliente</h4>
-              <button onClick={() => setEditing(null)} className="text-muted hover:text-gold-deep"><Icon name="X" size={18} /></button>
-            </div>
-            <div className="mt-4 space-y-3">
-              <LeadField label="Nome completo" value={form.full_name} onChange={(v) => setForm((f) => ({ ...f, full_name: v }))} />
-              <LeadField label="Telefone" value={form.phone} onChange={(v) => setForm((f) => ({ ...f, phone: v }))} />
-              <LeadField label="Família / grupo (vincula ao parceiro)" value={form.family} onChange={(v) => setForm((f) => ({ ...f, family: v }))} placeholder="ex.: Par 12" hint="Mesmo valor do parceiro → o par aparece na reserva." />
-              <LeadField label="E-mail (opcional)" value={form.email} onChange={(v) => setForm((f) => ({ ...f, email: v }))} />
-            </div>
-            <div className="mt-5 flex items-center gap-2">
-              <button onClick={saveForm} disabled={saving} className="btn-primary !px-4 !py-2 text-[13px] disabled:opacity-50">
-                <Icon name="UserPlus" size={14} /> {saving ? "Salvando…" : "Cadastrar"}
-              </button>
-              <button onClick={() => setEditing(null)} className="btn-ghost !px-4 !py-2 text-[13px]">Cancelar</button>
-            </div>
-          </div>
-        </div>
-      )}
+      <CadastroClienteModal
+        initial={editing ? { name: editing.name, phone: editing.phone } : null}
+        onClose={() => setEditing(null)}
+        onSaved={() => { if (editing) setDone((s) => new Set(s).add(keyOf(editing))); setEditing(null); onChange?.(); }}
+      />
     </div>
-  );
-}
-
-function LeadField({ label, value, onChange, placeholder, hint }: { label: string; value: string; onChange: (v: string) => void; placeholder?: string; hint?: string }) {
-  return (
-    <label className="block">
-      <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">{label}</span>
-      {hint && <span className="mb-1 block font-sans text-[11px] text-muted">{hint}</span>}
-      <input value={value} onChange={(e) => onChange(e.target.value)} placeholder={placeholder}
-        className="mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-base outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
-    </label>
   );
 }

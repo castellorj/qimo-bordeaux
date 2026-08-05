@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { Icon } from "@/components/Icon";
 import type { BxReservation, BxParticipant } from "@/lib/supabase/bordeaux";
+import { CadastroClienteModal } from "./CadastroClienteModal";
 
 const norm = (s?: string | null) =>
   (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/\s+/g, " ").trim();
@@ -19,8 +20,10 @@ interface Row {
 // Lista pessoas que aparecem em reservas mas NÃO constam no cadastro (Clientes),
 // comparando por nome normalizado. Mostra também se o telefone da reserva bate
 // com algum cliente (indício de que é a mesma pessoa cadastrada com outro nome).
-export function ReservasSemCadastro({ res, parts }: { res: BxReservation[]; parts: BxParticipant[] }) {
+export function ReservasSemCadastro({ res, parts, onChange }: { res: BxReservation[]; parts: BxParticipant[]; onChange?: () => void }) {
   const [query, setQuery] = useState("");
+  const [editing, setEditing] = useState<Row | null>(null);
+  const [done, setDone] = useState<Set<string>>(new Set());
 
   const rows = useMemo<Row[]>(() => {
     const nameSet = new Set(parts.map((p) => norm(p.full_name)).filter(Boolean));
@@ -95,8 +98,8 @@ export function ReservasSemCadastro({ res, parts }: { res: BxReservation[]; part
             <table className="w-full border-collapse text-left font-sans text-[13px]">
               <thead className="bg-black/[0.03]">
                 <tr>
-                  {["Nome (na reserva)", "Telefone da reserva", "Passeios", "Origem"].map((h) => (
-                    <th key={h} className="border-b px-4 py-2.5 font-sans text-[11px] uppercase tracking-wide2 text-muted" style={{ borderColor: "var(--line)" }}>{h}</th>
+                  {["Nome (na reserva)", "Telefone da reserva", "Passeios", "Origem", ""].map((h, hi) => (
+                    <th key={hi} className="border-b px-4 py-2.5 font-sans text-[11px] uppercase tracking-wide2 text-muted" style={{ borderColor: "var(--line)" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -112,6 +115,15 @@ export function ReservasSemCadastro({ res, parts }: { res: BxReservation[]; part
                     <td className="border-b px-4 py-2.5 align-top text-muted" style={{ borderColor: "var(--line)" }}>
                       {r.source === "guest" ? "pelo app" : "equipe"}
                     </td>
+                    <td className="border-b px-4 py-2.5 align-top" style={{ borderColor: "var(--line)" }}>
+                      {done.has(norm(r.name)) ? (
+                        <span className="inline-flex items-center gap-1.5 whitespace-nowrap font-sans text-[12px] text-olive-deep"><Icon name="CircleCheck" size={13} /> Cadastrado</span>
+                      ) : (
+                        <button onClick={() => setEditing(r)} className="btn-ghost whitespace-nowrap !px-3 !py-1.5 text-[12px]">
+                          <Icon name="UserPlus" size={13} /> Cadastrar
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -119,6 +131,12 @@ export function ReservasSemCadastro({ res, parts }: { res: BxReservation[]; part
           </div>
         </>
       )}
+
+      <CadastroClienteModal
+        initial={editing ? { name: editing.name, phone: editing.phone } : null}
+        onClose={() => setEditing(null)}
+        onSaved={() => { if (editing) setDone((s) => new Set(s).add(norm(editing.name))); setEditing(null); onChange?.(); }}
+      />
     </div>
   );
 }

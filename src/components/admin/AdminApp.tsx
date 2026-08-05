@@ -243,7 +243,7 @@ function Shell({ email }: { email?: string }) {
         ) : tab === "acessos" ? (
           <VisitsPanel />
         ) : tab === "semcadastro" ? (
-          <ReservasSemCadastro res={res} parts={parts} />
+          <ReservasSemCadastro res={res} parts={parts} onChange={reload} />
         ) : tab === "leads" ? (
           <LeadsPanel parts={parts} onChange={reload} />
         ) : (
