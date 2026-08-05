@@ -28,13 +28,23 @@ export function ReservasSemCadastro({ res, parts }: { res: BxReservation[]; part
     const active = res.filter((r) => r.status !== "cancelled");
     const found = new Map<string, Row>();
 
+    const lastFirst = new Set([...nameSet].map((n) => { const p = n.split(" "); return p.length > 1 ? p[0] + "|" + p[p.length - 1] : n; }));
+    const isClientName = (nk: string) => {
+      if (!nk) return false;
+      if (nameSet.has(nk)) return true;
+      const p = nk.split(" ");
+      const fl = p.length > 1 ? p[0] + "|" + p[p.length - 1] : nk;
+      return lastFirst.has(fl); // casa "Alceu Pinto Junior" com "Alceu ... Junior" (1o+último nome)
+    };
     for (const r of active) {
+      const rPhone = digits(r.guest_phone);
+      // Reserva já coberta por um cliente (vinculada OU telefone de cliente) → não é "sem cadastro"
+      if (r.participant_id || (rPhone.length >= 8 && phoneSet.has(rPhone))) continue;
       const people = r.party && r.party.length ? r.party : ([r.guest_name].filter(Boolean) as string[]);
       const actLabel = r.activity ? `Dia ${r.activity.day_number ?? "?"} · ${r.activity.title}` : r.activity_id;
-      const rPhone = digits(r.guest_phone);
       for (const person of people) {
         const nk = norm(person);
-        if (!nk || nameSet.has(nk)) continue; // já é cliente pelo nome
+        if (!nk || isClientName(nk)) continue; // já é cliente pelo nome
         const cur = found.get(nk) || {
           name: person,
           phone: r.guest_phone || "",
@@ -59,8 +69,8 @@ export function ReservasSemCadastro({ res, parts }: { res: BxReservation[]; part
           <h3 className="font-serif text-xl font-light">Reservou, mas não é cliente</h3>
           <p className="mt-1 max-w-2xl font-sans text-[13px] leading-relaxed text-muted">
             Pessoas que aparecem em alguma reserva do app mas <strong>não constam no cadastro</strong> (Clientes).
-            A comparação é por <strong>nome</strong>. Se o telefone da reserva bater com um cliente, marcamos
-            “tel. de cliente” — provável mesma pessoa cadastrada com outra grafia.
+            Já descontamos quem tem <strong>telefone de cliente</strong>, quem a reserva já está <strong>vinculada</strong>
+            e quem casa por <strong>1º + último nome</strong> — então aqui ficam só os realmente não cadastrados.
           </p>
         </div>
         <span className={`shrink-0 rounded-full px-3 py-1 font-sans text-[12px] ${rows.length ? "bg-gold/15 text-gold-deep" : "bg-olive/15 text-olive-deep"}`}>
