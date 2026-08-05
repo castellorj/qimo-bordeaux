@@ -1,8 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useState } from "react";
 import { Icon } from "@/components/Icon";
-import { fetchVisitsSummary, fetchVisitsTotals, type VisitSummary, type VisitTotals } from "@/lib/supabase/visits";
+import { fetchVisitsSummary, fetchVisitsTotals, fetchVisitsAll, type VisitSummary, type VisitTotals } from "@/lib/supabase/visits";
+
+// data local (yyyy-mm-dd) para agrupar acessos por dia do jeito do Brasil
+function dayKey(iso: string): string {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+function dayShow(key: string): string {
+  const [, mo, da] = key.split("-");
+  return `${da}/${mo}`;
+}
+
+interface Daily { today: number; days: { key: string; count: number }[] }
 
 function fmt(iso?: string) {
   if (!iso) return "—";
@@ -47,15 +59,32 @@ function downloadVisitsCsv(rows: VisitSummary[]) {
 export function VisitsPanel() {
   const [rows, setRows] = useState<VisitSummary[] | null>(null);
   const [totals, setTotals] = useState<VisitTotals | null>(null);
+  const [daily, setDaily] = useState<Map<string, Daily>>(new Map());
+  const [expanded, setExpanded] = useState<string | null>(null);
   const [error, setError] = useState(false);
   const [query, setQuery] = useState("");
 
   const load = useCallback(async () => {
     setError(false);
     try {
-      const [s, t] = await Promise.all([fetchVisitsSummary(), fetchVisitsTotals()]);
+      const [s, t, all] = await Promise.all([fetchVisitsSummary(), fetchVisitsTotals(), fetchVisitsAll(30).catch(() => [])]);
       setRows(s);
       setTotals(t);
+      // agrupa acessos por telefone → por dia (para a coluna "Hoje" e o detalhe)
+      const todayKey = dayKey(new Date().toISOString());
+      const byPhone = new Map<string, Map<string, number>>();
+      for (const v of all) {
+        if (!byPhone.has(v.phone)) byPhone.set(v.phone, new Map());
+        const m = byPhone.get(v.phone)!;
+        const k = dayKey(v.created_at);
+        m.set(k, (m.get(k) || 0) + 1);
+      }
+      const map = new Map<string, Daily>();
+      for (const [phone, m] of byPhone) {
+        const days = [...m.entries()].map(([key, count]) => ({ key, count })).sort((a, b) => b.key.localeCompare(a.key));
+        map.set(phone, { today: m.get(todayKey) || 0, days });
+      }
+      setDaily(map);
     } catch {
       setError(true);
       setRows([]);
@@ -85,6 +114,7 @@ export function VisitsPanel() {
           <h3 className="font-serif text-xl font-light">Acessos ao guia</h3>
           <p className="mt-1 max-w-2xl font-sans text-[13px] leading-relaxed text-muted">
             Quem abriu o guia e quantas vezes. Cada sessão do navegador conta como um acesso; o hóspede é identificado pelo nome/telefone do login.
+            A coluna <strong>Hoje</strong> e o detalhe por dia (clique na seta) mostram a frequência de acesso.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -127,28 +157,57 @@ export function VisitsPanel() {
             <table className="w-full border-collapse text-left font-sans text-[13px]">
               <thead className="bg-black/[0.03]">
                 <tr>
-                  {["Hóspede", "Telefone", "Acessos", "Primeiro acesso", "Último acesso"].map((h) => (
-                    <th key={h} className="border-b px-4 py-2.5 font-sans text-[11px] uppercase tracking-wide2 text-muted" style={{ borderColor: "var(--line)" }}>{h}</th>
+                  {["Hóspede", "Telefone", "Acessos", "Hoje", "Primeiro acesso", "Último acesso", ""].map((h, hi) => (
+                    <th key={hi} className="border-b px-4 py-2.5 font-sans text-[11px] uppercase tracking-wide2 text-muted" style={{ borderColor: "var(--line)" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
               <tbody>
                 {rows === null ? (
-                  <tr><td colSpan={5} className="px-4 py-6 text-center text-muted">Carregando…</td></tr>
+                  <tr><td colSpan={7} className="px-4 py-6 text-center text-muted">Carregando…</td></tr>
                 ) : visible.length === 0 ? (
-                  <tr><td colSpan={5} className="px-4 py-6 text-center text-muted">Nenhum acesso registrado ainda.</td></tr>
+                  <tr><td colSpan={7} className="px-4 py-6 text-center text-muted">Nenhum acesso registrado ainda.</td></tr>
                 ) : (
-                  visible.map((r, i) => (
-                    <tr key={i}>
-                      <td className="border-b px-4 py-2.5 align-top" style={{ borderColor: "var(--line)", color: "var(--text)" }}>{r.name || "—"}</td>
-                      <td className="border-b px-4 py-2.5 align-top text-muted" style={{ borderColor: "var(--line)" }}>{r.phone || "—"}</td>
-                      <td className="border-b px-4 py-2.5 align-top" style={{ borderColor: "var(--line)", color: "var(--text)" }}>
-                        <span className="rounded-full bg-petrol-600/10 px-2.5 py-0.5 font-semibold text-petrol-600">{r.visits}</span>
-                      </td>
-                      <td className="border-b px-4 py-2.5 align-top text-muted" style={{ borderColor: "var(--line)" }}>{fmt(r.first_seen)}</td>
-                      <td className="border-b px-4 py-2.5 align-top text-muted" style={{ borderColor: "var(--line)" }}>{fmt(r.last_seen)}</td>
-                    </tr>
-                  ))
+                  visible.map((r, i) => {
+                    const d = daily.get(r.phone);
+                    const isOpen = expanded === r.phone;
+                    return (
+                      <Fragment key={i}>
+                        <tr>
+                          <td className="border-b px-4 py-2.5 align-top" style={{ borderColor: "var(--line)", color: "var(--text)" }}>{r.name || "—"}</td>
+                          <td className="border-b px-4 py-2.5 align-top text-muted" style={{ borderColor: "var(--line)" }}>{r.phone || "—"}</td>
+                          <td className="border-b px-4 py-2.5 align-top" style={{ borderColor: "var(--line)", color: "var(--text)" }}>
+                            <span className="rounded-full bg-petrol-600/10 px-2.5 py-0.5 font-semibold text-petrol-600">{r.visits}</span>
+                          </td>
+                          <td className="border-b px-4 py-2.5 align-top" style={{ borderColor: "var(--line)" }}>
+                            {d ? <span className={d.today > 0 ? "font-semibold text-olive-deep" : "text-muted"}>{d.today}</span> : <span className="text-muted">—</span>}
+                          </td>
+                          <td className="border-b px-4 py-2.5 align-top text-muted" style={{ borderColor: "var(--line)" }}>{fmt(r.first_seen)}</td>
+                          <td className="border-b px-4 py-2.5 align-top text-muted" style={{ borderColor: "var(--line)" }}>{fmt(r.last_seen)}</td>
+                          <td className="border-b px-4 py-2.5 align-top" style={{ borderColor: "var(--line)" }}>
+                            {d && d.days.length > 0 && (
+                              <button onClick={() => setExpanded(isOpen ? null : r.phone)} className="grid h-7 w-7 place-items-center rounded-md text-muted hover:text-petrol-600" aria-label="Por dia">
+                                <Icon name="ChevronDown" size={16} className={isOpen ? "rotate-180" : ""} />
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                        {isOpen && d && (
+                          <tr>
+                            <td colSpan={7} className="border-b px-4 py-3" style={{ borderColor: "var(--line)", background: "rgba(0,0,0,.015)" }}>
+                              <div className="flex flex-wrap gap-2">
+                                {d.days.map((x) => (
+                                  <span key={x.key} className="rounded-full border px-2.5 py-1 font-sans text-[12px]" style={{ borderColor: "var(--line)" }}>
+                                    {dayShow(x.key)} · <strong>{x.count}</strong>
+                                  </span>
+                                ))}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
+                    );
+                  })
                 )}
               </tbody>
             </table>

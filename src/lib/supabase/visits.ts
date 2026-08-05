@@ -56,3 +56,12 @@ export async function fetchVisitsTotals(): Promise<VisitTotals> {
   const row = (data as VisitTotals[])?.[0];
   return row || { total_visits: 0, unique_guests: 0, visits_7d: 0 };
 }
+
+export interface VisitRow { name: string; phone: string; created_at: string }
+
+// Lista crua de acessos (para montar a quebra por dia no painel). Silencioso se
+// a migration 0008 ainda não existir.
+export async function fetchVisitsAll(days = 30): Promise<VisitRow[]> {
+  const { data } = await supabase().rpc("bordeaux_visits_all", { p_days: days });
+  return (data as VisitRow[]) || [];
+}
