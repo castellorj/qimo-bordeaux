@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { Icon } from "@/components/Icon";
 import {
-  CONTENT_KINDS, listContent, upsertContent, setPublished, deleteContent, importAllContent,
+  CONTENT_KINDS, listContent, upsertContent, setPublished, deleteContent, importAllContent, importKind,
   uploadImage, updateSort, listVersions, restoreVersion, kindSkeleton,
   type ContentRow, type VersionRow,
 } from "@/lib/supabase/content-admin";
@@ -345,6 +345,14 @@ export function ContentCMS() {
     await load(); setBusy(false);
   };
 
+  // Traz o modelo APENAS deste tipo, já OCULTO — você publica o que quiser.
+  const importThisKind = async () => {
+    setBusy(true); setMsg("");
+    const { inserted } = await importKind(kind, false);
+    setMsg(inserted ? `${inserted} ficha(s) trazida(s) como ocultas. Publique as que quiser.` : "Este tipo não tem modelo para importar.");
+    await load(); setBusy(false);
+  };
+
   const createContent = async () => {
     setBusy(true); setMsg("");
     const slug = `nova-ficha-${kind}-${Date.now().toString(36)}`;
@@ -599,7 +607,11 @@ export function ContentCMS() {
           ) : rows.length === 0 ? (
             <div className="card p-8 text-center">
               <p className="font-sans text-[14px] text-muted">Nenhum item deste tipo no banco ainda.</p>
-              <button onClick={doImport} disabled={busy} className="btn-primary mt-4">Atualizar base</button>
+              <p className="mx-auto mt-1 max-w-md font-sans text-[12px] text-muted">Crie uma ficha do zero (nasce oculta) ou traga o modelo pronto deste tipo — também oculto, para você publicar só o que quiser.</p>
+              <div className="mt-4 flex flex-wrap items-center justify-center gap-2">
+                <button onClick={createContent} disabled={busy} className="btn-primary"><Icon name="Plus" size={14} /> Nova ficha</button>
+                <button onClick={importThisKind} disabled={busy} className="btn-ghost"><Icon name="Download" size={14} /> Trazer modelo (ocultas)</button>
+              </div>
             </div>
           ) : (
             <>

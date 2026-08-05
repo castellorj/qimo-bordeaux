@@ -297,6 +297,19 @@ export async function triggerPublish(): Promise<{ ok: boolean; error?: string }>
   }
 }
 
+// Importa o seed de UM tipo só (ex.: chef), sem tocar nos outros.
+// published=false => entra oculto (você publica o que quiser depois).
+// Não sobrescreve fichas que já existem no banco (ignoreDuplicates) —
+// assim não ressuscita/republica o que você já ajustou ou apagou de propósito.
+export async function importKind(kind: string, published = false): Promise<{ inserted: number }> {
+  const group = CONTENT_KINDS.find((g) => g.kind === kind);
+  const file = (group?.file as any[]) || [];
+  if (!file.length) return { inserted: 0 };
+  const rows = file.map((item, i) => ({ kind, slug: item.slug, data: item, sort: i * 10, published }));
+  const { error } = await supabase().from("bordeaux_content").upsert(rows, { onConflict: "kind,slug", ignoreDuplicates: true });
+  return { inserted: error ? 0 : rows.length };
+}
+
 export async function importAllContent(): Promise<{ inserted: number }> {
   const sb = supabase();
   let count = 0;
