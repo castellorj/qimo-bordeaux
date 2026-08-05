@@ -656,6 +656,32 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
     if (error) { alert("Não foi possível adicionar o par: " + error.message); return; }
     await onChange();
   };
+  // Pares que faltam num passeio (reservas solo cujo parceiro ainda não está reservado)
+  const missingPartners = (activityId: string, list: BxReservation[]) => {
+    const out: BxParticipant[] = [];
+    const seen = new Set<string>();
+    for (const r of list) {
+      const partner = partnerOf(r);
+      if (partner && (r.seats ?? 1) <= 1 && !isReservedFor(activityId, partner) && !seen.has(partner.id)) {
+        seen.add(partner.id); out.push(partner);
+      }
+    }
+    return out;
+  };
+  const addAllPartners = async (activityId: string, list: BxReservation[]) => {
+    const toAdd = missingPartners(activityId, list);
+    if (!toAdd.length) return;
+    if (!confirm(`Reservar ${toAdd.length} parceiro(s) neste passeio? (respeita a capacidade)`)) return;
+    setAddBusy("all:" + activityId);
+    let ok = 0, fail = 0;
+    for (const p of toAdd) {
+      const { error } = await reserve(activityId, p.id, null, 1, 0, null);
+      if (error) fail++; else ok++;
+    }
+    setAddBusy(null);
+    await onChange();
+    if (fail) alert(`${ok} adicionado(s); ${fail} não couberam ou deram erro (veja a lista de espera).`);
+  };
   const q = query.trim().toLowerCase();
   const visibleGroups = filteredGroups.filter(({ a, list }) => {
     if (!q) return true;
@@ -826,9 +852,17 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
                   <p className="font-sans text-[11px] uppercase tracking-wide2 text-gold-deep">Dia {a.day_number}{a.start_time ? ` · ${a.start_time}` : ""}</p>
                   <p className="font-serif text-[17px] font-light leading-tight">{a.title}</p>
                 </div>
-                <span className="max-w-full shrink-0 whitespace-normal rounded-full bg-petrol-600/10 px-3 py-1 text-center font-sans text-[12px] font-medium leading-tight text-petrol-600">
-                  {people} {people === 1 ? "pessoa" : "pessoas"}{a.capacity_total != null ? ` / ${a.capacity_total}` : ""}
-                </span>
+                <div className="flex shrink-0 items-center gap-2">
+                  {missingPartners(a.id, list).length > 0 && (
+                    <button onClick={() => addAllPartners(a.id, list)} disabled={addBusy === "all:" + a.id}
+                      className="btn-ghost whitespace-nowrap !px-3 !py-1.5 text-[11px] disabled:opacity-50" title="Reservar o par de cada reserva-solo deste passeio">
+                      <Icon name="UserPlus" size={13} /> {addBusy === "all:" + a.id ? "…" : `Completar ${missingPartners(a.id, list).length} par(es)`}
+                    </button>
+                  )}
+                  <span className="max-w-full whitespace-normal rounded-full bg-petrol-600/10 px-3 py-1 text-center font-sans text-[12px] font-medium leading-tight text-petrol-600">
+                    {people} {people === 1 ? "pessoa" : "pessoas"}{a.capacity_total != null ? ` / ${a.capacity_total}` : ""}
+                  </span>
+                </div>
               </div>
               <div className="divide-y" style={{ borderColor: "var(--line)" }}>
                 {list.length === 0 && (
