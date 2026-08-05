@@ -21,9 +21,10 @@ import { PublishModal } from "./PublishModal";
 import { EditabilityAudit } from "./EditabilityAudit";
 import { VisitsPanel } from "./VisitsPanel";
 import { ReservasSemCadastro } from "./ReservasSemCadastro";
+import { LeadsPanel } from "./LeadsPanel";
 import clsx from "clsx";
 
-type Tab = "inicio" | "roteiro" | "passeios" | "participantes" | "reservas" | "semcadastro" | "acessos" | "conteudo" | "telas" | "paginas" | "textos" | "preview" | "cobertura";
+type Tab = "inicio" | "roteiro" | "passeios" | "participantes" | "reservas" | "semcadastro" | "acessos" | "leads" | "conteudo" | "telas" | "paginas" | "textos" | "preview" | "cobertura";
 
 type TabMeta = {
   key: Tab;
@@ -40,6 +41,7 @@ const TAB_META: Record<Tab, TabMeta> = {
   semcadastro: { key: "semcadastro", label: "Reservou sem cadastro", icon: "AlertTriangle", desc: "Pessoas que reservaram pelo app mas nao constam no cadastro de clientes." },
   participantes: { key: "participantes", label: "Clientes", icon: "Users", desc: "Cadastre os participantes e os dados de contato da viagem." },
   acessos: { key: "acessos", label: "Acessos", icon: "TrendingUp", desc: "Veja quem abriu o guia e quantas vezes." },
+  leads: { key: "leads", label: "Leads", icon: "UserPlus", desc: "Quem entrou no guia mas nao esta no cadastro de clientes." },
   conteudo: { key: "conteudo", label: "Fichas do guia", icon: "LayoutGrid", desc: "Edite cidades, vinicolas, restaurantes, vinhos, experiencias, compras e documentos." },
   telas: { key: "telas", label: "Fotos e concierge", icon: "Smartphone", desc: "Troque fotos fixas do site e edite os contatos do concierge." },
   paginas: { key: "paginas", label: "Paginas extras", icon: "BookOpen", desc: "Crie paginas novas com blocos prontos e publique no guia." },
@@ -51,7 +53,7 @@ const TAB_META: Record<Tab, TabMeta> = {
 const NAV_GROUPS: { title: string; items: Tab[] }[] = [
   { title: "Editar o guia", items: ["inicio", "roteiro", "conteudo", "textos", "telas", "paginas", "preview"] },
   { title: "Reservas", items: ["passeios", "reservas", "participantes", "semcadastro"] },
-  { title: "Relatorios", items: ["acessos"] },
+  { title: "Relatorios", items: ["acessos", "leads"] },
   { title: "Avancado", items: ["cobertura"] },
 ];
 
@@ -242,6 +244,8 @@ function Shell({ email }: { email?: string }) {
           <VisitsPanel />
         ) : tab === "semcadastro" ? (
           <ReservasSemCadastro res={res} parts={parts} />
+        ) : tab === "leads" ? (
+          <LeadsPanel parts={parts} />
         ) : (
           <Reservas acts={acts} parts={parts} res={res} onChange={reload} />
         )}
