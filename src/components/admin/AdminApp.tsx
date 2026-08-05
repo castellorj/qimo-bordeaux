@@ -556,7 +556,7 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
   const [guest, setGuest] = useState("");
   const [adults, setAdults] = useState(1);
   const [children, setChildren] = useState(0);
-  const [view, setView] = useState<"reserved" | "waitlist" | "empty" | "all">("reserved");
+  const [view, setView] = useState<"reserved" | "waitlist" | "empty" | "sempar" | "all">("reserved");
   const [query, setQuery] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -589,18 +589,6 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
       return { a, list, people, waitlist };
     })
     .sort((x, y) => (x.a.day_number ?? 99) - (y.a.day_number ?? 99));
-  const filteredGroups = byActivity.filter((g) => {
-    if (view === "all") return true;
-    if (view === "empty") return g.list.length === 0;
-    if (view === "waitlist") return g.waitlist > 0;
-    return g.list.length > 0;
-  });
-  const views = [
-    { key: "reserved" as const, label: "Com reservas", count: byActivity.filter((g) => g.list.length > 0).length, icon: "Check" },
-    { key: "waitlist" as const, label: "Lista de espera", count: byActivity.filter((g) => g.waitlist > 0).length, icon: "Clock" },
-    { key: "empty" as const, label: "Sem reservas", count: byActivity.filter((g) => g.list.length === 0).length, icon: "Circle" },
-    { key: "all" as const, label: "Todos", count: byActivity.length, icon: "Ticket" },
-  ];
 
   const digitsOf = (s?: string | null) => (s || "").replace(/\D/g, "");
   const normOf = (s?: string | null) => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLowerCase().replace(/\s+/g, " ");
@@ -705,13 +693,33 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
     await onChange();
     if (fail) alert(`${ok} par(es) vinculado(s); ${fail} deram erro.`);
   };
-  const q = query.trim().toLowerCase();
-  const visibleGroups = filteredGroups.filter(({ a, list }) => {
-    if (!q) return true;
-    const activityText = `${a.title} ${a.day_number ?? ""} ${a.start_time ?? ""}`.toLowerCase();
-    const reservationText = list.map((r) => `${personLabel(r)} ${r.guest_phone ?? ""} ${companions(r).join(" ")}`).join(" ").toLowerCase();
-    return activityText.includes(q) || reservationText.includes(q);
+  // Total de pares por vincular (para o cartão "Sem par")
+  const unpairedTotal = byActivity.reduce((s, g) => s + linkableInActivity(g.a.id, g.list).length, 0);
+  const filteredGroups = byActivity.filter((g) => {
+    if (view === "all") return true;
+    if (view === "empty") return g.list.length === 0;
+    if (view === "waitlist") return g.waitlist > 0;
+    if (view === "sempar") return linkableInActivity(g.a.id, g.list).length > 0;
+    return g.list.length > 0;
   });
+  const views = [
+    { key: "reserved" as const, label: "Com reservas", count: byActivity.filter((g) => g.list.length > 0).length, icon: "Check" },
+    { key: "sempar" as const, label: "Sem par vinculado", count: unpairedTotal, icon: "UserPlus" },
+    { key: "waitlist" as const, label: "Lista de espera", count: byActivity.filter((g) => g.waitlist > 0).length, icon: "Clock" },
+    { key: "empty" as const, label: "Sem reservas", count: byActivity.filter((g) => g.list.length === 0).length, icon: "Circle" },
+    { key: "all" as const, label: "Todos", count: byActivity.length, icon: "Ticket" },
+  ];
+
+  const q = query.trim().toLowerCase();
+  const visibleGroups = filteredGroups
+    // na visão "Sem par", cada passeio mostra só as reservas-solo a vincular (lista de trabalho)
+    .map((g) => view === "sempar" ? { ...g, list: linkableInActivity(g.a.id, g.list).map((x) => x.r) } : g)
+    .filter(({ a, list }) => {
+      if (!q) return true;
+      const activityText = `${a.title} ${a.day_number ?? ""} ${a.start_time ?? ""}`.toLowerCase();
+      const reservationText = list.map((r) => `${personLabel(r)} ${r.guest_phone ?? ""} ${companions(r).join(" ")}`).join(" ").toLowerCase();
+      return activityText.includes(q) || reservationText.includes(q);
+    });
   const timeline = byActivity
     .filter((g) => g.list.length > 0)
     .sort((x, y) =>
@@ -776,7 +784,7 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
             </button>
           </div>
         </div>
-        <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {views.map((item) => {
             const selected = view === item.key;
             return (
