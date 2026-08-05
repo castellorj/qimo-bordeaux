@@ -1,24 +1,24 @@
 "use client";
 
 import { supabase } from "./client";
+import { loadGuestRaw, loadDevice } from "@/lib/guestPersist";
 
 const VISIT_FLAG = "qimo:visit-logged";     // 1 registro por sessão do navegador
-const DEVICE_LS = "qimo_device_token";
-const GUEST_LS = "qimo:guest";
 
 // Registra um acesso ao guia (uma vez por sessão). Silencioso: se a migration
 // ainda não existir ou falhar a rede, não quebra nada.
+// Lê o hóspede/dispositivo pelo MESMO guestPersist do login (chaves :v3 +
+// backup em cookie) — senão o registro fica em branco e ninguém aparece.
 export async function logVisit(): Promise<void> {
   try {
     if (typeof window === "undefined") return;
     if (sessionStorage.getItem(VISIT_FLAG)) return;
-    const device = localStorage.getItem(DEVICE_LS) || "";
+    const device = loadDevice() || "";
     let name = "";
     let phone = "";
     try {
-      const g = JSON.parse(localStorage.getItem(GUEST_LS) || "{}");
-      name = g?.name || "";
-      phone = g?.phone || "";
+      const raw = loadGuestRaw();
+      if (raw) { const g = JSON.parse(raw); name = g?.name || ""; phone = g?.phone || ""; }
     } catch {}
     if (!device && !phone) return; // ainda sem identidade (antes do portão)
     // marca antes do await para evitar corrida (duplo registro na mesma sessão)
