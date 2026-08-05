@@ -560,6 +560,7 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
   const [query, setQuery] = useState("");
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [addBusy, setAddBusy] = useState<string | null>(null);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -628,6 +629,32 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
       .concat(participantForReservation(r)?.family)
       .filter(Boolean) as string[];
     return [...new Set(groups)].join(", ");
+  };
+
+  // Chave de grupo (mesma lógica do banco: dígitos se houver, senão o texto)
+  const groupKeyOf = (fam?: string | null) => digitsOf(fam) || normOf(fam) || "";
+  // Parceiro do titular (mesmo grupo, pessoa diferente)
+  const partnerOf = (r: BxReservation) => {
+    const me = participantForReservation(r);
+    const gk = me ? groupKeyOf(me.family) : "";
+    if (!me || !gk) return undefined;
+    return parts.find((p) => p.id !== me.id && groupKeyOf(p.family) === gk);
+  };
+  // Já existe reserva dessa pessoa neste passeio? (por id, nome ou telefone)
+  const isReservedFor = (activityId: string, person: BxParticipant) =>
+    res.some((r2) =>
+      r2.activity_id === activityId && r2.status !== "cancelled" && (
+        r2.participant_id === person.id ||
+        (digitsOf(r2.guest_phone).length >= 8 && digitsOf(r2.guest_phone) === digitsOf(person.phone)) ||
+        [rawLabel(r2), ...companionsRaw(r2)].some((n) => flOf(normOf(n)) === flOf(normOf(person.full_name)))
+      )
+    );
+  const addPartner = async (activityId: string, partner: BxParticipant) => {
+    setAddBusy(activityId + partner.id);
+    const { error } = await reserve(activityId, partner.id, null, 1, 0, null);
+    setAddBusy(null);
+    if (error) { alert("Não foi possível adicionar o par: " + error.message); return; }
+    await onChange();
   };
   const q = query.trim().toLowerCase();
   const visibleGroups = filteredGroups.filter(({ a, list }) => {
@@ -809,6 +836,9 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
                 )}
                 {list.map((r) => {
                   const comps = companions(r);
+                  const partner = partnerOf(r);
+                  // só oferece nas reservas SOLO (1 lugar); 2+ já têm o par
+                  const showAdd = partner && (r.seats ?? 1) <= 1 && !isReservedFor(a.id, partner);
                   return (
                     <div key={r.id} className="flex items-start gap-3 px-5 py-3">
                       <div className="min-w-0 flex-1">
@@ -832,6 +862,12 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
                           </div>
                         )}
                       </div>
+                      {showAdd && (
+                        <button onClick={() => addPartner(a.id, partner!)} disabled={addBusy === a.id + partner!.id}
+                          className="btn-ghost shrink-0 whitespace-nowrap !px-3 !py-1.5 text-[11px] disabled:opacity-50" title={`Reservar o par ${partner!.full_name} neste passeio`}>
+                          <Icon name="UserPlus" size={13} /> {addBusy === a.id + partner!.id ? "…" : `+ ${partner!.full_name.split(" ")[0]}`}
+                        </button>
+                      )}
                       <button onClick={async () => { await cancelReservation(r.id); onChange(); }} aria-label="Cancelar" className="shrink-0 text-muted hover:text-[#8f2f2f]"><Icon name="X" size={16} /></button>
                     </div>
                   );
