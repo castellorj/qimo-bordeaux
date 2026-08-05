@@ -600,20 +600,27 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
     { key: "all" as const, label: "Todos", count: byActivity.length, icon: "Ticket" },
   ];
 
-  const personLabel = (r: BxReservation) => {
-    if (r.source === "guest" && r.party && r.party.length) return r.party[0];
-    return r.participant?.full_name || r.guest_name || "—";
-  };
-  const companions = (r: BxReservation) => (r.source === "guest" && r.party ? r.party.slice(1) : []);
+  const digitsOf = (s?: string | null) => (s || "").replace(/\D/g, "");
+  const normOf = (s?: string | null) => (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").trim().toLowerCase().replace(/\s+/g, " ");
+  const flOf = (nk: string) => { const p = nk.split(" ").filter(Boolean); return p.length > 1 ? p[0] + "|" + p[p.length - 1] : nk; };
+
+  // Nome cru (o que a pessoa digitou no login/reserva)
+  const rawLabel = (r: BxReservation) => (r.source === "guest" && r.party && r.party.length ? r.party[0] : (r.participant?.full_name || r.guest_name || "—"));
+  const companionsRaw = (r: BxReservation) => (r.source === "guest" && r.party ? r.party.slice(1) : []);
+
   const participantByName = (name?: string | null) => {
-    const normalized = (name || "").trim().toLowerCase();
-    if (!normalized) return undefined;
-    return parts.find((p) => p.full_name.trim().toLowerCase() === normalized);
+    const nk = normOf(name);
+    if (!nk) return undefined;
+    return parts.find((p) => normOf(p.full_name) === nk) || parts.find((p) => flOf(normOf(p.full_name)) === flOf(nk));
   };
   const participantForReservation = (r: BxReservation) =>
     (r.participant_id ? parts.find((p) => p.id === r.participant_id) : undefined) ||
-    (r.guest_phone ? parts.find((p) => p.phone === r.guest_phone) : undefined) ||
-    participantByName(personLabel(r));
+    (digitsOf(r.guest_phone).length >= 8 ? parts.find((p) => digitsOf(p.phone) === digitsOf(r.guest_phone)) : undefined) ||
+    participantByName(rawLabel(r));
+
+  // Nome exibido = do cadastro (corrige nome antigo/typo do login); senão o digitado.
+  const personLabel = (r: BxReservation) => participantForReservation(r)?.full_name || rawLabel(r);
+  const companions = (r: BxReservation) => companionsRaw(r).map((n) => participantByName(n)?.full_name || n);
   const reservationGroup = (r: BxReservation) => {
     const names = [personLabel(r), ...companions(r)];
     const groups = names
