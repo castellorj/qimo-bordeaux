@@ -245,7 +245,7 @@ function Shell({ email }: { email?: string }) {
         ) : tab === "semcadastro" ? (
           <ReservasSemCadastro res={res} parts={parts} />
         ) : tab === "leads" ? (
-          <LeadsPanel parts={parts} />
+          <LeadsPanel parts={parts} onChange={reload} />
         ) : (
           <Reservas acts={acts} parts={parts} res={res} onChange={reload} />
         )}

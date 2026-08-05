@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Icon } from "@/components/Icon";
 import { fetchVisitsSummary, type VisitSummary } from "@/lib/supabase/visits";
-import type { BxParticipant } from "@/lib/supabase/bordeaux";
+import { addParticipant, type BxParticipant } from "@/lib/supabase/bordeaux";
 
 const norm = (s?: string | null) =>
   (s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z ]/g, "").replace(/\s+/g, " ").trim();
@@ -17,10 +17,24 @@ function fmt(iso?: string) {
 function csvCell(v: string | number) { const s = String(v ?? ""); return /[",\n;]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; }
 
 // Quem ENTROU no guia (acessos) mas NÃO está no cadastro de clientes.
-export function LeadsPanel({ parts }: { parts: BxParticipant[] }) {
+export function LeadsPanel({ parts, onChange }: { parts: BxParticipant[]; onChange?: () => void }) {
   const [visits, setVisits] = useState<VisitSummary[] | null>(null);
   const [error, setError] = useState(false);
   const [query, setQuery] = useState("");
+  const [saving, setSaving] = useState<string | null>(null);
+  const [done, setDone] = useState<Set<string>>(new Set());
+
+  const keyOf = (l: VisitSummary) => digits(l.phone) || norm(l.name);
+  const cadastrar = async (l: VisitSummary) => {
+    const k = keyOf(l);
+    setSaving(k);
+    try {
+      await addParticipant({ full_name: l.name || "(sem nome)", phone: l.phone || null });
+      setDone((s) => new Set(s).add(k));
+      onChange?.(); // recarrega os clientes no painel -> o lead sai da lista
+    } catch { alert("Não foi possível cadastrar. Tente de novo."); }
+    setSaving(null);
+  };
 
   const load = useCallback(async () => {
     setError(false);
@@ -103,8 +117,8 @@ export function LeadsPanel({ parts }: { parts: BxParticipant[] }) {
             <table className="w-full border-collapse text-left font-sans text-[13px]">
               <thead className="bg-black/[0.03]">
                 <tr>
-                  {["Nome (no login)", "Telefone", "Acessos", "Primeiro acesso", "Último acesso"].map((h) => (
-                    <th key={h} className="border-b px-4 py-2.5 font-sans text-[11px] uppercase tracking-wide2 text-muted" style={{ borderColor: "var(--line)" }}>{h}</th>
+                  {["Nome (no login)", "Telefone", "Acessos", "Primeiro acesso", "Último acesso", ""].map((h, i) => (
+                    <th key={i} className="border-b px-4 py-2.5 font-sans text-[11px] uppercase tracking-wide2 text-muted" style={{ borderColor: "var(--line)" }}>{h}</th>
                   ))}
                 </tr>
               </thead>
@@ -118,6 +132,15 @@ export function LeadsPanel({ parts }: { parts: BxParticipant[] }) {
                     </td>
                     <td className="border-b px-4 py-2.5 align-top text-muted" style={{ borderColor: "var(--line)" }}>{fmt(l.first_seen)}</td>
                     <td className="border-b px-4 py-2.5 align-top text-muted" style={{ borderColor: "var(--line)" }}>{fmt(l.last_seen)}</td>
+                    <td className="border-b px-4 py-2.5 align-top" style={{ borderColor: "var(--line)" }}>
+                      {done.has(keyOf(l)) ? (
+                        <span className="inline-flex items-center gap-1.5 font-sans text-[12px] text-olive-deep"><Icon name="CircleCheck" size={13} /> Cadastrado</span>
+                      ) : (
+                        <button onClick={() => cadastrar(l)} disabled={saving === keyOf(l)} className="btn-ghost !px-3 !py-1.5 text-[12px] disabled:opacity-50">
+                          <Icon name="UserPlus" size={13} /> {saving === keyOf(l) ? "…" : "Cadastrar"}
+                        </button>
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
