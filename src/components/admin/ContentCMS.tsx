@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { Icon } from "@/components/Icon";
 import {
-  CONTENT_KINDS, listContent, upsertContent, setPublished, deleteContent, importAllContent, importKind,
+  CONTENT_KINDS, listContent, upsertContent, setPublished, deleteContent, importKind,
   uploadImage, updateSort, listVersions, restoreVersion, kindSkeleton,
   type ContentRow, type VersionRow,
 } from "@/lib/supabase/content-admin";
@@ -338,13 +338,6 @@ export function ContentCMS() {
   }, [kind]);
   useEffect(() => { load(); setEditing(null); }, [load]);
 
-  const doImport = async () => {
-    setBusy(true); setMsg("");
-    const { inserted } = await importAllContent();
-    setMsg(`Importados/atualizados ${inserted} itens.`);
-    await load(); setBusy(false);
-  };
-
   // Traz o modelo APENAS deste tipo, já OCULTO — você publica o que quiser.
   const importThisKind = async () => {
     setBusy(true); setMsg("");
@@ -519,8 +512,8 @@ export function ContentCMS() {
           <button onClick={createContent} disabled={busy} className="btn-primary !px-4 !py-2">
             <Icon name="Plus" size={14} /> Nova ficha
           </button>
-          <button onClick={doImport} disabled={busy} className="btn-ghost !px-4 !py-2">
-            <Icon name="Download" size={14} /> Atualizar base
+          <button onClick={importThisKind} disabled={busy} className="btn-ghost !px-4 !py-2" title="Traz o modelo pronto deste tipo, como fichas OCULTAS. Não republica nem sobrescreve o que você já ajustou.">
+            <Icon name="Download" size={14} /> Trazer modelo (ocultas)
           </button>
         </div>
       </div>
