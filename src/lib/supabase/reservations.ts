@@ -103,6 +103,17 @@ export async function fetchMyReservations(phone: string): Promise<MyReservation[
   }));
 }
 
+// Fallback: quando o telefone do login não bate com o cadastro, busca o grupo
+// pelo NOME do hóspede (RPC bordeaux_guest_party_by_name). Silencioso se a
+// migration 0007 ainda não existir.
+export async function fetchGuestPartyByName(name: string): Promise<GuestPassenger[]> {
+  const clean = (name || "").trim();
+  if (!clean) return [];
+  const { data } = await supabase().rpc("bordeaux_guest_party_by_name", { p_name: clean });
+  if (Array.isArray(data) && data.length) return data.map(mapPassenger).filter((p) => p.fullName);
+  return [];
+}
+
 export async function guestReserve(activityId: string, name: string, phone: string, party: string[]) {
   return supabase().rpc("bordeaux_guest_reserve", {
     p_activity: activityId,

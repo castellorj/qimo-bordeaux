@@ -4,7 +4,7 @@ import { createContext, useContext, useEffect, useState, useCallback, useRef } f
 import { itinerary } from "@/content";
 import { type Locale, DEFAULT_LOCALE, makeT, type UiOverrides } from "@/lib/i18n";
 import {
-  fetchReservable, fetchMyReservations, guestReserve, guestCancel, fetchGuestParty,
+  fetchReservable, fetchMyReservations, guestReserve, guestCancel, fetchGuestParty, fetchGuestPartyByName,
   type Reservable, type MyReservation, type GuestPassenger,
 } from "@/lib/supabase/reservations";
 import { normalizePhone } from "@/lib/phone";
@@ -214,10 +214,17 @@ export function Providers({ children }: { children: React.ReactNode }) {
     const g = readGuest();
     setGuest(g);
     const owner = reservationOwner(g);
-    const [rv, party] = await Promise.all([
+    const [rv, phoneParty] = await Promise.all([
       fetchReservable(),
       owner ? fetchGuestParty(owner) : Promise.resolve([]),
     ]);
+    // Fallback por nome: se o telefone não achou o par (ex.: número de login
+    // divergente do cadastro), tenta pelo nome do hóspede.
+    let party = phoneParty;
+    if (party.length <= 1 && g?.name) {
+      const nameParty = await fetchGuestPartyByName(g.name);
+      if (nameParty.length > party.length) party = nameParty;
+    }
     await loadMine(owner, g?.name, party);
     setReservable(rv);
     setGuestParty(party);
