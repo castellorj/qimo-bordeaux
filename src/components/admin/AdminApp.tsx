@@ -561,6 +561,7 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
   const [msg, setMsg] = useState<{ ok: boolean; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [addBusy, setAddBusy] = useState<string | null>(null);
+  const [showNew, setShowNew] = useState(false);
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -745,6 +746,9 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
           <div className="flex flex-wrap items-center gap-2 font-sans text-[11px]">
             <span className="rounded-full bg-olive/15 px-3 py-1 text-olive-deep">{confirmedSeats} confirmados</span>
             <span className="rounded-full bg-gold/15 px-3 py-1 text-gold-deep">{waitlistSeats} em espera</span>
+            <button type="button" onClick={() => { setMsg(null); setShowNew(true); }} className="inline-flex items-center gap-1 rounded-full bg-petrol-600 px-3 py-1 font-semibold text-cream hover:bg-petrol-700">
+              <Icon name="Plus" size={13} /> Nova reserva
+            </button>
             <button type="button" onClick={exportExcel} className="rounded-full border px-3 py-1 font-semibold text-petrol-600 hover:border-gold" style={{ borderColor: "var(--line)" }}>
               Exportar Excel
             </button>
@@ -771,11 +775,16 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
         </div>
       </div>
 
-      <div className="grid min-w-0 gap-8 lg:grid-cols-[360px_minmax(0,1fr)]">
-        <form onSubmit={submit} className="card h-fit p-6">
-          <h3 className="font-serif text-xl font-light">Nova reserva</h3>
-          <p className="mt-1 font-sans text-[12px] leading-relaxed text-muted">Inscreva alguém num passeio manualmente. Os hóspedes também reservam pelo app — e aparecem aqui na hora.</p>
-          <div className="mt-4 space-y-3">
+      <div className="min-w-0">
+        {showNew && (
+          <div className="fixed inset-0 z-[60] grid place-items-center bg-black/40 p-4" onClick={() => setShowNew(false)}>
+            <form onSubmit={submit} onClick={(e) => e.stopPropagation()} className="card max-h-[90vh] w-full max-w-md overflow-y-auto p-6">
+              <div className="flex items-start justify-between gap-3">
+                <h3 className="font-serif text-xl font-light">Nova reserva</h3>
+                <button type="button" onClick={() => setShowNew(false)} className="shrink-0 text-muted hover:text-petrol-600" aria-label="Fechar"><Icon name="X" size={18} /></button>
+              </div>
+              <p className="mt-1 font-sans text-[12px] leading-relaxed text-muted">Inscreva alguém num passeio manualmente. Os hóspedes também reservam pelo app — e aparecem aqui na hora.</p>
+              <div className="mt-4 space-y-3">
             <label className="block">
               <span className="font-sans text-[10px] uppercase tracking-wide2 text-muted">Passeio</span>
               <select value={activityId} onChange={(e) => setActivityId(e.target.value)} className="mt-1 w-full rounded-[10px] border bg-transparent px-4 py-2.5 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }}>
@@ -808,10 +817,11 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
               </label>
             </div>
             {msg && <p className={clsx("font-sans text-[12px]", msg.ok ? "text-olive-deep" : "text-[#8f2f2f]")}>{msg.text}</p>}
-            <button disabled={busy} className="btn-primary w-full">{busy ? "…" : "Reservar"}</button>
+                <button disabled={busy} className="btn-primary w-full">{busy ? "…" : "Reservar"}</button>
+              </div>
+            </form>
           </div>
-        </form>
-
+        )}
 
         <div className="min-w-0">
           <div className="mb-4 rounded-[14px] border p-4" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
