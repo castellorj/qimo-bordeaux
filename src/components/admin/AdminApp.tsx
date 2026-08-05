@@ -20,9 +20,10 @@ import { PreviewPane } from "./PreviewPane";
 import { PublishModal } from "./PublishModal";
 import { EditabilityAudit } from "./EditabilityAudit";
 import { VisitsPanel } from "./VisitsPanel";
+import { ReservasSemCadastro } from "./ReservasSemCadastro";
 import clsx from "clsx";
 
-type Tab = "inicio" | "roteiro" | "passeios" | "participantes" | "reservas" | "acessos" | "conteudo" | "telas" | "paginas" | "textos" | "preview" | "cobertura";
+type Tab = "inicio" | "roteiro" | "passeios" | "participantes" | "reservas" | "semcadastro" | "acessos" | "conteudo" | "telas" | "paginas" | "textos" | "preview" | "cobertura";
 
 type TabMeta = {
   key: Tab;
@@ -36,6 +37,7 @@ const TAB_META: Record<Tab, TabMeta> = {
   roteiro: { key: "roteiro", label: "Roteiro", icon: "CalendarDays", desc: "Edite dias, horarios, fotos, portos e atividades da viagem." },
   passeios: { key: "passeios", label: "Vagas dos passeios", icon: "Ticket", desc: "Ajuste vagas, disponibilidade e o que aparece para o hospede reservar." },
   reservas: { key: "reservas", label: "Reservas", icon: "Check", desc: "Veja quem reservou cada passeio e inclua reservas feitas pela equipe." },
+  semcadastro: { key: "semcadastro", label: "Reservou sem cadastro", icon: "AlertTriangle", desc: "Pessoas que reservaram pelo app mas nao constam no cadastro de clientes." },
   participantes: { key: "participantes", label: "Clientes", icon: "Users", desc: "Cadastre os participantes e os dados de contato da viagem." },
   acessos: { key: "acessos", label: "Acessos", icon: "TrendingUp", desc: "Veja quem abriu o guia e quantas vezes." },
   conteudo: { key: "conteudo", label: "Fichas do guia", icon: "LayoutGrid", desc: "Edite cidades, vinicolas, restaurantes, vinhos, experiencias, compras e documentos." },
@@ -48,7 +50,7 @@ const TAB_META: Record<Tab, TabMeta> = {
 
 const NAV_GROUPS: { title: string; items: Tab[] }[] = [
   { title: "Editar o guia", items: ["inicio", "roteiro", "conteudo", "textos", "telas", "paginas", "preview"] },
-  { title: "Reservas", items: ["passeios", "reservas", "participantes"] },
+  { title: "Reservas", items: ["passeios", "reservas", "participantes", "semcadastro"] },
   { title: "Relatorios", items: ["acessos"] },
   { title: "Avancado", items: ["cobertura"] },
 ];
@@ -238,6 +240,8 @@ function Shell({ email }: { email?: string }) {
           <EditabilityAudit />
         ) : tab === "acessos" ? (
           <VisitsPanel />
+        ) : tab === "semcadastro" ? (
+          <ReservasSemCadastro res={res} parts={parts} />
         ) : (
           <Reservas acts={acts} parts={parts} res={res} onChange={reload} />
         )}
