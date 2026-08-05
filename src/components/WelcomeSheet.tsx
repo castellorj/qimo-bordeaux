@@ -11,9 +11,7 @@ import { LangDropdown } from "./LangSwitch";
 import { useLocale } from "./providers";
 import { cleanSiteImage, siteImageDef } from "@/lib/siteImages";
 import { normalizePhone, phoneVariants } from "@/lib/phone";
-
-const DEVICE_LS = "qimo_device_token:v3";
-const GUEST_LS = "qimo:guest:v3";
+import { persistGuest, persistDevice, loadDevice, loadGuestRaw } from "@/lib/guestPersist";
 
 const STR: Record<Lang, Record<string, string>> = {
   pt: {
@@ -50,8 +48,9 @@ const STR: Record<Lang, Record<string, string>> = {
 
 function deviceToken(): string {
   try {
-    let d = localStorage.getItem(DEVICE_LS);
-    if (!d) { d = crypto.randomUUID(); localStorage.setItem(DEVICE_LS, d); }
+    let d = loadDevice();
+    if (!d) d = crypto.randomUUID();
+    persistDevice(d);
     return d;
   } catch { return crypto.randomUUID(); }
 }
@@ -95,12 +94,12 @@ export function WelcomeSheet() {
     setLangState(getCurrentLang());
     (async () => {
       try {
-        if (localStorage.getItem(GUEST_LS)) return;
-        const dev = localStorage.getItem(DEVICE_LS);
+        if (loadGuestRaw()) return; // já entrou antes (localStorage OU cookie) → não pede telefone
+        const dev = loadDevice();
         if (dev) {
           const { data } = await supabase().rpc("guest_by_device", { p_device: dev });
           const g = (data as any[])?.[0];
-          if (g) { try { localStorage.setItem(GUEST_LS, JSON.stringify({ name: g.name, phone: normalizePhone(g.phone) || null })); } catch {} return; }
+          if (g) { persistGuest({ name: g.name, phone: normalizePhone(g.phone) || null }); return; }
         }
         setShow(true);
       } catch { setShow(true); }
@@ -118,8 +117,8 @@ export function WelcomeSheet() {
   }
 
   const enter = (guestName?: string) => {
-    // Guarda nome E telefone (E.164) — o telefone identifica as reservas do convidado.
-    try { localStorage.setItem(GUEST_LS, JSON.stringify({ name: guestName ?? null, phone: normalizePhone(phone) || null })); } catch {}
+    // Guarda nome E telefone (E.164) em localStorage + cookie — o telefone identifica as reservas.
+    persistGuest({ name: guestName ?? null, phone: normalizePhone(phone) || null });
     try { window.dispatchEvent(new Event("qimo-guest-updated")); } catch {}
     setLeaving(true);
     const onHome = typeof window !== "undefined" && window.location.pathname === "/";

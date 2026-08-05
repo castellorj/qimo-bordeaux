@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { Icon } from "./Icon";
 import { useLocale, useReservations } from "./providers";
+import { loadGuestRaw } from "@/lib/guestPersist";
 import { SearchOverlay } from "./Search";
 import { ConciergeFab } from "./ConciergeFab";
 
@@ -39,9 +40,9 @@ export function SiteChrome({ searchIndex }: { searchIndex: SearchDoc[] }) {
   const pathname = usePathname();
   const section = activeSection(pathname);
 
-  // Só carrega o gate (e suas libs) se não houver convidado salvo neste device.
+  // Só carrega o gate (e suas libs) se não houver convidado salvo (localStorage OU cookie).
   useEffect(() => {
-    try { if (!localStorage.getItem("qimo:guest:v3")) setMaybeGate(true); } catch { setMaybeGate(true); }
+    try { if (!loadGuestRaw()) setMaybeGate(true); } catch { setMaybeGate(true); }
   }, []);
 
   // O painel administrativo tem seu próprio layout (sem o chrome do guia)

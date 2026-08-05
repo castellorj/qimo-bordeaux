@@ -9,6 +9,7 @@ import {
 } from "@/lib/supabase/reservations";
 import { normalizePhone } from "@/lib/phone";
 import { logVisit } from "@/lib/supabase/visits";
+import { loadGuestRaw } from "@/lib/guestPersist";
 
 const SB_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://vvvzitszfcajfrvzpace.supabase.co";
 const SB_ANON =
@@ -53,7 +54,7 @@ const SETTINGS_CACHE_MAX_AGE = 5 * 60 * 1000;
 
 function readGuest(): Guest | null {
   try {
-    const raw = localStorage.getItem(GUEST_LS);
+    const raw = loadGuestRaw();
     if (!raw) return null;
     const g = JSON.parse(raw);
     if (typeof g !== "object" || !g) return null;
