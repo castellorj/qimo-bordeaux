@@ -4,7 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import { PageHero } from "@/components/PageHero";
 import { Icon } from "@/components/Icon";
 import { useGuideItem, useGuideList } from "@/components/GuideContent";
-import { useLocale } from "@/components/providers";
+import { useLocale, useReservations } from "@/components/providers";
+import { ActivityReserve } from "@/components/ActivityReserve";
 import { qimoWhatsApp } from "@/lib/reserve";
 import { chefProfile as fileChefProfile } from "@/content";
 import type { ChefExperience, ChefProfile } from "@/lib/types";
@@ -144,6 +145,8 @@ function ChefExperienceCard({
 }) {
   const sectionRef = useRef<HTMLElement>(null);
   const text = chefDescription(item.description);
+  const { reservableByKey } = useReservations();
+  const hasReserve = reservableByKey.has(item.slug);
 
   useEffect(() => {
     if (!open) return;
@@ -219,14 +222,18 @@ function ChefExperienceCard({
               {item.price && <span className="chip"><Icon name="Coins" size={13} /> {item.price}</span>}
             </div>
 
-            <a
-              href={qimoWhatsApp(`Olá! Tenho interesse na experiência Chef "${item.name}". Podem me passar detalhes e disponibilidade?`)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="btn-primary mt-5 w-full !rounded-[10px] !px-4 !py-3 !tracking-wide text-[12px]"
-            >
-              <Icon name="CalendarCheck" size={15} /> {ctaLabel}
-            </a>
+            {hasReserve ? (
+              <ActivityReserve contentKey={item.slug} />
+            ) : (
+              <a
+                href={qimoWhatsApp(`Olá! Tenho interesse na experiência Chef "${item.name}". Podem me passar detalhes e disponibilidade?`)}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-primary mt-5 w-full !rounded-[10px] !px-4 !py-3 !tracking-wide text-[12px]"
+              >
+                <Icon name="CalendarCheck" size={15} /> {ctaLabel}
+              </a>
+            )}
           </div>
         </div>
       )}

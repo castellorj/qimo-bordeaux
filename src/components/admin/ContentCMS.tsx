@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import { Icon } from "@/components/Icon";
 import {
-  CONTENT_KINDS, listContent, upsertContent, setPublished, deleteContent, importKind,
+  CONTENT_KINDS, listContent, upsertContent, setPublished, deleteContent, importKind, syncContentActivity,
   uploadImage, updateSort, listVersions, restoreVersion, kindSkeleton,
   type ContentRow, type VersionRow,
 } from "@/lib/supabase/content-admin";
@@ -236,6 +236,7 @@ function FieldEditor({ kind, data, onChange }: { kind: string; data: any; onChan
       let node: ReactNode;
 
       if (k === "slug") return null;
+      if (k === "reserva") return null; // editado na seção "Reservas" (só Chef)
       if (k === "gallery" && Array.isArray(v)) {
         node = <GalleryField key={k} value={v as string[]} onChange={(val) => set(k, val)} />;
       } else if (field.type === "coords") {
@@ -364,17 +365,37 @@ export function ContentCMS() {
     setBusy(false);
   };
 
+  // Salva a ficha e, no Chef, espelha uma atividade reservável (mesmo sistema da Viagem).
+  const persistDraft = async () => {
+    if (!editing) return;
+    await upsertContent(editing.kind, editing.slug, draft, editing.sort, editing.published);
+    if (editing.kind === "chef") {
+      const rsv = draft?.reserva || {};
+      const vagas = Math.max(0, parseInt(String(rsv.vagas ?? 0)) || 0);
+      const diaRaw = rsv.dia;
+      const dia = diaRaw == null || diaRaw === "" || Number.isNaN(parseInt(String(diaRaw))) ? null : parseInt(String(diaRaw));
+      const horario = String(rsv.horario || "").trim() || null;
+      await syncContentActivity(editing.slug, {
+        title: draft?.name || "Experiência do Chef",
+        capacity: vagas,
+        dayNumber: dia,
+        startTime: horario,
+        visible: editing.published, // publicada = reservável; oculta = atividade some do app
+      });
+    }
+  };
+
   const save = async () => {
     if (!editing) return;
     setBusy(true);
-    await upsertContent(editing.kind, editing.slug, draft, editing.sort, editing.published);
+    await persistDraft();
     setBusy(false); setEditing(null); await load();
   };
 
   const saveAndStay = async () => {
     if (!editing) return;
     setBusy(true);
-    await upsertContent(editing.kind, editing.slug, draft, editing.sort, editing.published);
+    await persistDraft();
     setBusy(false);
     setMsg("Alteracoes salvas.");
     setVersions(await listVersions(editing.kind, editing.slug));
@@ -388,6 +409,8 @@ export function ContentCMS() {
     // Châteaux: o dossiê (texto principal) mora em arquivo separado — traz para o
     // editor pré-preenchido, para virar campo editável salvo no banco.
     if (row.kind === "winery") base.dossier = base.dossier || chateauDossiers[row.slug] || "";
+    // Chef: config de reserva (vagas/dia/horário) mora em `reserva` e espelha uma atividade reservável.
+    if (row.kind === "chef") base.reserva = { vagas: 0, dia: null, horario: "", ...(base.reserva || {}) };
     setDraft(base);
     setShowHist(false);
     setVersions(await listVersions(row.kind, row.slug));
@@ -561,6 +584,35 @@ export function ContentCMS() {
           <div className="mt-5">
             <FieldEditor kind={editing.kind} data={draft} onChange={setDraft} />
           </div>
+          {editing.kind === "chef" && (() => {
+            const rsv = draft?.reserva || {};
+            const setRsv = (patch: Record<string, any>) => setDraft({ ...draft, reserva: { ...rsv, ...patch } });
+            const inputCls = "mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold";
+            return (
+              <div className="mt-5 rounded-[12px] border p-4" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
+                <p className="kicker flex items-center gap-1.5"><Icon name="CalendarCheck" size={13} /> Reservas</p>
+                <p className="mt-1 font-sans text-[12px] text-muted">Quando publicada, a experiência abre para reserva no app igual aos passeios — cai em <strong>/reservas</strong> e no painel <strong>Reservas</strong>. Sem vaga, a pessoa entra na <strong>fila de espera</strong>.</p>
+                <div className="mt-3 grid gap-3 sm:grid-cols-3">
+                  <label className="block">
+                    <span className="kicker-muted">Vagas</span>
+                    <span className="mb-1 block font-sans text-[11px] text-muted">0 = todos na fila de espera</span>
+                    <input type="number" min={0} value={rsv.vagas ?? 0} onChange={(e) => setRsv({ vagas: parseInt(e.target.value) || 0 })} className={inputCls} style={{ borderColor: "var(--line)" }} />
+                  </label>
+                  <label className="block">
+                    <span className="kicker-muted">Dia</span>
+                    <span className="mb-1 block font-sans text-[11px] text-muted">nº do dia (opcional)</span>
+                    <input type="number" min={1} value={rsv.dia ?? ""} onChange={(e) => setRsv({ dia: e.target.value === "" ? null : parseInt(e.target.value) })} className={inputCls} style={{ borderColor: "var(--line)" }} />
+                  </label>
+                  <label className="block">
+                    <span className="kicker-muted">Horário</span>
+                    <span className="mb-1 block font-sans text-[11px] text-muted">ex.: 20:00</span>
+                    <input value={rsv.horario ?? ""} onChange={(e) => setRsv({ horario: e.target.value })} placeholder="20:00" className={inputCls} style={{ borderColor: "var(--line)" }} />
+                  </label>
+                </div>
+                {!editing.published && <p className="mt-2 font-sans text-[11px] text-gold-deep">Esta ficha está oculta — publique-a para a reserva aparecer no app.</p>}
+              </div>
+            );
+          })()}
           <div className="sticky bottom-4 mt-6 flex flex-wrap items-center gap-3 rounded-[12px] border p-3 shadow-sm" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
             <button onClick={save} disabled={busy} className="btn-primary">{busy ? "Salvando..." : "Salvar e voltar"}</button>
             <button onClick={saveAndStay} disabled={busy} className="btn-ghost">{busy ? "Salvando..." : "Salvar e continuar"}</button>

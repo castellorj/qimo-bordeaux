@@ -13,11 +13,15 @@ export function ActivityReserve({ contentKey }: { contentKey: string }) {
   if (!rv) return null;
 
   const my = mine.get(rv.activityId);
-  const conflict = Array.from(mine.values()).find((r) =>
-    r.activityId !== rv.activityId &&
-    r.dayNumber === rv.dayNumber &&
-    r.startTime === rv.startTime
-  );
+  // Conflito de horário só quando há dia E horário definidos (experiências do Chef
+  // sem horário não conflitam entre si nem com passeios).
+  const conflict = rv.dayNumber != null && rv.startTime
+    ? Array.from(mine.values()).find((r) =>
+        r.activityId !== rv.activityId &&
+        r.dayNumber === rv.dayNumber &&
+        r.startTime === rv.startTime
+      )
+    : undefined;
   const full = rv.available != null && rv.available <= 0;
 
   return (
@@ -148,8 +152,11 @@ function ReserveSheet({
             <p className="kicker">Reserva de passeio</p>
             <h3 className="mt-1 font-serif text-xl font-light leading-snug">{rv.title}</h3>
             <p className="mt-1 font-sans text-[12px] text-muted">
-              Dia {rv.dayNumber}{rv.startTime ? ` · ${rv.startTime}` : ""}
-              {rv.available != null && ` · ${rv.available > 0 ? `${rv.available} ${rv.available === 1 ? "vaga" : "vagas"}` : "lista de espera"}`}
+              {[
+                rv.dayNumber != null ? `Dia ${rv.dayNumber}` : null,
+                rv.startTime || null,
+                rv.available != null ? (rv.available > 0 ? `${rv.available} ${rv.available === 1 ? "vaga" : "vagas"}` : "lista de espera") : null,
+              ].filter(Boolean).join(" · ")}
             </p>
           </div>
           <button onClick={onClose} aria-label="Fechar" className="shrink-0 text-muted hover:text-gold-deep"><Icon name="X" size={20} /></button>

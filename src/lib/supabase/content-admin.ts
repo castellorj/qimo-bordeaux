@@ -310,6 +310,27 @@ export async function importKind(kind: string, published = false): Promise<{ ins
   return { inserted: error ? 0 : rows.length };
 }
 
+// Liga um conteúdo (ex.: experiência do Chef) a uma atividade RESERVÁVEL
+// (bordeaux_activities.content_key = slug). Reusa todo o sistema de reservas:
+// a ficha de reserva no app, /reservas e o painel admin passam a funcionar,
+// como em qualquer passeio. vagas=0 → todas as reservas caem na fila de espera.
+export async function syncContentActivity(contentKey: string, opts: {
+  title: string; capacity: number | null; dayNumber: number | null; startTime: string | null; visible: boolean;
+}): Promise<void> {
+  const sb = supabase();
+  const { data: existing } = await sb.from("bordeaux_activities").select("id").eq("content_key", contentKey).maybeSingle();
+  const patch = {
+    content_key: contentKey,
+    title: opts.title,
+    capacity_total: opts.capacity,
+    day_number: opts.dayNumber,
+    start_time: opts.startTime,
+    status: opts.visible ? "available" : "hidden",
+  };
+  if ((existing as any)?.id) await sb.from("bordeaux_activities").update(patch).eq("id", (existing as any).id);
+  else await sb.from("bordeaux_activities").insert({ ...patch, sort: 900 });
+}
+
 export async function importAllContent(): Promise<{ inserted: number }> {
   const sb = supabase();
   let count = 0;
