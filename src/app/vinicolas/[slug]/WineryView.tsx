@@ -5,8 +5,6 @@ import { SmartImage } from "@/components/SmartImage";
 import { Icon } from "@/components/Icon";
 import { QimoSeal, Pill } from "@/components/ui";
 import { ReadMore } from "@/components/ReadMore";
-import { ActionBar } from "@/components/ActionBar";
-import { wineryActions } from "@/lib/reserve";
 import { useGuideItem, useGuideLoading } from "@/components/GuideContent";
 import { Editable } from "@/components/Editable";
 import { Section } from "@/components/Section";
@@ -128,7 +126,7 @@ export function WineryView({ slug }: { slug: string }) {
       {Hero}
 
       <div className="container-editorial py-14">
-        <div className="grid gap-12 lg:grid-cols-[1fr_300px]">
+        <div className="mx-auto max-w-3xl">
           <div className="space-y-10">
             <Editable as="div" kind="winery" slug={w.slug} field="history" value={w.history} label="História" multiline>
               <ReadMore text={w.history} className="font-serif text-xl font-light leading-relaxed sm:text-2xl" />
@@ -184,21 +182,6 @@ export function WineryView({ slug }: { slug: string }) {
             ) : null}
           </div>
 
-          <aside className="space-y-4 lg:sticky lg:top-24 lg:self-start">
-            <div className="card p-6">
-              {w.averagePrice && (<><h3 className="kicker">Preço médio</h3><p className="mt-2 font-serif text-2xl font-light">{w.averagePrice}</p></>)}
-              {w.visitHours && (<><h3 className="kicker mt-6">Visita QIMO</h3><p className="mt-2 font-sans text-[13px] leading-relaxed" style={{ color: "var(--text-muted)" }}>{w.visitHours}</p></>)}
-              {w.dressCode && (<p className="mt-3 flex items-center gap-2 font-sans text-[13px] text-muted"><Icon name="Shirt" size={14} className="text-gold" /> {w.dressCode}</p>)}
-              {w.visitedOnDays && (
-                <div className="mt-5 flex flex-wrap gap-2">
-                  {w.visitedOnDays.map((d) => (
-                    <Link key={d} href={`/programacao#dia-${d}`} className="chip hover:text-gold"><Icon name="CalendarDays" size={13} /> Dia {d}</Link>
-                  ))}
-                </div>
-              )}
-              <div className="mt-6"><ActionBar actions={wineryActions(w)} /></div>
-            </div>
-          </aside>
         </div>
       </div>
     </article>
