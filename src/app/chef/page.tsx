@@ -230,7 +230,7 @@ function ChefExperienceCard({
             {item.chef && <p className="mt-1 font-serif text-[15px] font-light italic text-muted">com {item.chef}</p>}
 
             {item.tagline && (
-              <p className="mt-4 font-serif text-[20px] font-light leading-snug text-gold-deep sm:text-[22px]">{item.tagline}</p>
+              <p className="mt-4 font-serif text-[20px] font-light italic leading-snug text-petrol-700 sm:text-[22px]">{item.tagline}</p>
             )}
 
             <div className="gold-rule mt-4" />
