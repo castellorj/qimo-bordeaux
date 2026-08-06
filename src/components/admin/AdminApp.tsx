@@ -726,15 +726,20 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
   ];
 
   const q = query.trim().toLowerCase();
+  // Texto de uma reserva para busca: responsável, acompanhantes, telefone e Grupo Bordeaux.
+  const rowText = (r: BxReservation) => `${personLabel(r)} ${companions(r).join(" ")} ${r.guest_phone ?? ""} ${reservationGroup(r)}`.toLowerCase();
   const visibleGroups = filteredGroups
     // na visão "Sem par", cada passeio mostra só as reservas-solo a vincular (lista de trabalho)
     .map((g) => view === "sempar" ? { ...g, list: linkableInActivity(g.a.id, g.list).map((x) => x.r) } : g)
-    .filter(({ a, list }) => {
-      if (!q) return true;
-      const activityText = `${a.title} ${a.day_number ?? ""} ${a.start_time ?? ""}`.toLowerCase();
-      const reservationText = list.map((r) => `${personLabel(r)} ${r.guest_phone ?? ""} ${companions(r).join(" ")}`).join(" ").toLowerCase();
-      return activityText.includes(q) || reservationText.includes(q);
-    });
+    .map((g) => {
+      if (!q) return g;
+      const activityText = `${g.a.title} ${g.a.day_number ?? ""} ${g.a.start_time ?? ""}`.toLowerCase();
+      if (activityText.includes(q)) return g; // buscou o passeio → mostra todos os inscritos
+      const matched = g.list.filter((r) => rowText(r).includes(q));
+      // buscou por pessoa/grupo → mostra só as reservas dessa pessoa/grupo
+      return matched.length ? { ...g, list: matched } : null;
+    })
+    .filter(Boolean) as typeof filteredGroups;
   const timeline = byActivity
     .filter((g) => g.list.length > 0)
     .sort((x, y) =>
@@ -887,7 +892,7 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Buscar passeio, telefone ou nome"
+                placeholder="Buscar por nome, grupo, telefone ou passeio"
                 className="min-w-[220px] rounded-[10px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold"
                 style={{ borderColor: "var(--line)" }}
               />
@@ -906,7 +911,7 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
               ))}
             </div>
           </div>
-          <p className="kicker mb-3">{active.length} reservas · {visibleGroups.length} passeio(s) neste filtro</p>
+          <p className="kicker mb-3">{visibleGroups.reduce((s, g) => s + g.list.length, 0)} reservas · {visibleGroups.length} passeio(s){q ? " nesta busca" : " neste filtro"}</p>
           {visibleGroups.length === 0 && <p className="text-muted">Nada para mostrar neste filtro.</p>}
           <div className="min-w-0 space-y-5">
             {visibleGroups.map(({ a, list, people }) => (
