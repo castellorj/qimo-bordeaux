@@ -238,9 +238,12 @@ export interface ChefExperience {
   slug: string;
   name: string;
   heroImage?: string;
+  gallery?: string[]; // carrossel de fotos da experiência (fotografias reais)
+  tagline?: string; // frase curta e vendedora, ex.: "Uma noite única a bordo"
   category: string; // ex.: "Jantar", "Aula", "Degustação"
   chef?: string; // ex.: "Thomas Troisgros"
   description: string;
+  highlights?: string[]; // destaques / o que está incluído (bullets)
   duration?: string;
   price?: string; // texto livre; "sob consulta" quando não divulgado
   qimoSelect?: boolean;
