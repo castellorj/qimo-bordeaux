@@ -610,7 +610,22 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
 
   // Nome exibido = do cadastro (corrige nome antigo/typo do login); senão o digitado.
   const personLabel = (r: BxReservation) => participantForReservation(r)?.full_name || rawLabel(r);
-  const companions = (r: BxReservation) => companionsRaw(r).map((n) => participantByName(n)?.full_name || n);
+  // Resolve o nome do acompanhante para o nome completo do cadastro. Além do match
+  // exato/primeiro+último, tenta pelo PRIMEIRO NOME dentro do mesmo Grupo Bordeaux do
+  // titular (ex.: "Silvana" -> "Silvana Nobre Martins" no grupo do Rommel).
+  const firstTok = (s?: string | null) => normOf(s).split(" ")[0] || "";
+  const resolveCompanion = (r: BxReservation, name: string) => {
+    const exact = participantByName(name);
+    if (exact) return exact.full_name;
+    const me = participantForReservation(r);
+    if (me?.family) {
+      const ft = firstTok(name);
+      const inGroup = ft ? parts.filter((p) => p.family === me.family && p.id !== me.id && firstTok(p.full_name) === ft) : [];
+      if (inGroup.length === 1) return inGroup[0].full_name;
+    }
+    return name;
+  };
+  const companions = (r: BxReservation) => companionsRaw(r).map((n) => resolveCompanion(r, n));
   const reservationGroup = (r: BxReservation) => {
     const names = [personLabel(r), ...companions(r)];
     const groups = names
