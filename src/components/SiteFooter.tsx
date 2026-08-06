@@ -48,7 +48,6 @@ export function SiteFooter() {
           <p className="mt-12 font-sans text-[10px] uppercase tracking-luxe text-muted">
             © 2026 QIMO — {t("footerRights")}
           </p>
-          <p className="mt-2 font-sans text-[10px] text-muted/70">Fotografias: Wikimedia Commons</p>
         </div>
       </div>
     </footer>

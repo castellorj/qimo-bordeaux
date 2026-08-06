@@ -40,15 +40,6 @@ const visibleFilters = [
   { label: "Contemporâneo", match: (r: Restaurant) => r.category === "contemporary" },
 ];
 
-type Sort = "thomas" | "sophisticated" | "value" | "near" | "price";
-
-function priceRank(price?: Restaurant["priceBand"]) {
-  if (price === "Até €50") return 1;
-  if (price === "€50 a €100") return 2;
-  if (price === "Acima de €100") return 3;
-  return 4;
-}
-
 function RestaurantCard({ r, priority }: { r: Restaurant; priority?: boolean }) {
   const { t } = useLocale();
   const reserveHref =
@@ -112,19 +103,14 @@ export default function RestaurantesPage() {
   const { t } = useLocale();
   const restaurants = useGuideKind<Restaurant>("restaurant").filter((r) => r.adminStatus !== "oculto" && r.adminStatus !== "encerrado");
   const [activeFilter, setActiveFilter] = useState("Todos");
-  const [sort, setSort] = useState<Sort>("thomas");
-
   const filtered = useMemo(() => {
     const picked = visibleFilters.find((f) => f.label === activeFilter);
     const list = picked ? restaurants.filter(picked.match) : restaurants;
-    return [...list].sort((a, b) => {
-      if (sort === "sophisticated") return (b.qimoScores?.exclusivity ?? 0) - (a.qimoScores?.exclusivity ?? 0);
-      if (sort === "value") return (b.qimoScores?.value ?? 0) - (a.qimoScores?.value ?? 0);
-      if (sort === "near") return (b.qimoScores?.location ?? 0) - (a.qimoScores?.location ?? 0);
-      if (sort === "price") return priceRank(a.priceBand) - priceRank(b.priceBand);
-      return (b.qimoScores?.overall ?? 0) - (a.qimoScores?.overall ?? 0) || (a.sortOrder ?? 99) - (b.sortOrder ?? 99);
-    });
-  }, [activeFilter, restaurants, sort]);
+    // ordem fixa: recomendados por Thomas Troisgros
+    return [...list].sort((a, b) =>
+      (b.qimoScores?.overall ?? 0) - (a.qimoScores?.overall ?? 0) || (a.sortOrder ?? 99) - (b.sortOrder ?? 99)
+    );
+  }, [activeFilter, restaurants]);
 
   const grouped = useMemo(() => {
     return CATEGORY_KEYS.map((key) => ({
@@ -161,15 +147,6 @@ export default function RestaurantesPage() {
                 {label}
               </button>
             ))}
-          </div>
-          <div className="mt-3 flex flex-wrap items-center gap-2">
-            <select value={sort} onChange={(e) => setSort(e.target.value as Sort)} className="rounded-full border bg-white/70 px-4 py-2 font-sans text-[13px]" style={{ borderColor: "var(--line)" }}>
-              <option value="thomas">{t("rest.sort.thomas")}</option>
-              <option value="sophisticated">{t("rest.sort.sophisticated")}</option>
-              <option value="value">{t("rest.sort.value")}</option>
-              <option value="near">{t("rest.sort.near")}</option>
-              <option value="price">{t("rest.sort.price")}</option>
-            </select>
           </div>
         </section>
 
