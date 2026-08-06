@@ -417,7 +417,22 @@ export function ContentCMS() {
   };
 
   const togglePublished = async (row: ContentRow) => {
-    await setPublished(row.id, !row.published);
+    const next = !row.published;
+    await setPublished(row.id, next);
+    // No Chef, publicar/ocultar também abre/fecha a atividade de reserva ligada.
+    if (row.kind === "chef") {
+      const rsv = (row.data as any)?.reserva || {};
+      const vagas = Math.max(0, parseInt(String(rsv.vagas ?? 0)) || 0);
+      const diaRaw = rsv.dia;
+      const dia = diaRaw == null || diaRaw === "" || Number.isNaN(parseInt(String(diaRaw))) ? null : parseInt(String(diaRaw));
+      await syncContentActivity(row.slug, {
+        title: (row.data as any)?.name || "Experiência do Chef",
+        capacity: vagas,
+        dayNumber: dia,
+        startTime: String(rsv.horario || "").trim() || null,
+        visible: next,
+      });
+    }
     await load();
   };
 
