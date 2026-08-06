@@ -28,6 +28,34 @@ export const chefProfile: ChefProfile = {
 // Preços "sob consulta" até definição comercial. Apenas fotografias reais.
 export const chefExperiences: ChefExperience[] = [
   {
+    slug: "noite-vinhas-iconicas-haut-brion",
+    name: "Jantar de gala no Château Haut-Brion",
+    category: "Château Haut-Brion · Noite exclusiva",
+    chef: "Chef Andrea Capasso · Le Clarence (2★ Michelin)",
+    heroImage: "/photos/haut-brion-jantar.jpg",
+    gallery: [
+      "/photos/haut-brion-jantar.jpg",
+      "/photos/haut-brion-salao.jpg",
+      "/photos/haut-brion-vinhos.jpg",
+      "/photos/haut-brion-la-mission.jpg",
+      "/photos/haut-brion-cave.jpg",
+    ],
+    tagline: "An Evening Among Iconic Vines — uma noite entre as vinhas mais lendárias de Bordeaux.",
+    description:
+      "No Pavillon Catelan, elo histórico entre o Château Haut-Brion e o Château La Mission Haut-Brion, uma noite que reúne patrimônio e grandes vinhos. Começa com um tour privativo por um dos châteaux e uma recepção com champanhe no terraço, sobre os vinhedos icônicos do Haut-Brion. Segue-se um jantar assinado pelo chef Andrea Capasso (Le Clarence, duas estrelas Michelin), em que cada tempo é harmonizado a vinhos das propriedades. A noite pode se estender com uma festa dançante na cave abobadada restaurada e um presente comemorativo na despedida.",
+    highlights: [
+      "Tour privativo pelo Château Haut-Brion ou La Mission Haut-Brion",
+      "Recepção com champanhe no terraço sobre os vinhedos",
+      "Jantar em quatro tempos do chef Andrea Capasso (2★ Michelin)",
+      "Harmonização com vinhos das propriedades (Haut-Brion, La Clarté, Quintus)",
+      "Wine Ambassador comentando cada rótulo da noite",
+      "Cave abobadada para dançar e presente comemorativo",
+    ],
+    duration: "19h às 1h",
+    price: "€ 850 por pessoa",
+    qimoSelect: true,
+  },
+  {
     slug: "jantar-troisgros-a-bordo",
     name: "Jantar assinado Thomas Troisgros",
     category: "Jantar exclusivo",
