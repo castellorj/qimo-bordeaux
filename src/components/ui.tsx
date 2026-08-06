@@ -53,8 +53,7 @@ export function Crumb({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="mb-7 inline-flex items-center gap-1.5 rounded-full border px-4 py-2 font-sans text-[12px] font-semibold uppercase tracking-wide2 text-petrol-700 transition-colors hover:border-gold hover:bg-cream hover:text-petrol-600"
-      style={{ borderColor: "var(--line)" }}
+      className="mb-7 inline-flex items-center gap-1.5 rounded-full border border-white/70 bg-white/90 px-4 py-2 font-sans text-[12px] font-semibold uppercase tracking-wide2 text-petrol-700 shadow-sm backdrop-blur-sm transition-colors hover:bg-white hover:text-petrol-600"
     >
       <Icon name="ArrowLeft" size={15} />
       {label}
