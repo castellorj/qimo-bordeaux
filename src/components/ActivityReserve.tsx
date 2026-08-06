@@ -37,16 +37,6 @@ export function ActivityReserve({ contentKey }: { contentKey: string }) {
           {my.status === "waitlist" ? "Na lista de espera" : "Reservado"} · {my.seats} {my.seats > 1 ? "pessoas" : "pessoa"}
           <Icon name="Pencil" size={12} className="opacity-70" />
         </button>
-      ) : conflict ? (
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-[10px] border px-3 py-2 font-sans text-[12px] font-semibold"
-          style={{ borderColor: "var(--line)", color: "var(--text-muted)", background: "rgba(0,0,0,.025)" }}
-        >
-          <Icon name="CircleCheck" size={15} />
-          Horário já escolhido
-        </button>
       ) : (
         <button
           type="button"
@@ -95,6 +85,7 @@ function ReserveSheet({
   });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
+  const [replace, setReplace] = useState(false); // substituir a reserva conflitante
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -115,13 +106,17 @@ function ReserveSheet({
   const submit = async () => {
     const party = names.map((n) => n.trim()).filter(Boolean);
     if (!party.length) { setErr("Selecione ao menos uma pessoa."); return; }
-    if (conflict && !my) {
-      setErr(`Você já reservou "${conflict.title}" neste mesmo horário. Cancele ou altere a outra escolha antes de reservar esta opção.`);
+    if (conflict && !my && !replace) {
+      setErr(`Marque "Substituir" para trocar a reserva de "${conflict.title}" por esta.`);
       return;
     }
 
     setBusy(true);
     setErr("");
+    // Substituição: cancela a reserva conflitante antes de confirmar a nova.
+    if (conflict && !my && replace) {
+      await cancel(conflict.activityId);
+    }
     const res = await reserve(rv.activityId, party);
     setBusy(false);
     if (!res.ok) {
@@ -164,8 +159,12 @@ function ReserveSheet({
 
         {conflict && !my && (
           <div className="mt-5 rounded-[12px] border p-4 font-sans text-[12px] leading-relaxed" style={{ borderColor: "var(--gold)", background: "color-mix(in srgb, var(--gold) 10%, transparent)", color: "var(--text)" }}>
-            <p className="flex items-center gap-1.5 font-semibold"><Icon name="Info" size={14} className="text-gold-deep" /> Escolha uma opção neste horário</p>
-            <p className="mt-1 text-muted">Você já tem reserva para <strong>{conflict.title}</strong>. Para trocar, cancele a reserva anterior primeiro.</p>
+            <p className="flex items-center gap-1.5 font-semibold"><Icon name="Info" size={14} className="text-gold-deep" /> Conflito de horário</p>
+            <p className="mt-1 text-muted">Você já tem <strong>{conflict.title}</strong> no mesmo dia e horário. Só é possível estar em uma.</p>
+            <label className="mt-3 flex cursor-pointer items-start gap-2 rounded-[10px] border px-3 py-2.5" style={{ borderColor: replace ? "var(--gold)" : "var(--line)", background: replace ? "color-mix(in srgb, var(--gold) 8%, transparent)" : "transparent" }}>
+              <input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} className="mt-0.5" />
+              <span>Substituir <strong>{conflict.title}</strong> por esta reserva — a anterior será cancelada.</span>
+            </label>
           </div>
         )}
 
@@ -194,8 +193,8 @@ function ReserveSheet({
 
         {err && <p className="mt-3 font-sans text-[12px] text-[#8f2f2f]">{err}</p>}
 
-        <button disabled={busy || (!!conflict && !my)} onClick={submit} className="btn-primary mt-5 w-full !py-3.5 disabled:opacity-50">
-          {busy ? "Salvando..." : my ? `Atualizar reserva · ${total} ${total > 1 ? "pessoas" : "pessoa"}` : `Confirmar · ${total} ${total > 1 ? "pessoas" : "pessoa"}`}
+        <button disabled={busy || (!!conflict && !my && !replace)} onClick={submit} className="btn-primary mt-5 w-full !py-3.5 disabled:opacity-50">
+          {busy ? "Salvando..." : my ? `Atualizar reserva · ${total} ${total > 1 ? "pessoas" : "pessoa"}` : conflict && !my && replace ? `Substituir e confirmar · ${total} ${total > 1 ? "pessoas" : "pessoa"}` : `Confirmar · ${total} ${total > 1 ? "pessoas" : "pessoa"}`}
           {!busy && <Icon name="ArrowRight" size={15} />}
         </button>
 
