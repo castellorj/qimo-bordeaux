@@ -75,7 +75,7 @@ function labelFor(k: string): string {
   return FIELD_LABELS[k] ?? k.replace(/([A-Z])/g, " $1").replace(/^./, (c) => c.toUpperCase());
 }
 
-function ImageField({ label, hint, value, onChange, pickFrom }: { label: string; hint?: string; value: string; onChange: (v: string) => void; pickFrom?: string[] }) {
+function ImageField({ label, hint, value, onChange }: { label: string; hint?: string; value: string; onChange: (v: string) => void }) {
   const [busy, setBusy] = useState(false);
   const onFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -103,30 +103,11 @@ function ImageField({ label, hint, value, onChange, pickFrom }: { label: string;
       </div>
       <input value={value || ""} onChange={(e) => onChange(e.target.value)} placeholder="URL da imagem"
         className="mt-2 w-full rounded-[8px] border bg-transparent px-3 py-1.5 font-sans text-[11px] text-muted outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
-      {pickFrom && pickFrom.filter(Boolean).length > 0 && (
-        <div className="mt-2">
-          <span className="font-sans text-[11px] text-muted">Ou escolha uma foto da galeria como capa:</span>
-          <div className="mt-1.5 flex flex-wrap gap-2">
-            {pickFrom.filter(Boolean).map((u, i) => {
-              const selected = u === value;
-              return (
-                <button key={i} type="button" onClick={() => onChange(u)}
-                  className={clsx("relative h-14 w-20 overflow-hidden rounded-[8px] border-2 transition", selected ? "border-gold" : "border-transparent hover:border-gold/50")}
-                  title={selected ? "Capa atual" : "Definir como capa"}>
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={u} alt="" className="h-full w-full object-cover" />
-                  {selected && <span className="absolute right-0.5 top-0.5 grid h-4 w-4 place-items-center rounded-full bg-gold text-white"><Icon name="Check" size={10} /></span>}
-                </button>
-              );
-            })}
-          </div>
-        </div>
-      )}
     </div>
   );
 }
 
-function GalleryField({ value, onChange }: { value: string[]; onChange: (v: string[]) => void }) {
+function GalleryField({ value, onChange, coverValue, onSetCover }: { value: string[]; onChange: (v: string[]) => void; coverValue?: string; onSetCover?: (url: string) => void }) {
   const [busy, setBusy] = useState(false);
   const add = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -138,14 +119,24 @@ function GalleryField({ value, onChange }: { value: string[]; onChange: (v: stri
   return (
     <div>
       <span className="kicker-muted">galeria</span>
+      {onSetCover && <span className="mb-1 block font-sans text-[11px] normal-case tracking-normal text-muted">Clique em “capa” na foto que deve virar a foto de capa.</span>}
       <div className="mt-1 flex flex-wrap gap-2">
-        {(value || []).map((u, i) => (
-          <div key={i} className="relative">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={u} alt="" className="h-16 w-24 rounded-[8px] object-cover" />
-            <button onClick={() => onChange(value.filter((_, j) => j !== i))} className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-[#8f2f2f] text-white"><Icon name="X" size={11} /></button>
-          </div>
-        ))}
+        {(value || []).map((u, i) => {
+          const isCover = !!onSetCover && u === coverValue;
+          return (
+            <div key={i} className="relative">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={u} alt="" className={clsx("h-16 w-24 rounded-[8px] object-cover", isCover && "ring-2 ring-gold ring-offset-1")} />
+              <button onClick={() => onChange(value.filter((_, j) => j !== i))} className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center rounded-full bg-[#8f2f2f] text-white" title="Remover"><Icon name="X" size={11} /></button>
+              {onSetCover && (
+                <button type="button" onClick={() => onSetCover(u)} title={isCover ? "Foto de capa atual" : "Definir como foto de capa"}
+                  className={clsx("absolute inset-x-0 bottom-0 flex items-center justify-center gap-1 rounded-b-[8px] py-0.5 font-sans text-[9px] font-semibold uppercase tracking-wide", isCover ? "bg-gold text-white" : "bg-black/55 text-white/90 hover:bg-black/75")}>
+                  <Icon name="Star" size={9} /> capa
+                </button>
+              )}
+            </div>
+          );
+        })}
         <label className="grid h-16 w-24 cursor-pointer place-items-center rounded-[8px] border text-muted" style={{ borderColor: "var(--line)" }}>
           <Icon name={busy ? "Clock" : "Plus"} size={18} />
           <input type="file" accept="image/*" hidden onChange={add} />
@@ -258,12 +249,14 @@ function FieldEditor({ kind, data, onChange }: { kind: string; data: any; onChan
       if (k === "slug") return null;
       if (k === "reserva") return null; // editado na seção "Reservas" (só Chef)
       if (k === "gallery" && Array.isArray(v)) {
-        node = <GalleryField key={k} value={v as string[]} onChange={(val) => set(k, val)} />;
+        const hasCover = "heroImage" in (data as any);
+        node = <GalleryField key={k} value={v as string[]} onChange={(val) => set(k, val)}
+          coverValue={hasCover ? (data as any).heroImage : undefined}
+          onSetCover={hasCover ? (url) => set("heroImage", url) : undefined} />;
       } else if (field.type === "coords") {
         node = <CoordsField key={k} label={fieldLabel} hint={fieldHint} value={v} onChange={(val) => set(k, val)} />;
       } else if (typeof v === "string" && /image|hero|photo|foto/i.test(k)) {
-        const gal = (data as any)?.gallery;
-        node = <ImageField key={k} label={fieldLabel} hint={fieldHint} value={v} onChange={(val) => set(k, val)} pickFrom={Array.isArray(gal) ? gal : undefined} />;
+        node = <ImageField key={k} label={fieldLabel} hint={fieldHint} value={v} onChange={(val) => set(k, val)} />;
       } else if (typeof v === "boolean") {
         node = (
           <label key={k} className="flex items-center gap-2 font-sans text-[13px]">
