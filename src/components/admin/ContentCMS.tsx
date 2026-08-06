@@ -9,6 +9,7 @@ import {
   type ContentRow, type VersionRow,
 } from "@/lib/supabase/content-admin";
 import { getContentKindConfig, getFieldConfig, sortContentFields } from "@/lib/adminContentRegistry";
+import { ChefPreview } from "./ChefPreview";
 import { chateauDossiers } from "@/content/chateaux-dossiers";
 import clsx from "clsx";
 
@@ -331,6 +332,7 @@ export function ContentCMS() {
   const [overIdx, setOverIdx] = useState<number | null>(null);
   const [versions, setVersions] = useState<VersionRow[]>([]);
   const [showHist, setShowHist] = useState(false);
+  const [showPreview, setShowPreview] = useState(true);
   const [query, setQuery] = useState("");
   const kindConfig = getContentKindConfig(kind);
 
@@ -596,6 +598,23 @@ export function ContentCMS() {
             </div>
             <button onClick={() => setEditing(null)} className="shrink-0 text-muted hover:text-gold-deep"><Icon name="X" size={18} /></button>
           </div>
+          {editing.kind === "chef" && (
+            <div className="mt-5 rounded-[14px] border p-3 sm:p-4" style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--gold) 4%, transparent)" }}>
+              <button type="button" onClick={() => setShowPreview((v) => !v)} className="flex w-full items-center justify-between gap-2">
+                <span className="flex items-center gap-1.5 kicker"><Icon name="Eye" size={13} /> Pré-visualização · como o hóspede vê</span>
+                <Icon name="ChevronDown" size={16} className={clsx("text-muted transition-transform", showPreview && "rotate-180")} />
+              </button>
+              {showPreview && (
+                <div className="mt-3">
+                  <div className="mx-auto max-w-md">
+                    <ChefPreview data={draft} />
+                  </div>
+                  <p className="mt-2 text-center font-sans text-[11px] text-muted">Atualiza conforme você edita abaixo. A reserva aparece se você preencher a seção “Reservas”.</p>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="mt-5">
             <FieldEditor kind={editing.kind} data={draft} onChange={setDraft} />
           </div>
