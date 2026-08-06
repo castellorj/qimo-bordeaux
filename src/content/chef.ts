@@ -40,9 +40,9 @@ export const chefExperiences: ChefExperience[] = [
       "/photos/haut-brion-la-mission.jpg",
       "/photos/haut-brion-cave.jpg",
     ],
-    tagline: "An Evening Among Iconic Vines — uma noite entre as vinhas mais lendárias de Bordeaux.",
+    tagline: "Entre as vinhas mais lendárias de Bordeaux — patrimônio, alta gastronomia e Grands Crus.",
     description:
-      "No Pavillon Catelan, elo histórico entre o Château Haut-Brion e o Château La Mission Haut-Brion, uma noite que reúne patrimônio e grandes vinhos. Começa com um tour privativo por um dos châteaux e uma recepção com champanhe no terraço, sobre os vinhedos icônicos do Haut-Brion. Segue-se um jantar assinado pelo chef Andrea Capasso (Le Clarence, duas estrelas Michelin), em que cada tempo é harmonizado a vinhos das propriedades. A noite pode se estender com uma festa dançante na cave abobadada restaurada e um presente comemorativo na despedida. A experiência se confirma com um mínimo de 35 participantes (até 50 lugares).",
+      "No Pavillon Catelan, elo histórico entre o Château Haut-Brion e o Château La Mission Haut-Brion, uma experiência que reúne patrimônio e grandes vinhos. Começa com um tour privativo por um dos châteaux e uma recepção com champanhe no terraço, sobre os vinhedos icônicos do Haut-Brion. Em seguida, um menu-degustação assinado pelo chef Andrea Capasso (Le Clarence, duas estrelas Michelin), com cada tempo harmonizado a vinhos das propriedades. Pode se estender com música na cave abobadada restaurada e um presente comemorativo na despedida. A experiência se confirma com um mínimo de 35 participantes (até 50 lugares).",
     highlights: [
       "Tour privativo pelo Château Haut-Brion ou La Mission Haut-Brion",
       "Recepção com champanhe no terraço sobre os vinhedos",
