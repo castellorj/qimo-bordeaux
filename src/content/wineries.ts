@@ -33,7 +33,7 @@ export const wineries: Winery[] = [
     bookingChannel: "Reserva oficial (espaço Renaissance)",
     address: "4 Quai Antoine Ferchaud, 33250 Pauillac",
     coords: { lat: 45.2003, lng: -0.7458 },
-    qimoSelect: true,
+    qimoSelect: false,
     visitedOnDays: [2],
   },
   {
@@ -67,7 +67,7 @@ export const wineries: Winery[] = [
     bookingChannel: "Formulário oficial de visita",
     address: "Route de la Rivière, 33250 Pauillac",
     coords: { lat: 45.2075, lng: -0.7539 },
-    qimoSelect: true,
+    qimoSelect: false,
     visitedOnDays: [2],
   },
   {
@@ -98,7 +98,7 @@ export const wineries: Winery[] = [
     email: "chateaudecazeneuve@orange.fr",
     address: "Château de Cazeneuve, 33730 Préchac",
     coords: { lat: 44.4225, lng: -0.3081 },
-    qimoSelect: true,
+    qimoSelect: false,
     visitedOnDays: [3],
   },
   {
@@ -128,7 +128,7 @@ export const wineries: Winery[] = [
     bookingChannel: "Reserva oficial de visita",
     phone: "+33545357666",
     address: "20 Rue de la Société Vinicole, 16100 Cognac",
-    qimoSelect: true,
+    qimoSelect: false,
     visitedOnDays: [4],
   },
   {
@@ -160,7 +160,7 @@ export const wineries: Winery[] = [
     address: "Saint-Émilion, 33330",
     dressCode: "Casual elegante.",
     coords: { lat: 44.8938, lng: -0.1556 },
-    qimoSelect: true,
+    qimoSelect: false,
     visitedOnDays: [5],
   },
 ];

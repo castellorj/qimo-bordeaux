@@ -196,7 +196,7 @@ export function WineryView({ slug }: { slug: string }) {
                   ))}
                 </div>
               )}
-              <div className="mt-6"><ActionBar actions={wineryActions(w)} channelLabel={w.bookingChannel} /></div>
+              <div className="mt-6"><ActionBar actions={wineryActions(w)} /></div>
             </div>
           </aside>
         </div>

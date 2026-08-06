@@ -16,7 +16,7 @@ export const iconicChateaux: Winery[] = [
     grapes: [],
     icons: [],
     history: "",
-    qimoSelect: true,
+    qimoSelect: false,
   },
   {
     slug: "chateau-mouton-rothschild",
@@ -29,7 +29,7 @@ export const iconicChateaux: Winery[] = [
     grapes: [],
     icons: [],
     history: "",
-    qimoSelect: true,
+    qimoSelect: false,
   },
   {
     slug: "chateau-lafite-rothschild",
@@ -42,7 +42,7 @@ export const iconicChateaux: Winery[] = [
     grapes: [],
     icons: [],
     history: "",
-    qimoSelect: true,
+    qimoSelect: false,
   },
   {
     slug: "chateau-d-yquem",
@@ -55,7 +55,7 @@ export const iconicChateaux: Winery[] = [
     grapes: [],
     icons: [],
     history: "",
-    qimoSelect: true,
+    qimoSelect: false,
   },
   {
     slug: "chateau-haut-brion",
@@ -68,7 +68,7 @@ export const iconicChateaux: Winery[] = [
     grapes: [],
     icons: [],
     history: "",
-    qimoSelect: true,
+    qimoSelect: false,
   },
   {
     slug: "chateau-cheval-blanc",
@@ -81,7 +81,7 @@ export const iconicChateaux: Winery[] = [
     grapes: [],
     icons: [],
     history: "",
-    qimoSelect: true,
+    qimoSelect: false,
   },
   {
     slug: "chateau-ausone",
@@ -94,7 +94,7 @@ export const iconicChateaux: Winery[] = [
     grapes: [],
     icons: [],
     history: "",
-    qimoSelect: true,
+    qimoSelect: false,
   },
   {
     slug: "chateau-latour",
@@ -107,7 +107,7 @@ export const iconicChateaux: Winery[] = [
     grapes: [],
     icons: [],
     history: "",
-    qimoSelect: true,
+    qimoSelect: false,
   },
   {
     slug: "chateau-palmer",
@@ -120,7 +120,7 @@ export const iconicChateaux: Winery[] = [
     grapes: [],
     icons: [],
     history: "",
-    qimoSelect: true,
+    qimoSelect: false,
   },
   {
     slug: "chateau-la-fleur-petrus",
@@ -133,7 +133,7 @@ export const iconicChateaux: Winery[] = [
     grapes: [],
     icons: [],
     history: "",
-    qimoSelect: true,
+    qimoSelect: false,
   },
   {
     slug: "chateau-smith-haut-lafitte",
@@ -146,7 +146,7 @@ export const iconicChateaux: Winery[] = [
     grapes: [],
     icons: [],
     history: "",
-    qimoSelect: true,
+    qimoSelect: false,
   },
   {
     slug: "chateau-beychevelle",
@@ -159,7 +159,7 @@ export const iconicChateaux: Winery[] = [
     grapes: [],
     icons: [],
     history: "",
-    qimoSelect: true,
+    qimoSelect: false,
   },
   {
     slug: "chateau-pichon-baron",
@@ -172,7 +172,7 @@ export const iconicChateaux: Winery[] = [
     grapes: [],
     icons: [],
     history: "",
-    qimoSelect: true,
+    qimoSelect: false,
   },
   {
     slug: "chateau-lynch-bages",
@@ -185,7 +185,7 @@ export const iconicChateaux: Winery[] = [
     grapes: [],
     icons: [],
     history: "",
-    qimoSelect: true,
+    qimoSelect: false,
   },
   {
     slug: "chateau-canon",
@@ -198,7 +198,7 @@ export const iconicChateaux: Winery[] = [
     grapes: [],
     icons: [],
     history: "",
-    qimoSelect: true,
+    qimoSelect: false,
   },
   {
     slug: "chateau-cos-d-estournel",
@@ -211,7 +211,7 @@ export const iconicChateaux: Winery[] = [
     grapes: [],
     icons: [],
     history: "",
-    qimoSelect: true,
+    qimoSelect: false,
   },
   {
     slug: "chateau-troplong-mondot",
@@ -224,7 +224,7 @@ export const iconicChateaux: Winery[] = [
     grapes: [],
     icons: [],
     history: "",
-    qimoSelect: true,
+    qimoSelect: false,
   },
   {
     slug: "chateau-pape-clement",
@@ -237,7 +237,7 @@ export const iconicChateaux: Winery[] = [
     grapes: [],
     icons: [],
     history: "",
-    qimoSelect: true,
+    qimoSelect: false,
   },
   {
     slug: "chateau-la-dominique",
@@ -250,7 +250,7 @@ export const iconicChateaux: Winery[] = [
     grapes: [],
     icons: [],
     history: "",
-    qimoSelect: true,
+    qimoSelect: false,
   },
   {
     slug: "chateau-guiraud",
@@ -263,6 +263,6 @@ export const iconicChateaux: Winery[] = [
     grapes: [],
     icons: [],
     history: "",
-    qimoSelect: true,
+    qimoSelect: false,
   },
 ];

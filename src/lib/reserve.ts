@@ -24,15 +24,11 @@ export function mapsUrl(address?: string, name?: string) {
 }
 
 // Ordem de prioridade: 1) reserva oficial direta/formulário/parceiro → 2) telefone → 5) concierge QIMO
+// Vinícolas são informativas (só para conhecer) — sem "reservar visita" nem
+// "como chegar/endereço". Ficam apenas os links informativos.
 export function wineryActions(w: Winery): Action[] {
-  const reserveHref =
-    w.bookingUrl ||
-    (w.phone ? `tel:${w.phone}` : qimoWhatsApp(`Olá! Gostaria de reservar uma visita à vinícola ${w.name}.`));
-  const a: Action[] = [
-    { kind: "reserve", href: reserveHref, labelKey: "act.reserveVisit", icon: "Grape", primary: true, external: reserveHref.startsWith("http") },
-  ];
+  const a: Action[] = [];
   if (w.website) a.push({ kind: "site", href: w.website, labelKey: "act.site", icon: "Globe", external: true });
-  a.push({ kind: "maps", href: mapsUrl(w.address, w.name), labelKey: "act.maps", icon: "Navigation", external: true });
   if (w.phone) a.push({ kind: "call", href: `tel:${w.phone}`, labelKey: "act.call", icon: "Phone" });
   if (w.email) a.push({ kind: "email", href: `mailto:${w.email}`, labelKey: "act.email", icon: "Mail" });
   if (w.instagram) a.push({ kind: "instagram", href: w.instagram, labelKey: "act.instagram", icon: "Instagram", external: true });
