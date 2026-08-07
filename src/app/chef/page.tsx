@@ -147,7 +147,8 @@ function ChefExperienceCard({
   const sectionRef = useRef<HTMLElement>(null);
   const text = chefDescription(item.description);
   const { reservableByKey } = useReservations();
-  const hasReserve = reservableByKey.has(item.slug);
+  const rv = reservableByKey.get(item.slug);
+  const hasReserve = !!rv;
   const gallery = item.gallery?.filter(Boolean).length ? item.gallery.filter(Boolean) : (item.heroImage ? [item.heroImage] : []);
   const cover = gallery[0] || item.heroImage;
 
@@ -256,10 +257,39 @@ function ChefExperienceCard({
               </div>
             )}
 
-            <div className="mt-5 flex flex-wrap items-center gap-2">
-              {item.duration && <span className="chip"><Icon name="Clock" size={13} /> {item.duration}</span>}
-              {item.price && <span className="chip"><Icon name="Coins" size={13} /> {item.price}</span>}
-            </div>
+            {(rv?.dayNumber != null || rv?.startTime || item.price || item.duration) && (
+              <div className="mt-5 rounded-[16px] border p-4 sm:p-5" style={{ borderColor: "color-mix(in srgb, var(--gold) 45%, var(--line))", background: "color-mix(in srgb, var(--gold) 8%, transparent)" }}>
+                <div className="flex flex-wrap items-center gap-x-8 gap-y-4">
+                  {(rv?.dayNumber != null || rv?.startTime) && (
+                    <div className="flex items-center gap-2.5">
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gold/15 text-gold-deep"><Icon name="CalendarCheck" size={16} /></span>
+                      <div>
+                        <p className="font-sans text-[10px] font-semibold uppercase tracking-wide2 text-muted">Quando</p>
+                        <p className="font-serif text-[18px] font-light leading-tight text-petrol-700">{[rv?.dayNumber != null ? `Dia ${rv.dayNumber}` : null, rv?.startTime].filter(Boolean).join(" · ")}</p>
+                      </div>
+                    </div>
+                  )}
+                  {item.price && (
+                    <div className="flex items-center gap-2.5">
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gold/15 text-gold-deep"><Icon name="Coins" size={16} /></span>
+                      <div>
+                        <p className="font-sans text-[10px] font-semibold uppercase tracking-wide2 text-muted">Valor</p>
+                        <p className="font-serif text-[18px] font-light leading-tight text-petrol-700">{item.price}</p>
+                      </div>
+                    </div>
+                  )}
+                  {item.duration && (
+                    <div className="flex items-center gap-2.5">
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gold/15 text-gold-deep"><Icon name="Clock" size={16} /></span>
+                      <div>
+                        <p className="font-sans text-[10px] font-semibold uppercase tracking-wide2 text-muted">Duração</p>
+                        <p className="font-serif text-[18px] font-light leading-tight text-petrol-700">{item.duration}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
 
             {hasReserve ? (
               <ActivityReserve contentKey={item.slug} />
