@@ -8,7 +8,7 @@ import { useLocale, useReservations } from "@/components/providers";
 import { ActivityReserve } from "@/components/ActivityReserve";
 import { PhotoCarousel } from "@/components/PhotoCarousel";
 import { qimoWhatsApp } from "@/lib/reserve";
-import { chefProfile as fileChefProfile } from "@/content";
+import { chefProfile as fileChefProfile, getDay } from "@/content";
 import type { ChefExperience, ChefProfile } from "@/lib/types";
 
 export default function ChefPage() {
@@ -150,7 +150,8 @@ function ChefExperienceCard({
   const rv = reservableByKey.get(item.slug);
   const hasReserve = !!rv;
   const gallery = item.gallery?.filter(Boolean).length ? item.gallery.filter(Boolean) : (item.heroImage ? [item.heroImage] : []);
-  const cover = gallery[0] || item.heroImage;
+  const cover = item.heroImage || gallery[0]; // usa a CAPA selecionada (heroImage), não a 1ª da galeria
+  const dayDate = rv?.dayNumber != null ? getDay(rv.dayNumber)?.date : null;
 
   useEffect(() => {
     if (!open) return;
@@ -266,6 +267,7 @@ function ChefExperienceCard({
                       <div>
                         <p className="font-sans text-[10px] font-semibold uppercase tracking-wide2 text-muted">Quando</p>
                         <p className="font-serif text-[18px] font-light leading-tight text-petrol-700">{[rv?.dayNumber != null ? `Dia ${rv.dayNumber}` : null, rv?.startTime].filter(Boolean).join(" · ")}</p>
+                        {dayDate && <p className="mt-0.5 font-sans text-[12px] capitalize text-muted">{new Date(dayDate + "T12:00:00").toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}</p>}
                       </div>
                     </div>
                   )}
