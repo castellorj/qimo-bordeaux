@@ -5,7 +5,7 @@
    - API de clima (open-meteo): network-first com fallback ao cache
    Resultado: todo conteúdo já acessado funciona offline.
 */
-const VERSION = "qimo-v2";
+const VERSION = "qimo-v3";
 const SHELL = `${VERSION}-shell`;
 const IMG = `${VERSION}-img`;
 
@@ -58,20 +58,22 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  // Imagens — cache-first
+  // Imagens — cache-first, mas SÓ guarda respostas OK (nunca 404/erro),
+  // senão um 404 momentâneo fica preso no cache e a foto nunca mais aparece.
   if (request.destination === "image") {
     event.respondWith(
-      caches.match(request).then(
-        (cached) =>
-          cached ||
-          fetch(request)
-            .then((res) => {
+      caches.match(request).then((cached) => {
+        if (cached) return cached;
+        return fetch(request)
+          .then((res) => {
+            if (res.ok) {
               const copy = res.clone();
               caches.open(IMG).then((c) => c.put(request, copy));
-              return res;
-            })
-            .catch(() => cached)
-      )
+            }
+            return res;
+          })
+          .catch(() => cached);
+      })
     );
     return;
   }
