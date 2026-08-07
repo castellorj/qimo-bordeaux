@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import PhoneInput from "react-phone-number-input";
+import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { Icon } from "./Icon";
 import { supabase } from "@/lib/supabase/client";
@@ -133,11 +133,10 @@ export function WelcomeSheet() {
 
   const submitPhone = async (e: React.FormEvent) => {
     e.preventDefault();
+    // Validação real da biblioteca (exige DDD/formato correto por país, sem barrar válidos).
+    if (!phone || !isValidPhoneNumber(phone)) { setErr(L.errPhone); return; }
     const cleanPhone = normalizePhone(phone);
-    // BR sem DDD: 55 + 9 dígitos = 11. Com DDD: 55 + 2 (DDD) + 8/9 = 12/13.
-    // Exige o DDD para números do Brasil (senão as reservas não casam pelo telefone).
-    const isBR = country === "BR" || cleanPhone.startsWith("55");
-    if (!cleanPhone || cleanPhone.length < 10 || (isBR && cleanPhone.length < 12)) { setErr(L.errPhone); return; }
+    if (!cleanPhone) { setErr(L.errPhone); return; }
     setBusy(true); setErr("");
     try {
       const participant = await participantByPhone(cleanPhone);
