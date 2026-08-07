@@ -36,7 +36,7 @@ const ANON =
 type ByKind = Record<string, { slug: string; data: any; sort: number; published?: boolean }[]>;
 type ContentState = ByKind | null | undefined;
 const Ctx = createContext<ContentState>(undefined);
-const CONTENT_CACHE_KEY = "qimo:content-cache:v4";
+const CONTENT_CACHE_KEY = "qimo:content-cache:v5";
 const CONTENT_CACHE_MAX_AGE = 5 * 60 * 1000;
 
 // Contexto de edição inline (ativo quando o guia roda dentro do preview do painel).
