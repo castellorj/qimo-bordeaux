@@ -770,7 +770,7 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
         activity?.title ?? r.activity?.title ?? "",
         reservationGroup(r),
         personLabel(r),
-        r.guest_phone || participantForReservation(r)?.phone || "",
+        participantForReservation(r)?.phone || r.guest_phone || "",
         companions(r).join(", "),
         r.seats || 1,
         r.status === "confirmed" ? "Confirmada" : r.status === "waitlist" ? "Lista de espera" : r.status,
@@ -953,7 +953,7 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
                           {r.status !== "confirmed" && <span className="rounded-full bg-gold/15 px-2 py-0.5 font-sans text-[10px] uppercase tracking-wide2 text-gold-deep">lista de espera</span>}
                         </div>
                         <p className="mt-0.5 font-sans text-[12px] text-muted">
-                          {[r.guest_phone, `${r.seats} ${r.seats === 1 ? "lugar" : "lugares"}`].filter(Boolean).join(" · ")}
+                          {[participantForReservation(r)?.phone || r.guest_phone, `${r.seats} ${r.seats === 1 ? "lugar" : "lugares"}`].filter(Boolean).join(" · ")}
                         </p>
                         {comps.length > 0 && (
                           <div className="mt-1.5 flex flex-wrap gap-1.5">

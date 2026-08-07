@@ -22,6 +22,7 @@ const STR: Record<Lang, Record<string, string>> = {
     title2: "Complete seu cadastro", sub2: "Só mais um passo para abrir o seu guia.",
     name: "Nome completo *", email: "E-mail *", btn2: "Entrar no guia", registering: "Cadastrando…", back: "← Voltar",
     errPhone: "Informe um telefone válido com DDD. Exemplo: 21 99999-9999.", errForm: "Preencha nome e e-mail válidos.",
+    ddd: "Importante: inclua o DDD (ex.: 21). Sem o DDD, suas reservas não aparecem.",
     priv: "Seus dados são tratados com discrição. Sem senha, sem spam.",
   },
   en: {
@@ -31,7 +32,8 @@ const STR: Record<Lang, Record<string, string>> = {
     btn1: "Enter", checking: "Checking…",
     title2: "Complete your registration", sub2: "Just one more step to open your guide.",
     name: "Full name *", email: "Email *", btn2: "Enter the guide", registering: "Registering…", back: "← Back",
-    errPhone: "Enter a valid phone number.", errForm: "Enter a valid name and email.",
+    errPhone: "Enter a valid phone number with area code.", errForm: "Enter a valid name and email.",
+    ddd: "Important: include your area code. Without it, your reservations won't show.",
     priv: "Your details are handled with discretion. No password, no spam.",
   },
   es: {
@@ -41,7 +43,8 @@ const STR: Record<Lang, Record<string, string>> = {
     btn1: "Entrar", checking: "Verificando…",
     title2: "Completa tu registro", sub2: "Solo un paso más para abrir tu guía.",
     name: "Nombre completo *", email: "Correo *", btn2: "Entrar a la guía", registering: "Registrando…", back: "← Volver",
-    errPhone: "Ingresa un teléfono válido.", errForm: "Ingresa un nombre y correo válidos.",
+    errPhone: "Ingresa un teléfono válido con código de área.", errForm: "Ingresa un nombre y correo válidos.",
+    ddd: "Importante: incluye el código de área (DDD). Sin él, tus reservas no aparecen.",
     priv: "Tus datos se tratan con discreción. Sin contraseña, sin spam.",
   },
 };
@@ -131,7 +134,10 @@ export function WelcomeSheet() {
   const submitPhone = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanPhone = normalizePhone(phone);
-    if (!cleanPhone || cleanPhone.length < 10) { setErr(L.errPhone); return; }
+    // BR sem DDD: 55 + 9 dígitos = 11. Com DDD: 55 + 2 (DDD) + 8/9 = 12/13.
+    // Exige o DDD para números do Brasil (senão as reservas não casam pelo telefone).
+    const isBR = country === "BR" || cleanPhone.startsWith("55");
+    if (!cleanPhone || cleanPhone.length < 10 || (isBR && cleanPhone.length < 12)) { setErr(L.errPhone); return; }
     setBusy(true); setErr("");
     try {
       const participant = await participantByPhone(cleanPhone);
@@ -188,6 +194,9 @@ export function WelcomeSheet() {
             <div className="mt-8">
               <PhoneInput international defaultCountry="BR" value={phone} onChange={setPhone}
                 onCountryChange={(c) => setCountry(c || "BR")} autoFocus placeholder="+55 DDD + número" />
+              <p className="mx-auto mt-2.5 flex max-w-xs items-start justify-center gap-1.5 rounded-[10px] border border-gold/30 bg-gold/10 px-3 py-2 font-sans text-[12px] leading-snug text-gold-soft">
+                <Icon name="Info" size={14} className="mt-px shrink-0" /> {L.ddd}
+              </p>
             </div>
             {err && <p className="mt-3 font-sans text-[12px] text-gold-soft">{err}</p>}
             <button type="submit" disabled={busy} className="btn-primary mt-6 w-full !py-3.5 text-[15px]">
