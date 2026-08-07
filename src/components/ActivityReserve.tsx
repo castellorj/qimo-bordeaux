@@ -5,6 +5,16 @@ import { createPortal } from "react-dom";
 import { Icon } from "./Icon";
 import { useReservations } from "./providers";
 import { type Reservable, type MyReservation } from "@/lib/supabase/reservations";
+import { getDay } from "@/content";
+
+// Data por extenso do dia da viagem (ex.: "Quinta-feira, 29 de outubro"), ou null.
+function dayDateFull(dayNumber?: number | null): string | null {
+  if (dayNumber == null) return null;
+  const d = getDay(dayNumber)?.date;
+  if (!d) return null;
+  const s = new Date(d + "T12:00:00").toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" });
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
 
 export function ActivityReserve({ contentKey }: { contentKey: string }) {
   const { reservableByKey, mine } = useReservations();
@@ -146,10 +156,12 @@ function ReserveSheet({
           <div className="min-w-0">
             <p className="kicker">Reserva de passeio</p>
             <h3 className="mt-1 font-serif text-xl font-light leading-snug">{rv.title}</h3>
-            <p className="mt-1 font-sans text-[12px] text-muted">
+            <p className="mt-1 font-sans text-[13px] font-medium text-petrol-700">
+              {[dayDateFull(rv.dayNumber) || (rv.dayNumber != null ? `Dia ${rv.dayNumber}` : null), rv.startTime].filter(Boolean).join(" · ")}
+            </p>
+            <p className="mt-0.5 font-sans text-[12px] text-muted">
               {[
-                rv.dayNumber != null ? `Dia ${rv.dayNumber}` : null,
-                rv.startTime || null,
+                rv.dayNumber != null && dayDateFull(rv.dayNumber) ? `Dia ${rv.dayNumber} da viagem` : null,
                 rv.available != null ? (rv.available > 0 ? `${rv.available} ${rv.available === 1 ? "vaga" : "vagas"}` : "lista de espera") : null,
               ].filter(Boolean).join(" · ")}
             </p>
