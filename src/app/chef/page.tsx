@@ -152,6 +152,9 @@ function ChefExperienceCard({
   const gallery = item.gallery?.filter(Boolean).length ? item.gallery.filter(Boolean) : (item.heroImage ? [item.heroImage] : []);
   const cover = item.heroImage || gallery[0]; // usa a CAPA selecionada (heroImage), não a 1ª da galeria
   const dayDate = rv?.dayNumber != null ? getDay(rv.dayNumber)?.date : null;
+  const dateFull = dayDate
+    ? (() => { const s = new Date(dayDate + "T12:00:00").toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" }); return s.charAt(0).toUpperCase() + s.slice(1); })()
+    : null;
 
   useEffect(() => {
     if (!open) return;
@@ -266,8 +269,14 @@ function ChefExperienceCard({
                       <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-gold/15 text-gold-deep"><Icon name="CalendarCheck" size={16} /></span>
                       <div>
                         <p className="font-sans text-[10px] font-semibold uppercase tracking-wide2 text-muted">Quando</p>
-                        <p className="font-serif text-[18px] font-light leading-tight text-petrol-700">{[rv?.dayNumber != null ? `Dia ${rv.dayNumber}` : null, rv?.startTime].filter(Boolean).join(" · ")}</p>
-                        {dayDate && <p className="mt-0.5 font-sans text-[12px] capitalize text-muted">{new Date(dayDate + "T12:00:00").toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" })}</p>}
+                        {dateFull ? (
+                          <>
+                            <p className="font-serif text-[18px] font-light leading-tight text-petrol-700">{[dateFull, rv?.startTime].filter(Boolean).join(" · ")}</p>
+                            {rv?.dayNumber != null && <p className="mt-0.5 font-sans text-[12px] text-muted">Dia {rv.dayNumber} da viagem</p>}
+                          </>
+                        ) : (
+                          <p className="font-serif text-[18px] font-light leading-tight text-petrol-700">{[rv?.dayNumber != null ? `Dia ${rv.dayNumber}` : null, rv?.startTime].filter(Boolean).join(" · ")}</p>
+                        )}
                       </div>
                     </div>
                   )}
