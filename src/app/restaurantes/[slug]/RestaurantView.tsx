@@ -5,7 +5,7 @@ import { SmartImage } from "@/components/SmartImage";
 import { Icon } from "@/components/Icon";
 import { QimoSeal, Pill } from "@/components/ui";
 import { ActionBar } from "@/components/ActionBar";
-import { restaurantActions, qimoWhatsApp } from "@/lib/reserve";
+import { restaurantActions } from "@/lib/reserve";
 import { useGuideItem, useGuideLoading } from "@/components/GuideContent";
 import type { Restaurant } from "@/lib/types";
 
@@ -129,12 +129,9 @@ export function RestaurantView({ slug }: { slug: string }) {
                 <InfoCard icon="MapPin" label="Bairro" value={r.neighborhood || r.city} />
                 <InfoCard icon="Shirt" label="Traje" value={r.dressCode} />
               </div>
-              <div className="mt-4 grid grid-cols-2 gap-2">
-                <a href={qimoWhatsApp(`Quero salvar ${r.name} para minha viagem a Bordeaux.`)} target="_blank" rel="noopener noreferrer" className="btn-ghost !px-3 !py-2 text-[12px]">
-                  <Icon name="Heart" size={14} /> Favorito
-                </a>
-                <a href={`https://wa.me/?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer" className="btn-ghost !px-3 !py-2 text-[12px]">
-                  <Icon name="MessageCircle" size={14} /> Enviar
+              <div className="mt-4">
+                <a href={`https://wa.me/?text=${encodeURIComponent(shareText)}`} target="_blank" rel="noopener noreferrer" className="btn-ghost w-full !px-3 !py-2 text-[12px]">
+                  <Icon name="MessageCircle" size={14} /> Enviar para alguém
                 </a>
               </div>
             </div>
