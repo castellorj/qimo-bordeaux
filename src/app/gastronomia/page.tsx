@@ -21,7 +21,7 @@ export default function GastronomiaPage() {
               image={g.heroImage}
               kicker={g.category}
               title={g.name}
-              subtitle={g.pairing}
+              subtitle={g.subtitle || g.pairing}
               seal={g.qimoSelect}
               priority={i < 3}
             />

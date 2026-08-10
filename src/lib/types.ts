@@ -130,10 +130,16 @@ export interface Appellation {
 export interface GastronomyItem {
   slug: string;
   name: string;
-  category: "Salgado" | "Doce" | "Frutos do mar" | "Queijo" | "Padaria" | "Mercado";
+  category: string; // kicker (comida: tipo; golfe: a data, ex.: "26 de outubro")
   heroImage?: string;
+  gallery?: string[]; // carrossel de fotos (golfe/experiência)
+  subtitle?: string; // linha secundária (ex.: "Tom Doak · Gardegan-et-Tourtirac")
   description: string;
-  whereToTry: string[];
+  highlights?: string[]; // destaques/prêmios
+  teeTime?: string; // ex.: "Tee time ≈ 9h00"
+  price?: string; // ex.: "€ 170 por pessoa"
+  website?: string; // site oficial
+  whereToTry?: string[];
   pairing?: string;
   qimoSelect?: boolean;
 }

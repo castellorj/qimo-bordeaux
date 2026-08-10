@@ -2,6 +2,7 @@
 
 import { SmartImage } from "@/components/SmartImage";
 import { Icon } from "@/components/Icon";
+import { PhotoCarousel } from "@/components/PhotoCarousel";
 import { QimoSeal, Crumb } from "@/components/ui";
 import { useGuideItem, useGuideLoading } from "@/components/GuideContent";
 import type { GastronomyItem } from "@/lib/types";
@@ -11,6 +12,10 @@ export function GastronomyView({ slug }: { slug: string }) {
   const loading = useGuideLoading();
   if (loading) return <div className="container-editorial py-20 text-center text-muted">Carregando...</div>;
   if (!g) return <div className="container-editorial py-20 text-center text-muted">Item não encontrado.</div>;
+
+  const gallery = (g.gallery || []).filter(Boolean);
+  const highlights = (g.highlights || []).filter(Boolean);
+  const hasAside = (g.whereToTry || []).filter(Boolean).length > 0;
 
   return (
     <article>
@@ -26,15 +31,46 @@ export function GastronomyView({ slug }: { slug: string }) {
                 {g.qimoSelect && <QimoSeal />}
               </div>
               <h1 className="display mt-2 text-4xl text-cream sm:text-6xl">{g.name}</h1>
+              {g.subtitle && <p className="mt-2 font-serif text-lg font-light italic text-cream/85 sm:text-xl">{g.subtitle}</p>}
             </div>
           </div>
         </div>
       </section>
 
       <div className="container-editorial py-12">
-        <div className="grid gap-12 lg:grid-cols-[1fr_320px]">
+        <div className={hasAside ? "grid gap-12 lg:grid-cols-[1fr_320px]" : "mx-auto max-w-3xl"}>
           <div className="space-y-8">
+            {gallery.length > 0 && <PhotoCarousel images={gallery} alt={g.name} />}
+
             <p className="font-serif text-xl font-light leading-relaxed sm:text-2xl" style={{ color: "var(--text)" }}>{g.description}</p>
+
+            {highlights.length > 0 && (
+              <div className="rounded-[14px] border bg-white/40 p-5" style={{ borderColor: "var(--line)" }}>
+                <p className="font-sans text-[10px] font-semibold uppercase tracking-wide2 text-muted">Destaques</p>
+                <ul className="mt-3 space-y-2.5">
+                  {highlights.map((h, i) => (
+                    <li key={i} className="flex items-start gap-2 font-sans text-[14px] leading-snug" style={{ color: "var(--text)" }}>
+                      <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-gold/15 text-gold-deep"><Icon name="Star" size={11} /></span>{h}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            {(g.teeTime || g.price) && (
+              <div className="flex flex-wrap items-center gap-2">
+                {g.teeTime && <span className="chip"><Icon name="Clock" size={13} /> {g.teeTime}</span>}
+                {g.price && <span className="chip"><Icon name="Coins" size={13} /> {g.price}</span>}
+              </div>
+            )}
+
+            {g.website && (
+              <a href={g.website.startsWith("http") ? g.website : `https://${g.website}`} target="_blank" rel="noopener noreferrer"
+                className="btn-primary !rounded-[10px] !px-4 !py-3 text-[12px]">
+                <Icon name="Globe" size={15} /> Site oficial
+              </a>
+            )}
+
             {g.pairing && (
               <p className="flex items-start gap-2 font-serif text-lg font-light italic" style={{ color: "var(--text-muted)" }}>
                 <Icon name="Wine" size={18} className="mt-1 shrink-0 text-gold" /> {g.pairing}
@@ -42,18 +78,20 @@ export function GastronomyView({ slug }: { slug: string }) {
             )}
           </div>
 
-          <aside className="lg:sticky lg:top-24 lg:self-start">
-            <div className="card p-6">
-              <h3 className="kicker flex items-center gap-2"><Icon name="MapPin" size={14} /> Onde provar</h3>
-              <ul className="mt-4 space-y-2.5">
-                {(g.whereToTry || []).map((w, i) => (
-                  <li key={i} className="flex items-start gap-3 font-sans text-[14px] leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                    <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-gold" />{w}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </aside>
+          {hasAside && (
+            <aside className="lg:sticky lg:top-24 lg:self-start">
+              <div className="card p-6">
+                <h3 className="kicker flex items-center gap-2"><Icon name="MapPin" size={14} /> Onde provar</h3>
+                <ul className="mt-4 space-y-2.5">
+                  {(g.whereToTry || []).map((w, i) => (
+                    <li key={i} className="flex items-start gap-3 font-sans text-[14px] leading-relaxed" style={{ color: "var(--text-muted)" }}>
+                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-gold" />{w}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </aside>
+          )}
         </div>
       </div>
     </article>
