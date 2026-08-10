@@ -37,6 +37,10 @@ export const SITE_IMAGES: SiteImage[] = [
   { key: "img.hub.cidades", label: "Card Cidades", group: "Cards do Descobrir", def: "/photos/hero-saint-emilion.jpg" },
   { key: "img.hub.mapa-rota", label: "Card Mapa da rota", group: "Cards do Descobrir", def: "/photos/route-map-card.png" },
 
+  // ---- Página do Mapa (as duas ilustrações grandes) ----
+  { key: "img.mapa.rota", label: "Mapa da rota", group: "Página do Mapa", def: "/photos/route-map-full.png", hint: "Ilustração grande da rota do cruzeiro." },
+  { key: "img.mapa.wine-central", label: "Mapa Bordeaux Wine Central", group: "Página do Mapa", def: "/photos/route-map-wine-central.png", hint: "Mapa ilustrado complementar." },
+
   // ---- Concierge · "Sua viagem" ----
   { key: "img.viagem.barco", label: "Card O Navio", group: "Concierge · Sua viagem", def: "/photos/ship-exterior.jpg" },
   { key: "img.viagem.mapa", label: "Card Mapa", group: "Concierge · Sua viagem", def: "/photos/hero-vignoble.jpg" },

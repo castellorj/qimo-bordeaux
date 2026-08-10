@@ -5,6 +5,8 @@ import Link from "next/link";
 import { PageHero } from "@/components/PageHero";
 import { Icon } from "@/components/Icon";
 import { useGuideKind } from "@/components/GuideContent";
+import { useLocale } from "@/components/providers";
+import { cleanSiteImage } from "@/lib/siteImages";
 import type { City, Winery } from "@/lib/types";
 
 type Filter = "all" | "cities" | "wineries";
@@ -13,6 +15,10 @@ export default function MapaPage() {
   const [filter, setFilter] = useState<Filter>("all");
   const cities = useGuideKind<City>("city");
   const wineries = useGuideKind<Winery>("winery");
+  const { cfg } = useLocale();
+  // Ilustrações do mapa: editáveis no painel (Fotos do site → "Página do Mapa").
+  const mapaRota = cleanSiteImage(cfg("img.mapa.rota")) || "/photos/route-map-full.png";
+  const mapaWineCentral = cleanSiteImage(cfg("img.mapa.wine-central")) || "/photos/route-map-wine-central.png";
 
   const points = [
     ...cities
@@ -63,7 +69,7 @@ export default function MapaPage() {
           </div>
           <div className="card overflow-hidden bg-[#f6e7bd]">
             <img
-              src="/photos/route-map-full.png"
+              src={mapaRota}
               alt="Mapa da rota Bordeaux Experience"
               className="w-full"
               loading="eager"
@@ -78,7 +84,7 @@ export default function MapaPage() {
           </div>
           <div className="card overflow-hidden bg-[#f6e7bd]">
             <img
-              src="/photos/route-map-wine-central.png"
+              src={mapaWineCentral}
               alt="Mapa ilustrado de Bordeaux Wine Central"
               className="w-full"
               loading="lazy"
