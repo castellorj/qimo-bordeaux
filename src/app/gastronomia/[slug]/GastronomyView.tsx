@@ -3,6 +3,7 @@
 import { SmartImage } from "@/components/SmartImage";
 import { Icon } from "@/components/Icon";
 import { PhotoCarousel } from "@/components/PhotoCarousel";
+import { ActivityReserve } from "@/components/ActivityReserve";
 import { QimoSeal, Crumb } from "@/components/ui";
 import { useGuideItem, useGuideLoading } from "@/components/GuideContent";
 import type { GastronomyItem } from "@/lib/types";
@@ -69,6 +70,9 @@ export function GastronomyView({ slug }: { slug: string }) {
                 <Icon name="Globe" size={15} /> Site oficial
               </a>
             )}
+
+            {/* Botão Reservar — mesma dinâmica dos passeios (aparece se houver atividade reservável ligada). */}
+            <ActivityReserve contentKey={g.slug} />
           </div>
         </div>
       </div>

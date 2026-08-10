@@ -14,6 +14,9 @@ import { chateauDossiers } from "@/content/chateaux-dossiers";
 import clsx from "clsx";
 
 const LONG = 70;
+// Tipos que espelham uma atividade reservável (mesmo sistema de reservas da Viagem):
+// mostram a seção "Reservas" no editor e abrem o botão Reservar no app.
+const hasReserva = (kind: string) => kind === "chef" || kind === "gastronomy";
 const KIND_GROUPS = [
   { title: "Principais", kinds: ["city", "winery", "restaurant", "document_category"] },
   { title: "Descobrir", kinds: ["wine", "gastronomy", "experience", "shopping", "chef", "chef_profile"] },
@@ -384,14 +387,14 @@ export function ContentCMS() {
   const persistDraft = async () => {
     if (!editing) return;
     await upsertContent(editing.kind, editing.slug, draft, editing.sort, editing.published);
-    if (editing.kind === "chef") {
+    if (hasReserva(editing.kind)) {
       const rsv = draft?.reserva || {};
       const vagas = Math.max(0, parseInt(String(rsv.vagas ?? 0)) || 0);
       const diaRaw = rsv.dia;
       const dia = diaRaw == null || diaRaw === "" || Number.isNaN(parseInt(String(diaRaw))) ? null : parseInt(String(diaRaw));
       const horario = String(rsv.horario || "").trim() || null;
       await syncContentActivity(editing.slug, {
-        title: draft?.name || "Experiência do Chef",
+        title: draft?.name || "Reserva",
         capacity: vagas,
         dayNumber: dia,
         startTime: horario,
@@ -424,8 +427,8 @@ export function ContentCMS() {
     // Châteaux: o dossiê (texto principal) mora em arquivo separado — traz para o
     // editor pré-preenchido, para virar campo editável salvo no banco.
     if (row.kind === "winery") base.dossier = base.dossier || chateauDossiers[row.slug] || "";
-    // Chef: config de reserva (vagas/dia/horário) mora em `reserva` e espelha uma atividade reservável.
-    if (row.kind === "chef") base.reserva = { vagas: 0, dia: null, horario: "", ...(base.reserva || {}) };
+    // Chef/Golf: config de reserva (vagas/dia/horário) mora em `reserva` e espelha uma atividade reservável.
+    if (hasReserva(row.kind)) base.reserva = { vagas: 0, dia: null, horario: "", ...(base.reserva || {}) };
     setDraft(base);
     setShowHist(false);
     setVersions(await listVersions(row.kind, row.slug));
@@ -434,14 +437,14 @@ export function ContentCMS() {
   const togglePublished = async (row: ContentRow) => {
     const next = !row.published;
     await setPublished(row.id, next);
-    // No Chef, publicar/ocultar também abre/fecha a atividade de reserva ligada.
-    if (row.kind === "chef") {
+    // No Chef/Golf, publicar/ocultar também abre/fecha a atividade de reserva ligada.
+    if (hasReserva(row.kind)) {
       const rsv = (row.data as any)?.reserva || {};
       const vagas = Math.max(0, parseInt(String(rsv.vagas ?? 0)) || 0);
       const diaRaw = rsv.dia;
       const dia = diaRaw == null || diaRaw === "" || Number.isNaN(parseInt(String(diaRaw))) ? null : parseInt(String(diaRaw));
       await syncContentActivity(row.slug, {
-        title: (row.data as any)?.name || "Experiência do Chef",
+        title: (row.data as any)?.name || "Reserva",
         capacity: vagas,
         dayNumber: dia,
         startTime: String(rsv.horario || "").trim() || null,
@@ -631,7 +634,7 @@ export function ContentCMS() {
           <div className="mt-5">
             <FieldEditor kind={editing.kind} data={draft} onChange={setDraft} />
           </div>
-          {editing.kind === "chef" && (() => {
+          {hasReserva(editing.kind) && (() => {
             const rsv = draft?.reserva || {};
             const setRsv = (patch: Record<string, any>) => setDraft({ ...draft, reserva: { ...rsv, ...patch } });
             const inputCls = "mt-1 w-full rounded-[8px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold";
