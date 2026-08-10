@@ -22,12 +22,13 @@ export function ActivityReserve({ contentKey, inline = false }: { contentKey: st
   const rv = reservableByKey.get(contentKey);
   if (!rv) return null;
 
-  // inline = botão compacto (mesmo tamanho do "Site oficial"); padrão = largura total.
+  // inline = mesmo formato do botão "Site oficial" (largura total, sem margem própria —
+  // o espaçamento fica com o container); padrão = largura total com mt-3.
   const reservedCls = inline
-    ? "flex items-center justify-center gap-2 rounded-[10px] border-2 px-4 py-3 font-sans text-[12px] font-semibold transition-colors"
+    ? "flex w-full items-center justify-center gap-2 rounded-[10px] border-2 px-4 py-3 font-sans text-[12px] font-semibold transition-colors"
     : "mt-3 flex w-full items-center justify-center gap-2 rounded-[10px] border-2 px-3 py-2 font-sans text-[12px] font-semibold transition-colors";
   const primaryCls = inline
-    ? "btn-primary !rounded-[10px] !px-4 !py-3 text-[12px]"
+    ? "btn-primary w-full !rounded-[10px] !px-4 !py-3 text-[12px]"
     : "btn-primary mt-3 w-full !rounded-[10px] !px-4 !py-2 !tracking-wide text-[12px]";
 
   const my = mine.get(rv.activityId);

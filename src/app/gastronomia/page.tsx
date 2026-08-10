@@ -153,11 +153,11 @@ function GolfCard({
               </div>
             )}
 
-            {/* Site oficial + Reservar — mesma altura/estilo, lado a lado. */}
-            <div className="mt-5 flex flex-wrap items-center gap-3">
+            {/* Site oficial + Reservar — mesmo tamanho (largura total), empilhados. */}
+            <div className="mt-5 flex flex-col gap-3">
               {item.website && (
                 <a href={item.website.startsWith("http") ? item.website : `https://${item.website}`} target="_blank" rel="noopener noreferrer"
-                  className="btn-primary !rounded-[10px] !px-4 !py-3 text-[12px]">
+                  className="btn-primary w-full !rounded-[10px] !px-4 !py-3 text-[12px]">
                   <Icon name="Globe" size={15} /> Site oficial
                 </a>
               )}

@@ -64,11 +64,11 @@ export function GastronomyView({ slug }: { slug: string }) {
               </div>
             )}
 
-            {/* Site oficial + Reservar — mesma altura/estilo, lado a lado. */}
-            <div className="flex flex-wrap items-center gap-3">
+            {/* Site oficial + Reservar — mesmo tamanho (largura total), empilhados. */}
+            <div className="flex flex-col gap-3">
               {g.website && (
                 <a href={g.website.startsWith("http") ? g.website : `https://${g.website}`} target="_blank" rel="noopener noreferrer"
-                  className="btn-primary !rounded-[10px] !px-4 !py-3 text-[12px]">
+                  className="btn-primary w-full !rounded-[10px] !px-4 !py-3 text-[12px]">
                   <Icon name="Globe" size={15} /> Site oficial
                 </a>
               )}
