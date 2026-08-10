@@ -9,7 +9,6 @@ import { Icon } from "@/components/Icon";
 import { Crumb } from "@/components/ui";
 import { useGuideKind } from "@/components/GuideContent";
 import { useLocale } from "@/components/providers";
-import { qimoWhatsApp } from "@/lib/reserve";
 import type { Restaurant } from "@/lib/types";
 
 // Categorias (títulos/intros editáveis no painel via i18n rest.cat.*)
@@ -42,9 +41,8 @@ const visibleFilters = [
 
 function RestaurantCard({ r, priority }: { r: Restaurant; priority?: boolean }) {
   const { t } = useLocale();
-  const reserveHref =
-    r.bookingUrl ||
-    (r.phone ? `tel:${r.phone}` : qimoWhatsApp(`Olá! Gostaria de reservar uma mesa no ${r.name}.`));
+  // Reserva: link de reserva > site oficial > telefone. Nunca o WhatsApp da QIMO.
+  const reserveHref = r.bookingUrl || r.website || (r.phone ? `tel:${r.phone}` : undefined);
   const category = r.category ? t(`rest.cat.${catI18n(r.category)}.s`) : "Restaurante";
   const summary = r.bestFor || r.specialty || r.description;
 
@@ -85,15 +83,17 @@ function RestaurantCard({ r, priority }: { r: Restaurant; priority?: boolean }) 
           >
             Detalhes
           </Link>
-          <a
-            href={reserveHref}
-            target={reserveHref.startsWith("http") ? "_blank" : undefined}
-            rel="noopener noreferrer"
-            className="flex min-h-[42px] flex-[1.25] items-center justify-center gap-2 rounded-[6px] bg-petrol-600 px-3 text-center text-[11px] font-semibold uppercase tracking-wide text-cream shadow-[0_8px_18px_rgba(92,23,42,.18)] transition-colors hover:bg-petrol-500"
-          >
-            <Icon name="CalendarCheck" size={14} />
-            {r.bookingUrl ? t("rest.book") : t("rest.contact")}
-          </a>
+          {reserveHref && (
+            <a
+              href={reserveHref}
+              target={reserveHref.startsWith("http") ? "_blank" : undefined}
+              rel="noopener noreferrer"
+              className="flex min-h-[42px] flex-[1.25] items-center justify-center gap-2 rounded-[6px] bg-petrol-600 px-3 text-center text-[11px] font-semibold uppercase tracking-wide text-cream shadow-[0_8px_18px_rgba(92,23,42,.18)] transition-colors hover:bg-petrol-500"
+            >
+              <Icon name="CalendarCheck" size={14} />
+              {reserveHref.startsWith("http") ? t("rest.book") : t("rest.contact")}
+            </a>
+          )}
       </div>
     </article>
   );

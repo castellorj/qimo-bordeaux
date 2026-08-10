@@ -36,14 +36,12 @@ export function wineryActions(w: Winery): Action[] {
 }
 
 export function restaurantActions(r: Restaurant): Action[] {
-  const reserveHref =
-    r.bookingUrl ||
-    (r.phone ? `tel:${r.phone}` : qimoWhatsApp(`Olá! Gostaria de reservar uma mesa no ${r.name}.`));
-  const a: Action[] = [
-    { kind: "reserve", href: reserveHref, labelKey: "act.reserveTable", icon: "Utensils", primary: true, external: reserveHref.startsWith("http") },
-  ];
+  // Reserva: link de reserva > site oficial > telefone. Nunca o WhatsApp da QIMO.
+  const reserveHref = r.bookingUrl || r.website || (r.phone ? `tel:${r.phone}` : undefined);
+  const a: Action[] = [];
+  if (reserveHref) a.push({ kind: "reserve", href: reserveHref, labelKey: "act.reserveTable", icon: "Utensils", primary: true, external: reserveHref.startsWith("http") });
   if (r.menuUrl) a.push({ kind: "menu", href: r.menuUrl, labelKey: "act.menu", icon: "BookOpen", external: true });
-  if (r.website) a.push({ kind: "site", href: r.website, labelKey: "act.site", icon: "Globe", external: true });
+  if (r.website && r.website !== reserveHref) a.push({ kind: "site", href: r.website, labelKey: "act.site", icon: "Globe", external: true });
   a.push({ kind: "maps", href: mapsUrl(r.address, r.name), labelKey: "act.maps", icon: "Navigation", external: true });
   if (r.email) a.push({ kind: "email", href: `mailto:${r.email}`, labelKey: "act.email", icon: "Mail" });
   if (r.instagram) a.push({ kind: "instagram", href: r.instagram, labelKey: "act.instagram", icon: "Instagram", external: true });
