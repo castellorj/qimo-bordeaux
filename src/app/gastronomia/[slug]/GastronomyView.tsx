@@ -15,7 +15,6 @@ export function GastronomyView({ slug }: { slug: string }) {
 
   const gallery = (g.gallery || []).filter(Boolean);
   const highlights = (g.highlights || []).filter(Boolean);
-  const hasAside = (g.whereToTry || []).filter(Boolean).length > 0;
 
   return (
     <article>
@@ -38,7 +37,7 @@ export function GastronomyView({ slug }: { slug: string }) {
       </section>
 
       <div className="container-editorial py-12">
-        <div className={hasAside ? "grid gap-12 lg:grid-cols-[1fr_320px]" : "mx-auto max-w-3xl"}>
+        <div className="mx-auto max-w-3xl">
           <div className="space-y-8">
             {gallery.length > 0 && <PhotoCarousel images={gallery} alt={g.name} />}
 
@@ -70,28 +69,7 @@ export function GastronomyView({ slug }: { slug: string }) {
                 <Icon name="Globe" size={15} /> Site oficial
               </a>
             )}
-
-            {g.pairing && (
-              <p className="flex items-start gap-2 font-serif text-lg font-light italic" style={{ color: "var(--text-muted)" }}>
-                <Icon name="Wine" size={18} className="mt-1 shrink-0 text-gold" /> {g.pairing}
-              </p>
-            )}
           </div>
-
-          {hasAside && (
-            <aside className="lg:sticky lg:top-24 lg:self-start">
-              <div className="card p-6">
-                <h3 className="kicker flex items-center gap-2"><Icon name="MapPin" size={14} /> Onde provar</h3>
-                <ul className="mt-4 space-y-2.5">
-                  {(g.whereToTry || []).map((w, i) => (
-                    <li key={i} className="flex items-start gap-3 font-sans text-[14px] leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                      <span className="mt-1.5 h-1 w-1 shrink-0 rounded-full bg-gold" />{w}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </aside>
-          )}
         </div>
       </div>
     </article>

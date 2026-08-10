@@ -9,7 +9,7 @@ import {
   BookOpen, Martini, Fish, Beef, ExternalLink, Navigation, Coffee, BedDouble, Mail,
   Smartphone, Tablet, Monitor, Rocket, GripVertical, Eye, EyeOff, Pencil, Image,
   Megaphone, AlertTriangle, TrendingUp, Copy, LayoutGrid, CircleCheck,
-  CalendarCheck, User, UserPlus, ListChecks,
+  CalendarCheck, User, UserPlus, ListChecks, Flag,
   type LucideIcon,
 } from "lucide-react";
 
@@ -24,7 +24,7 @@ const map: Record<string, LucideIcon> = {
   BookOpen, Martini, Fish, Beef, ExternalLink, Navigation, Coffee, BedDouble, Mail,
   Smartphone, Tablet, Monitor, Rocket, GripVertical, Eye, EyeOff, Pencil, Image,
   Megaphone, AlertTriangle, TrendingUp, Copy, LayoutGrid, CircleCheck,
-  CalendarCheck, User, UserPlus, ListChecks,
+  CalendarCheck, User, UserPlus, ListChecks, Flag,
 };
 
 export function Icon({

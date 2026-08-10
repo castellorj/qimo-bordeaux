@@ -22,7 +22,7 @@ export const SITE_IMAGES: SiteImage[] = [
   { key: "img.sec.cidades", label: "Cidades", group: "Topos de seção", def: "/photos/hero-saint-emilion.jpg" },
   { key: "img.sec.vinhos", label: "Vinhos", group: "Topos de seção", def: "/photos/hero-margaux.jpg" },
   { key: "img.sec.restaurantes", label: "Restaurantes", group: "Topos de seção", def: "/photos/food-entrecote.jpg" },
-  { key: "img.sec.gastronomia", label: "Gastronomia", group: "Topos de seção", def: "/photos/food-entrecote.jpg" },
+  { key: "img.sec.gastronomia", label: "Golf", group: "Topos de seção", def: "/media/golf-cabot-1.jpg" },
   { key: "img.sec.experiencias", label: "Experiências", group: "Topos de seção", def: "/photos/wine-glass.jpg" },
   { key: "img.sec.compras", label: "Compras", group: "Topos de seção", def: "/photos/shop-laguiole.jpg" },
 
@@ -31,7 +31,7 @@ export const SITE_IMAGES: SiteImage[] = [
   { key: "img.hub.chef", label: "Card Chef", group: "Cards do Descobrir", def: "/photos/ship-dining.jpg" },
   { key: "img.hub.restaurantes", label: "Card Restaurantes", group: "Cards do Descobrir", def: "/photos/food-entrecote.jpg" },
   { key: "img.hub.vinhos", label: "Card Vinhos", group: "Cards do Descobrir", def: "/photos/hero-margaux.jpg" },
-  { key: "img.hub.gastronomia", label: "Card Gastronomia", group: "Cards do Descobrir", def: "/photos/food-entrecote.jpg" },
+  { key: "img.hub.gastronomia", label: "Card Golf", group: "Cards do Descobrir", def: "/media/golf-cabot-1.jpg" },
   { key: "img.hub.experiencias", label: "Card Experiências", group: "Cards do Descobrir", def: "/photos/wine-glass.jpg" },
   { key: "img.hub.compras", label: "Card Compras", group: "Cards do Descobrir", def: "/photos/shop-laguiole.jpg" },
   { key: "img.hub.cidades", label: "Card Cidades", group: "Cards do Descobrir", def: "/photos/hero-saint-emilion.jpg" },

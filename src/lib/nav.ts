@@ -41,7 +41,7 @@ export const descobrirLinks: HubLink[] = [
   { key: "vinicolas", href: "/vinicolas", icon: "Grape" },
   { key: "restaurantes", href: "/restaurantes", icon: "UtensilsCrossed" },
   { key: "vinhos", href: "/vinhos", icon: "Wine" },
-  { key: "gastronomia", href: "/gastronomia", icon: "UtensilsCrossed" },
+  { key: "gastronomia", href: "/gastronomia", icon: "Flag" },
   { key: "experiencias", href: "/experiencias", icon: "Sparkles" },
   { key: "compras", href: "/compras", icon: "ShoppingBag" },
   { key: "cidades", href: "/cidades", icon: "Landmark" },

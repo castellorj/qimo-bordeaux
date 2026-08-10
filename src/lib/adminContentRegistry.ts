@@ -153,12 +153,14 @@ const registry: CmsKindConfig[] = [
   },
   {
     kind: "gastronomy",
-    label: "Gastronomia",
-    description: "Pratos, produtos e harmonizacoes regionais.",
+    label: "Golf",
+    description: "Campos de golfe e tee times na regiao de Bordeaux.",
     fields: [
       ...commonFields,
-      { key: "whereToTry", label: "Onde provar", type: "list", section: "Dicas" },
-      { key: "pairing", label: "Harmonizacao", type: "textarea", section: "Dicas" },
+      { key: "subtitle", label: "Subtitulo", type: "text", section: "Principal", hint: "Ex.: arquiteto e localizacao do campo." },
+      { key: "highlights", label: "Destaques", type: "list", section: "Texto" },
+      { key: "teeTime", label: "Tee time", type: "text", section: "Principal", hint: "Ex.: Tee time a partir das 9h00." },
+      { key: "price", label: "Valor", type: "text", section: "Principal", hint: "Ex.: EUR 170 por pessoa." },
     ],
   },
   {

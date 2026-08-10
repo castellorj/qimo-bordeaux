@@ -6,7 +6,7 @@ const items: HubItem[] = [
   { href: "/vinicolas", icon: "Grape", key: "vinicolas", image: "/photos/hero-lafite.jpg" },
   { href: "/restaurantes", icon: "UtensilsCrossed", key: "restaurantes", image: "/photos/food-entrecote.jpg" },
   { href: "/vinhos", icon: "Wine", key: "vinhos", image: "https://www.bordeaux.com/app/uploads/2025/10/dsc_8445-1920x1080.jpg" },
-  { href: "/gastronomia", icon: "UtensilsCrossed", key: "gastronomia", image: "/photos/food-entrecote.jpg" },
+  { href: "/gastronomia", icon: "Flag", key: "gastronomia", image: "/media/golf-cabot-1.jpg" },
   { href: "/experiencias", icon: "Sparkles", key: "experiencias", image: "/photos/wine-glass.jpg" },
   { href: "/compras", icon: "ShoppingBag", key: "compras", image: "/photos/shop-laguiole.jpg" },
   { href: "/cidades", icon: "Landmark", key: "cidades", image: "https://upload.wikimedia.org/wikipedia/commons/thumb/0/0f/Place_de_la_Bourse%2C_Bordeaux%2C_France.jpg/1280px-Place_de_la_Bourse%2C_Bordeaux%2C_France.jpg" },

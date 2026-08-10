@@ -10,7 +10,7 @@ export default function GastronomiaPage() {
   const gastronomy = useGuideKind<GastronomyItem>("gastronomy");
   return (
     <>
-      <PageHero section="gastronomia" small bgImage="/photos/food-entrecote.jpg" />
+      <PageHero section="gastronomia" small bgImage="/media/golf-cabot-1.jpg" />
       <div className="container-editorial py-10">
         <Crumb href="/descobrir" label="Voltar" />
         <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
@@ -21,7 +21,7 @@ export default function GastronomiaPage() {
               image={g.heroImage}
               kicker={g.category}
               title={g.name}
-              subtitle={g.subtitle || g.pairing}
+              subtitle={g.subtitle}
               seal={g.qimoSelect}
               priority={i < 3}
             />
