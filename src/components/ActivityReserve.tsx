@@ -16,11 +16,19 @@ function dayDateFull(dayNumber?: number | null): string | null {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-export function ActivityReserve({ contentKey }: { contentKey: string }) {
+export function ActivityReserve({ contentKey, inline = false }: { contentKey: string; inline?: boolean }) {
   const { reservableByKey, mine } = useReservations();
   const [open, setOpen] = useState(false);
   const rv = reservableByKey.get(contentKey);
   if (!rv) return null;
+
+  // inline = botão compacto (mesmo tamanho do "Site oficial"); padrão = largura total.
+  const reservedCls = inline
+    ? "flex items-center justify-center gap-2 rounded-[10px] border-2 px-4 py-3 font-sans text-[12px] font-semibold transition-colors"
+    : "mt-3 flex w-full items-center justify-center gap-2 rounded-[10px] border-2 px-3 py-2 font-sans text-[12px] font-semibold transition-colors";
+  const primaryCls = inline
+    ? "btn-primary !rounded-[10px] !px-4 !py-3 text-[12px]"
+    : "btn-primary mt-3 w-full !rounded-[10px] !px-4 !py-2 !tracking-wide text-[12px]";
 
   const my = mine.get(rv.activityId);
   // Conflito de horário só quando há dia E horário definidos (experiências do Chef
@@ -40,7 +48,7 @@ export function ActivityReserve({ contentKey }: { contentKey: string }) {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="mt-3 flex w-full items-center justify-center gap-2 rounded-[10px] border-2 px-3 py-2 font-sans text-[12px] font-semibold transition-colors"
+          className={reservedCls}
           style={{ borderColor: "var(--olive)", color: "var(--olive-deep)", background: "color-mix(in srgb, var(--olive) 10%, transparent)" }}
         >
           <Icon name="CircleCheck" size={15} />
@@ -51,7 +59,7 @@ export function ActivityReserve({ contentKey }: { contentKey: string }) {
         <button
           type="button"
           onClick={() => setOpen(true)}
-          className="btn-primary mt-3 w-full !rounded-[10px] !px-4 !py-2 !tracking-wide text-[12px]"
+          className={primaryCls}
         >
           <Icon name="CalendarCheck" size={15} /> Reservar
           {rv.available != null && (
