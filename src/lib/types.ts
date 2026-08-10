@@ -139,6 +139,7 @@ export interface GastronomyItem {
   teeTime?: string; // ex.: "Tee time ≈ 9h00"
   price?: string; // ex.: "€ 170 por pessoa"
   website?: string; // site oficial
+  activityKey?: string; // content_key da atividade reservável na PROGRAMAÇÃO (ex.: "d2-t6j54") — o botão Reservar usa a MESMA reserva do dia
   whereToTry?: string[];
   pairing?: string;
   qimoSelect?: boolean;

@@ -14,9 +14,12 @@ import { chateauDossiers } from "@/content/chateaux-dossiers";
 import clsx from "clsx";
 
 const LONG = 70;
-// Tipos que espelham uma atividade reservável (mesmo sistema de reservas da Viagem):
-// mostram a seção "Reservas" no editor e abrem o botão Reservar no app.
-const hasReserva = (kind: string) => kind === "chef" || kind === "gastronomy";
+// Tipos que espelham uma atividade reservável PRÓPRIA (fora do roteiro): mostram a
+// seção "Reservas" no editor e criam a atividade via content_key = slug.
+// O Golf NÃO entra aqui: sua reserva é a atividade da PROGRAMAÇÃO (Roteiro), e o card
+// do Descobrir aponta para ela via `activityKey` — assim reservar pelo Descobrir ou
+// pela programação é a MESMA reserva (sem duplicar).
+const hasReserva = (kind: string) => kind === "chef";
 const KIND_GROUPS = [
   { title: "Principais", kinds: ["city", "winery", "restaurant", "document_category"] },
   { title: "Descobrir", kinds: ["wine", "gastronomy", "experience", "shopping", "chef", "chef_profile"] },

@@ -161,6 +161,7 @@ const registry: CmsKindConfig[] = [
       { key: "highlights", label: "Destaques", type: "list", section: "Texto" },
       { key: "teeTime", label: "Tee time", type: "text", section: "Principal", hint: "Ex.: Tee time a partir das 9h00." },
       { key: "price", label: "Valor", type: "text", section: "Principal", hint: "Ex.: EUR 170 por pessoa." },
+      { key: "activityKey", label: "Reserva vinculada (ID na programacao)", type: "text", section: "Reservas", hint: "ID da atividade reservavel no Roteiro (ex.: d2-t6j54). O botao Reservar deste card usa a MESMA reserva do dia. Ajuste a capacidade/dia na aba Roteiro." },
     ],
   },
   {

@@ -20,6 +20,7 @@ export const gastronomy: GastronomyItem[] = [
     teeTime: "Tee time ≈ 9h00",
     price: "€ 170 por pessoa",
     website: "https://cabot.com/bordeaux",
+    activityKey: "d2-t6j54", // reserva = "Jogo de Golf em Medóc" (Dia 2, na programação)
     qimoSelect: true,
   },
   {
@@ -39,6 +40,7 @@ export const gastronomy: GastronomyItem[] = [
     teeTime: "Tee time ≈ 9h00",
     price: "€ 155 por pessoa",
     website: "https://segolfclub.com",
+    activityKey: "d5-pgs5o", // reserva = "Jogo de Golf Saint-Émilion" (Dia 5, na programação)
     qimoSelect: true,
   },
 ];
