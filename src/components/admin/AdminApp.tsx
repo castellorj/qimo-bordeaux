@@ -753,12 +753,16 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
     .replace(/>/g, "&gt;")
     .replace(/"/g, "&quot;");
   const exportExcel = () => {
-    // Ordena o relatório por Dia → Horário → Grupo Bordeaux → Responsável.
+    // Ordena o relatório por Dia → Horário → Passeio (atividade) → Grupo Bordeaux → Responsável.
+    // O Passeio entra antes do grupo para que todas as reservas de uma mesma atividade
+    // fiquem juntas (ex.: no mesmo horário, todas as "Degustação Pédesclaux" agrupadas).
     const dayOf = (r: BxReservation) => { const a = acts.find((x) => x.id === r.activity_id); return a?.day_number ?? r.activity?.day_number ?? 99; };
     const timeOf = (r: BxReservation) => { const a = acts.find((x) => x.id === r.activity_id); return a?.start_time ?? r.activity?.start_time ?? ""; };
+    const titleOf = (r: BxReservation) => { const a = acts.find((x) => x.id === r.activity_id); return a?.title ?? r.activity?.title ?? ""; };
     const sorted = [...active].sort((x, y) =>
       (dayOf(x) - dayOf(y)) ||
       String(timeOf(x)).localeCompare(String(timeOf(y))) ||
+      titleOf(x).localeCompare(titleOf(y), "pt-BR") ||
       reservationGroup(x).localeCompare(reservationGroup(y)) ||
       personLabel(x).localeCompare(personLabel(y))
     );
