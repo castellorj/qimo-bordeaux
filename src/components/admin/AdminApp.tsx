@@ -122,14 +122,33 @@ function Shell({ email }: { email?: string }) {
   const [parts, setParts] = useState<BxParticipant[]>([]);
   const [res, setRes] = useState<BxReservation[]>([]);
   const [loading, setLoading] = useState(true);
+  const [lastSync, setLastSync] = useState<Date | null>(null);
   const [publishOpen, setPublishOpen] = useState(false);
 
-  const reload = useCallback(async () => {
-    setLoading(true);
+  // silent = atualização em segundo plano (não mostra "Carregando dados…"), usada
+  // pelo auto-refresh; a atualização manual/inicial mantém o estado de carregamento.
+  const reload = useCallback(async (silent = false) => {
+    if (!silent) setLoading(true);
     const [a, p, r] = await Promise.all([fetchActivities(), fetchParticipants(), fetchReservations()]);
-    setActs(a); setParts(p); setRes(r); setLoading(false);
+    setActs(a); setParts(p); setRes(r); setLastSync(new Date());
+    if (!silent) setLoading(false);
   }, []);
   useEffect(() => { reload(); }, [reload]);
+
+  // Mantém os números (vagas/reservas) ao vivo: reservas entram pelo app a todo
+  // momento, então o painel se atualiza sozinho a cada 20s enquanto a aba está
+  // visível (e ao voltar o foco), evitando divergência com o site.
+  useEffect(() => {
+    const tick = () => { if (document.visibilityState === "visible") reload(true); };
+    const timer = window.setInterval(tick, 20000);
+    window.addEventListener("focus", tick);
+    document.addEventListener("visibilitychange", tick);
+    return () => {
+      window.clearInterval(timer);
+      window.removeEventListener("focus", tick);
+      document.removeEventListener("visibilitychange", tick);
+    };
+  }, [reload]);
 
   const active = TAB_META[tab];
 
@@ -142,7 +161,12 @@ function Shell({ email }: { email?: string }) {
         </div>
         <div className="flex items-center gap-3">
           <button onClick={() => setPublishOpen(true)} className="btn-primary !px-5 !py-2.5"><Icon name="Rocket" size={15} /> Publicar site</button>
-          <button onClick={reload} className="btn-ghost !px-4 !py-2" aria-label="Atualizar"><Icon name="RefreshCw" size={14} /></button>
+          {lastSync && (
+            <span className="font-sans text-[11px] text-muted" title="Os números se atualizam sozinhos a cada 20s enquanto esta aba está aberta.">
+              atualizado às {lastSync.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
+            </span>
+          )}
+          <button onClick={() => reload()} className="btn-ghost !px-4 !py-2" aria-label="Atualizar agora"><Icon name="RefreshCw" size={14} /></button>
           <button onClick={() => supabase().auth.signOut()} className="font-sans text-[12px] text-muted hover:text-gold-deep">Sair</button>
         </div>
       </div>
