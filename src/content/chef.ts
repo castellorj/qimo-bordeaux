@@ -87,7 +87,7 @@ export const chefExperiences: ChefExperience[] = [
     duration: "Tarde inteira · a partir das 14h",
     price: "€ 400 por pessoa · 20 lugares apenas",
     qimoSelect: true,
-    reserva: { vagas: 20, dia: null, horario: "14:00" },
+    reserva: { vagas: 20, dia: 3, horario: "14:00" },
   },
   {
     slug: "jantar-troisgros-a-bordo",
