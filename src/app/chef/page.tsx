@@ -148,7 +148,11 @@ function ChefExperienceCard({
   const text = chefDescription(item.description);
   const { reservableByKey } = useReservations();
   const rv = reservableByKey.get(item.slug);
-  const hasReserve = !!rv;
+  // Reservável = tem config de reserva no conteúdo (vagas > 0). Não dependemos de
+  // `rv` (disponibilidade ao vivo) para decidir o CTA: enquanto as vagas carregam,
+  // o ActivityReserve renderiza sozinho — evitando o "flash" do botão de WhatsApp,
+  // que fazia a experiência parecer não-reservável.
+  const reservaConfigured = Number(item.reserva?.vagas ?? 0) > 0;
   const gallery = item.gallery?.filter(Boolean).length ? item.gallery.filter(Boolean) : (item.heroImage ? [item.heroImage] : []);
   const cover = item.heroImage || gallery[0]; // usa a CAPA selecionada (heroImage), não a 1ª da galeria
   const dayDate = rv?.dayNumber != null ? getDay(rv.dayNumber)?.date : null;
@@ -302,7 +306,7 @@ function ChefExperienceCard({
               </div>
             )}
 
-            {hasReserve ? (
+            {reservaConfigured ? (
               <ActivityReserve contentKey={item.slug} />
             ) : (
               <a

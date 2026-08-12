@@ -254,6 +254,9 @@ export interface ChefExperience {
   duration?: string;
   price?: string; // texto livre; "sob consulta" quando não divulgado
   qimoSelect?: boolean;
+  // Config de reserva (vagas/dia/horário) — espelha uma atividade reservável
+  // (content_key = slug). Editada na seção "Reservas" do admin. vagas>0 = reservável.
+  reserva?: { vagas?: number; dia?: number | null; horario?: string };
 }
 
 export interface ChefProfile {
