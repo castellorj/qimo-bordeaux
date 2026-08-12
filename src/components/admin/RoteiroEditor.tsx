@@ -40,6 +40,12 @@ async function syncActivities(day: Day) {
   const sb = supabase();
   const normalizedDay = normalizeReservableActivities(day);
   const { data: existing } = await sb.from("bordeaux_activities").select("id,content_key").eq("day_number", normalizedDay.n);
+  // Reserváveis PRÓPRIOS do Chef (content_key = slug de um item kind='chef') podem
+  // estar marcados com um `dia` (via data.reserva) e por isso carregam day_number = N,
+  // mas vivem FORA do roteiro. Sem esta proteção, salvar o dia os ocultava — quebrando
+  // a reserva (ex.: Jantar de gala Haut-Brion sumia toda vez que o Dia 5 era salvo).
+  const { data: chefRows } = await sb.from("bordeaux_content").select("slug").eq("kind", "chef");
+  const chefSlugs = new Set((chefRows || []).map((r: any) => r.slug));
   const keep = new Set<string>();
   for (let i = 0; i < normalizedDay.activities.length; i++) {
     const a = normalizedDay.activities[i];
@@ -57,7 +63,7 @@ async function syncActivities(day: Day) {
     }
   }
   for (const e of (existing || []) as any[]) {
-    if (e.content_key && !keep.has(e.content_key)) {
+    if (e.content_key && !keep.has(e.content_key) && !chefSlugs.has(e.content_key)) {
       await sb.from("bordeaux_activities").update({ status: "hidden" }).eq("id", e.id);
     }
   }
