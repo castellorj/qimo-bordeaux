@@ -295,7 +295,13 @@ function Passeios({ acts, onChange }: { acts: BxActivityFull[]; onChange: () => 
     if (filter === "soldout") return soldout;
     if (filter === "attention") return soldout || almost || a.waitlisted > 0;
     return true;
-  });
+  }).sort((x, y) =>
+    // Ordena por Dia (1→7; sem dia por último) → Horário → Nome — inclusive os
+    // reserváveis do Chef, que têm dia definido mas antes caíam no fim (sort 900).
+    ((x.day_number ?? 99) - (y.day_number ?? 99)) ||
+    String(x.start_time ?? "").localeCompare(String(y.start_time ?? "")) ||
+    String(x.title ?? "").localeCompare(String(y.title ?? ""), "pt-BR")
+  );
   const summary = {
     attention: acts.filter((a) => a.status !== "hidden" && a.capacity_total != null && ((a.available ?? 0) <= 0 || a.reserved >= a.capacity_total * 0.8 || a.waitlisted > 0)).length,
     soldout: acts.filter((a) => a.status !== "hidden" && a.capacity_total != null && (a.available ?? 0) <= 0).length,
