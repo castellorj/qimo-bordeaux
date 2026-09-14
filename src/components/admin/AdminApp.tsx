@@ -5,7 +5,7 @@ import { supabase } from "@/lib/supabase/client";
 import {
   fetchActivities, fetchParticipants, fetchReservations,
   updateCapacity, setHidden, deleteParticipant,
-  reserve, cancelReservation, setReservationParty, upsertParticipantByPhone, updateParticipant,
+  reserve, cancelReservation, setReservationParty, updateReservation, upsertParticipantByPhone, updateParticipant,
   type BxActivityFull, type BxParticipant, type BxReservation,
 } from "@/lib/supabase/bordeaux";
 import { Icon } from "@/components/Icon";
@@ -738,6 +738,36 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
     await onChange();
     if (fail) alert(`${ok} par(es) vinculado(s); ${fail} deram erro.`);
   };
+  // Desvincular a pessoa na posição `idx` do party (0 = responsável). Ao remover o
+  // responsável, o próximo nome vira o titular (guest_name/telefone). Se sobrar
+  // ninguém, cancela a reserva inteira.
+  const removePersonAt = async (r: BxReservation, idx: number) => {
+    const raw = r.party && r.party.length ? [...r.party] : [rawLabel(r)];
+    if (idx < 0 || idx >= raw.length) return;
+    const label = resolveCompanion(r, raw[idx]) || raw[idx];
+    if (raw.length <= 1) {
+      if (!confirm(`Remover ${personLabel(r)} deste passeio? Isso cancela a reserva.`)) return;
+      setAddBusy("rm:" + r.id);
+      await cancelReservation(r.id);
+      setAddBusy(null); await onChange(); return;
+    }
+    if (!confirm(`Desvincular ${label} desta reserva? Fica com ${raw.length - 1} ${raw.length - 1 === 1 ? "pessoa" : "pessoas"}.`)) return;
+    raw.splice(idx, 1);
+    const patch: { party: string[]; adults: number; children: number; guest_name: string; guest_phone?: string | null } =
+      { party: raw, adults: raw.length, children: 0, guest_name: raw[0] };
+    if (idx === 0) {
+      // removeu o responsável → o novo titular assume. Usa o telefone do cadastro;
+      // se não achar, zera o telefone (senão a pessoa removida ainda apareceria
+      // vinculada por casar o telefone antigo).
+      const np = participantByName(raw[0]);
+      patch.guest_phone = np?.phone ? digitsOf(np.phone) : null;
+    }
+    setAddBusy("rm:" + r.id + ":" + idx);
+    const { error } = await updateReservation(r.id, patch);
+    setAddBusy(null);
+    if (error) { alert("Não foi possível desvincular: " + error.message); return; }
+    await onChange();
+  };
   // Total de pares por vincular (para o cartão "Sem par")
   const unpairedTotal = byActivity.reduce((s, g) => s + linkableInActivity(g.a.id, g.list).length, 0);
   const filteredGroups = byActivity.filter((g) => {
@@ -981,6 +1011,13 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="font-serif text-[16px] font-light">{personLabel(r)}</span>
+                          {comps.length > 0 && (
+                            <button onClick={() => removePersonAt(r, 0)} disabled={addBusy === "rm:" + r.id + ":0"}
+                              aria-label={`Desvincular ${personLabel(r)}`} title="Desvincular esta pessoa (o próximo acompanhante vira o responsável)"
+                              className="grid h-5 w-5 place-items-center rounded-full text-muted transition-colors hover:bg-[#8f2f2f]/10 hover:text-[#8f2f2f] disabled:opacity-40">
+                              <Icon name="X" size={12} />
+                            </button>
+                          )}
                           {r.source === "guest"
                             ? <span className="rounded-full bg-olive/12 px-2 py-0.5 font-sans text-[10px] uppercase tracking-wide2 text-olive-deep">pelo app</span>
                             : <span className="rounded-full bg-black/[0.05] px-2 py-0.5 font-sans text-[10px] uppercase tracking-wide2 text-muted">equipe</span>}
@@ -992,8 +1029,13 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
                         {comps.length > 0 && (
                           <div className="mt-1.5 flex flex-wrap gap-1.5">
                             {comps.map((c, i) => (
-                              <span key={i} className="inline-flex items-center gap-1 rounded-full bg-black/[0.04] px-2 py-0.5 font-sans text-[11px]">
+                              <span key={i} className="inline-flex items-center gap-1 rounded-full bg-black/[0.04] py-0.5 pl-2 pr-1 font-sans text-[11px]">
                                 <Icon name="Users" size={11} className="text-gold-deep" /> {c}
+                                <button onClick={() => removePersonAt(r, i + 1)} disabled={addBusy === "rm:" + r.id + ":" + (i + 1)}
+                                  aria-label={`Desvincular ${c}`} title={`Desvincular ${c} desta reserva`}
+                                  className="grid h-4 w-4 place-items-center rounded-full text-muted transition-colors hover:bg-[#8f2f2f]/12 hover:text-[#8f2f2f] disabled:opacity-40">
+                                  <Icon name="X" size={11} />
+                                </button>
                               </span>
                             ))}
                           </div>
@@ -1005,7 +1047,7 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
                           <Icon name="UserPlus" size={13} /> {addBusy === "link:" + r.id ? "…" : `Vincular ${partner!.full_name.split(" ")[0]}`}
                         </button>
                       )}
-                      <button onClick={async () => { await cancelReservation(r.id); onChange(); }} aria-label="Cancelar" className="shrink-0 text-muted hover:text-[#8f2f2f]"><Icon name="X" size={16} /></button>
+                      <button onClick={async () => { if (!confirm(`Cancelar a reserva inteira de ${personLabel(r)}${comps.length ? ` (+${comps.length})` : ""} neste passeio?`)) return; await cancelReservation(r.id); onChange(); }} aria-label="Cancelar reserva inteira" title="Cancelar a reserva inteira neste passeio" className="shrink-0 text-muted hover:text-[#8f2f2f]"><Icon name="X" size={16} /></button>
                     </div>
                   );
                 })}

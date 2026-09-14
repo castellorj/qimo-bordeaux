@@ -133,3 +133,13 @@ export async function setReservationParty(id: string, names: string[]) {
     .update({ adults: Math.max(1, names.length), children: 0, party: names, updated_at: new Date().toISOString() })
     .eq("id", id);
 }
+// Desvincular pessoa(s) de uma reserva: grava o novo party e, quando o responsável
+// muda (removido o 1º nome), atualiza guest_name/guest_phone para o novo titular.
+export async function updateReservation(
+  id: string,
+  patch: { party?: string[]; adults?: number; children?: number; guest_name?: string; guest_phone?: string | null }
+) {
+  return supabase().from("bordeaux_reservations")
+    .update({ ...patch, updated_at: new Date().toISOString() })
+    .eq("id", id);
+}
