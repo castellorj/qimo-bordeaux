@@ -21,6 +21,8 @@ export function PhotoCarousel({
   const [idx, setIdx] = useState(0);
   const [lightbox, setLightbox] = useState<number | null>(null);
   const pics = images.filter(Boolean);
+  // Suporta itens de vídeo (mp4/webm/mov) no mesmo carrossel das fotos.
+  const isVideo = (s: string) => /\.(mp4|webm|mov|m4v)(\?|#|$)/i.test(s);
 
   const go = (i: number) => {
     const n = (i + pics.length) % pics.length;
@@ -58,17 +60,30 @@ export function PhotoCarousel({
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
         {pics.map((src, i) => (
-          <button key={i} type="button" onClick={() => setLightbox(i)} className="relative w-full shrink-0 cursor-zoom-in snap-center" aria-label="Ampliar foto">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={src}
-              alt={`${alt} — foto ${i + 1}`}
-              loading={i === 0 ? undefined : "lazy"}
-              decoding="async"
-              className="h-full w-full object-cover object-center"
-              draggable={false}
-            />
-          </button>
+          isVideo(src) ? (
+            <div key={i} className="flex w-full shrink-0 snap-center items-center justify-center bg-black">
+              {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
+              <video
+                src={src}
+                controls
+                playsInline
+                preload="metadata"
+                className="h-full w-full object-contain"
+              />
+            </div>
+          ) : (
+            <button key={i} type="button" onClick={() => setLightbox(i)} className="relative w-full shrink-0 cursor-zoom-in snap-center" aria-label="Ampliar foto">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={src}
+                alt={`${alt} — foto ${i + 1}`}
+                loading={i === 0 ? undefined : "lazy"}
+                decoding="async"
+                className="h-full w-full object-cover object-center"
+                draggable={false}
+              />
+            </button>
+          )
         ))}
       </div>
 
@@ -117,13 +132,25 @@ export function PhotoCarousel({
             className="absolute right-4 top-4 grid h-10 w-10 place-items-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/25">
             <Icon name="X" size={22} />
           </button>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={pics[lightbox]}
-            alt={`${alt} — foto ${lightbox + 1}`}
-            className="max-h-[90vh] max-w-[95vw] rounded-[10px] object-contain shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          />
+          {isVideo(pics[lightbox]) ? (
+            // eslint-disable-next-line jsx-a11y/media-has-caption
+            <video
+              src={pics[lightbox]}
+              controls
+              autoPlay
+              playsInline
+              className="max-h-[90vh] max-w-[95vw] rounded-[10px] object-contain shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          ) : (
+            /* eslint-disable-next-line @next/next/no-img-element */
+            <img
+              src={pics[lightbox]}
+              alt={`${alt} — foto ${lightbox + 1}`}
+              className="max-h-[90vh] max-w-[95vw] rounded-[10px] object-contain shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            />
+          )}
           {many && (
             <>
               <button type="button" onClick={(e) => { e.stopPropagation(); setLightbox((v) => (v === null ? v : (v - 1 + pics.length) % pics.length)); }}
