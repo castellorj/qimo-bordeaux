@@ -254,6 +254,8 @@ export interface ChefExperience {
   duration?: string;
   price?: string; // texto livre; "sob consulta" quando não divulgado
   qimoSelect?: boolean;
+  address?: string; // endereço exato do local (mostra bloco "Local" + "Como chegar")
+  transportNote?: string; // aviso de logística (ex.: transporte por conta do convidado)
   // Config de reserva (vagas/dia/horário) — espelha uma atividade reservável
   // (content_key = slug). Editada na seção "Reservas" do admin. vagas>0 = reservável.
   reserva?: { vagas?: number; dia?: number | null; horario?: string };

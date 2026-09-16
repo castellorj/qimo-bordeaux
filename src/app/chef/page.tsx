@@ -7,7 +7,7 @@ import { useGuideItem, useGuideList } from "@/components/GuideContent";
 import { useLocale, useReservations } from "@/components/providers";
 import { ActivityReserve } from "@/components/ActivityReserve";
 import { PhotoCarousel } from "@/components/PhotoCarousel";
-import { qimoWhatsApp } from "@/lib/reserve";
+import { qimoWhatsApp, mapsUrl } from "@/lib/reserve";
 import { chefProfile as fileChefProfile, getDay } from "@/content";
 import type { ChefExperience, ChefProfile } from "@/lib/types";
 
@@ -303,6 +303,30 @@ function ChefExperienceCard({
                     </div>
                   )}
                 </div>
+              </div>
+            )}
+
+            {(item.address || item.transportNote) && (
+              <div className="mt-5 rounded-[16px] border p-4 sm:p-5" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
+                {item.address && (
+                  <>
+                    <p className="font-sans text-[10px] font-semibold uppercase tracking-wide2 text-muted">Local</p>
+                    <p className="mt-1 font-sans text-[14px] leading-snug" style={{ color: "var(--text)" }}>{item.address}</p>
+                    <a
+                      href={mapsUrl(item.address, item.name)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="mt-2 inline-flex items-center gap-1.5 font-sans text-[13px] font-semibold text-gold-deep hover:underline"
+                    >
+                      <Icon name="Navigation" size={14} /> Como chegar
+                    </a>
+                  </>
+                )}
+                {item.transportNote && (
+                  <p className="mt-3 flex items-start gap-1.5 font-sans text-[12px] leading-relaxed text-muted">
+                    <Icon name="Info" size={13} className="mt-0.5 shrink-0 text-gold-deep" /> {item.transportNote}
+                  </p>
+                )}
               </div>
             )}
 

@@ -140,6 +140,8 @@ export const chefExperiences: ChefExperience[] = [
     tagline: "Do pôr do sol ao jantar — rooftop e restaurante só do nosso grupo, sobre o Rio Garona.",
     description:
       "A partir das 17h, vamos nos encontrar no Chouette Rooftop, com uma vista privilegiada sobre o Rio Garona, para aproveitar o fim de tarde em clima descontraído, entre amigos. Uma seleção de vinhos de Bordeaux, Champagne, drinks e deliciosas tapas, o som do DJ LP e o pôr do sol, em um rooftop aquecido e reservado exclusivamente para o nosso grupo. A partir das 20h, quem quiser continuar a noite pode descer para o Caffe Cuisine, logo abaixo do rooftop, para aproveitar o famoso entrecôte com fritas — um dos pratos mais conhecidos e elogiados da região de Bordeaux — acompanhado de bons vinhos. O prédio inteiro estará reservado exclusivamente para o nosso grupo, rooftop e restaurante, deixando a noite totalmente à vontade para cada um aproveitar como preferir. Cada um escolhe o que quiser consumir e paga apenas pelo que consumir no local.",
+    address: "7-9 Place du Marché, 33420 Branne, França",
+    transportNote: "O transporte até o local fica por conta de cada convidado — a QIMO não fará a logística de deslocamento.",
     highlights: [
       "17h–20h · Happy Hour no Chouette Rooftop — vinhos de Bordeaux, Champagne, drinks & tapas",
       "DJ LP e pôr do sol sobre o Rio Garona, em rooftop aquecido",
