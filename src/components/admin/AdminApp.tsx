@@ -471,6 +471,23 @@ function Participantes({ parts, onChange }: { parts: BxParticipant[]; onChange: 
     await onChange();
     setBusy(false);
   };
+  // Exporta a lista geral de clientes (na ordem atual) em Excel (.xls via HTML).
+  const exportClientes = () => {
+    const esc = (v: unknown) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    const header = ["Nome", "Grupo Bordeaux", "Telefone", "E-mail", "Restricao alimentar", "Observacoes"];
+    const rows = sortedParts.map((p) => [p.full_name, p.family || "", p.phone || "", p.email || "", p.dietary || "", p.notes || ""]);
+    const tableRows = [header, ...rows]
+      .map((row, i) => `<tr>${row.map((c) => (i === 0 ? `<th>${esc(c)}</th>` : `<td>${esc(c)}</td>`)).join("")}</tr>`)
+      .join("");
+    const html = `<!doctype html><html><head><meta charset="utf-8"><style>table{border-collapse:collapse;font-family:Arial,sans-serif;font-size:12px}th{background:#3f1d25;color:#fff}td,th{border:1px solid #d8d0c7;padding:6px 8px;vertical-align:top}td{mso-number-format:"\\@"}</style></head><body><table>${tableRows}</table></body></html>`;
+    const blob = new Blob([html], { type: "application/vnd.ms-excel;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `qimo-clientes-bordeaux-${new Date().toISOString().slice(0, 10)}.xls`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
   return (
     <div className="grid gap-8 lg:grid-cols-[340px_1fr]">
       <div className="space-y-4">
@@ -522,19 +539,30 @@ function Participantes({ parts, onChange }: { parts: BxParticipant[]; onChange: 
       <div>
         <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
           <p className="kicker">{parts.length} clientes</p>
-          <label className="flex items-center gap-2 font-sans text-[12px] text-muted">
-            Ordenar
-            <select
-              value={sort}
-              onChange={(e) => setSort(e.target.value as "name" | "phoneAsc" | "groupAsc")}
-              className="rounded-[10px] border bg-transparent px-3 py-2 font-sans text-[12px] outline-none focus:border-gold"
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={exportClientes}
+              className="inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 font-sans text-[12px] font-semibold text-petrol-600 hover:border-gold"
               style={{ borderColor: "var(--line)" }}
+              title="Baixar a lista de clientes (Excel)"
             >
-              <option value="name">Nome A-Z</option>
-              <option value="phoneAsc">Telefone menor-maior</option>
-              <option value="groupAsc">Grupo Bordeaux menor-maior</option>
-            </select>
-          </label>
+              <Icon name="Download" size={13} /> Exportar Excel
+            </button>
+            <label className="flex items-center gap-2 font-sans text-[12px] text-muted">
+              Ordenar
+              <select
+                value={sort}
+                onChange={(e) => setSort(e.target.value as "name" | "phoneAsc" | "groupAsc")}
+                className="rounded-[10px] border bg-transparent px-3 py-2 font-sans text-[12px] outline-none focus:border-gold"
+                style={{ borderColor: "var(--line)" }}
+              >
+                <option value="name">Nome A-Z</option>
+                <option value="phoneAsc">Telefone menor-maior</option>
+                <option value="groupAsc">Grupo Bordeaux menor-maior</option>
+              </select>
+            </label>
+          </div>
         </div>
         <div className="space-y-2">
           {sortedParts.map((p) => (
