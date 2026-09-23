@@ -83,34 +83,93 @@ export function AdminApp() {
 
 /* ---------------- Login ---------------- */
 function Login() {
+  // "code" = entrar sem senha (código de 6 dígitos por e-mail); "password" = senha.
+  const [mode, setMode] = useState<"code" | "password">("code");
+  const [step, setStep] = useState<"email" | "code">("email");
   const [email, setEmail] = useState("");
   const [pw, setPw] = useState("");
+  const [code, setCode] = useState("");
   const [err, setErr] = useState("");
+  const [msg, setMsg] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const submit = async (e: React.FormEvent) => {
+  const loginPassword = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true); setErr("");
-    const { error } = await supabase().auth.signInWithPassword({ email, password: pw });
+    const { error } = await supabase().auth.signInWithPassword({ email: email.trim(), password: pw });
     if (error) setErr("E-mail ou senha inválidos.");
     setBusy(false);
   };
 
+  const sendCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true); setErr(""); setMsg("");
+    const { error } = await supabase().auth.signInWithOtp({ email: email.trim(), options: { shouldCreateUser: false } });
+    setBusy(false);
+    if (error) { setErr("Não foi possível enviar o código. Confira o e-mail — precisa ser um e-mail da equipe já cadastrado."); return; }
+    setCode(""); setStep("code");
+    setMsg(`Enviamos um código de 6 dígitos para ${email.trim()}. Verifique também a caixa de spam.`);
+  };
+
+  const verifyCode = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setBusy(true); setErr("");
+    const { error } = await supabase().auth.verifyOtp({ email: email.trim(), token: code.trim(), type: "email" });
+    setBusy(false);
+    if (error) { setErr("Código inválido ou expirado. Peça um novo código."); return; }
+    // Sucesso: o onAuthStateChange em AdminApp detecta a sessão e abre o painel.
+  };
+
+  const inputCls = "w-full rounded-[10px] border bg-transparent px-4 py-3 font-sans text-sm outline-none focus:border-gold";
+  const linkCls = "font-sans text-[12px] text-gold-deep hover:underline";
+
   return (
     <div className="container-editorial flex min-h-[70vh] items-center justify-center py-16">
-      <form onSubmit={submit} className="card w-full max-w-sm p-8">
+      <div className="card w-full max-w-sm p-8">
         <p className="kicker">QIMO Bordeaux</p>
         <h1 className="display mt-2 text-3xl">Painel de gestão</h1>
         <p className="mt-2 font-sans text-[13px] text-muted">Acesso restrito à equipe QIMO.</p>
-        <div className="mt-6 space-y-3">
-          <input type="email" required placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-[10px] border bg-transparent px-4 py-3 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
-          <input type="password" required placeholder="Senha" value={pw} onChange={(e) => setPw(e.target.value)}
-            className="w-full rounded-[10px] border bg-transparent px-4 py-3 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
-          {err && <p className="font-sans text-[12px] text-[#8f2f2f]">{err}</p>}
-          <button disabled={busy} className="btn-primary w-full">{busy ? "Entrando…" : "Entrar"}</button>
-        </div>
-      </form>
+
+        {mode === "password" ? (
+          <form onSubmit={loginPassword} className="mt-6 space-y-3">
+            <input type="email" required placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)}
+              className={inputCls} style={{ borderColor: "var(--line)" }} />
+            <input type="password" required placeholder="Senha" value={pw} onChange={(e) => setPw(e.target.value)}
+              className={inputCls} style={{ borderColor: "var(--line)" }} />
+            {err && <p className="font-sans text-[12px] text-[#8f2f2f]">{err}</p>}
+            <button disabled={busy} className="btn-primary w-full">{busy ? "Entrando…" : "Entrar"}</button>
+            <button type="button" onClick={() => { setMode("code"); setStep("email"); setErr(""); setMsg(""); }} className={`${linkCls} block w-full pt-1 text-center`}>
+              Esqueci a senha — entrar com código por e-mail
+            </button>
+          </form>
+        ) : step === "email" ? (
+          <form onSubmit={sendCode} className="mt-6 space-y-3">
+            <p className="font-sans text-[12px] text-muted">Digite seu e-mail e enviaremos um código de acesso — sem precisar de senha.</p>
+            <input type="email" required placeholder="E-mail" value={email} onChange={(e) => setEmail(e.target.value)}
+              className={inputCls} style={{ borderColor: "var(--line)" }} />
+            {err && <p className="font-sans text-[12px] text-[#8f2f2f]">{err}</p>}
+            <button disabled={busy} className="btn-primary w-full">{busy ? "Enviando…" : "Enviar código"}</button>
+            <button type="button" onClick={() => { setMode("password"); setErr(""); setMsg(""); }} className={`${linkCls} block w-full pt-1 text-center`}>
+              Entrar com senha
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={verifyCode} className="mt-6 space-y-3">
+            {msg && <p className="font-sans text-[12px] text-olive-deep">{msg}</p>}
+            <input
+              inputMode="numeric" autoComplete="one-time-code" required placeholder="Código de 6 dígitos"
+              value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+              className={`${inputCls} text-center text-lg tracking-[0.4em]`} style={{ borderColor: "var(--line)" }}
+            />
+            {err && <p className="font-sans text-[12px] text-[#8f2f2f]">{err}</p>}
+            <button disabled={busy || code.length < 6} className="btn-primary w-full disabled:opacity-50">{busy ? "Entrando…" : "Entrar"}</button>
+            <div className="flex items-center justify-between pt-1">
+              <button type="button" onClick={() => { setStep("email"); setErr(""); setMsg(""); }} className={linkCls}>Trocar e-mail</button>
+              <button type="button" disabled={busy} onClick={(e) => sendCode(e as unknown as React.FormEvent)} className={linkCls}>Reenviar código</button>
+            </div>
+          </form>
+        )}
+      </div>
     </div>
   );
 }
