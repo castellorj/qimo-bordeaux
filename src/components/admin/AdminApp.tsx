@@ -57,6 +57,11 @@ const NAV_GROUPS: { title: string; items: Tab[] }[] = [
   { title: "Avancado", items: ["cobertura"] },
 ];
 
+// Acessos somente-visualização: veem APENAS a página de Reservas, em modo leitura
+// (sem criar/cancelar/vincular/desvincular). Entram normalmente (senha ou código).
+const VIEWER_EMAILS = new Set<string>(["luis.perdigao@qimobr.com"]);
+const isViewer = (email?: string | null) => !!email && VIEWER_EMAILS.has(email.trim().toLowerCase());
+
 export function AdminApp() {
   const [ready, setReady] = useState(false);
   const [session, setSession] = useState<any>(null);
@@ -176,7 +181,8 @@ function Login() {
 
 /* ---------------- Shell ---------------- */
 function Shell({ email }: { email?: string }) {
-  const [tab, setTab] = useState<Tab>("inicio");
+  const viewer = isViewer(email);
+  const [tab, setTab] = useState<Tab>(viewer ? "reservas" : "inicio");
   const [acts, setActs] = useState<BxActivityFull[]>([]);
   const [parts, setParts] = useState<BxParticipant[]>([]);
   const [res, setRes] = useState<BxReservation[]>([]);
@@ -219,7 +225,7 @@ function Shell({ email }: { email?: string }) {
           <h1 className="display text-2xl sm:text-3xl">Central de Operações</h1>
         </div>
         <div className="flex items-center gap-3">
-          <button onClick={() => setPublishOpen(true)} className="btn-primary !px-5 !py-2.5"><Icon name="Rocket" size={15} /> Publicar site</button>
+          {!viewer && <button onClick={() => setPublishOpen(true)} className="btn-primary !px-5 !py-2.5"><Icon name="Rocket" size={15} /> Publicar site</button>}
           {lastSync && (
             <span className="font-sans text-[11px] text-muted" title="Os números se atualizam sozinhos a cada 20s enquanto esta aba está aberta.">
               atualizado às {lastSync.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })}
@@ -233,7 +239,7 @@ function Shell({ email }: { email?: string }) {
       <div className="mt-6 grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
         <aside className="lg:sticky lg:top-5 lg:self-start">
           <div className="card overflow-hidden p-3">
-            {NAV_GROUPS.map((group) => (
+            {(viewer ? [{ title: "Reservas", items: ["reservas"] as Tab[] }] : NAV_GROUPS).map((group) => (
               <div key={group.title} className="border-b py-3 last:border-b-0" style={{ borderColor: "var(--line)" }}>
                 <p className="px-2 pb-2 font-sans text-[10px] font-semibold uppercase tracking-wide2 text-muted">{group.title}</p>
                 <div className="space-y-1">
@@ -267,7 +273,7 @@ function Shell({ email }: { email?: string }) {
                 <p className="kicker flex items-center gap-2"><Icon name={active.icon} size={14} /> {active.label}</p>
                 <p className="mt-2 max-w-3xl font-sans text-[13px] leading-relaxed text-muted">{active.desc}</p>
               </div>
-              {tab !== "inicio" && (
+              {!viewer && tab !== "inicio" && (
                 <button onClick={() => setTab("preview")} className="btn-ghost !px-3 !py-2 text-[12px]">
                   <Icon name="Eye" size={14} /> Revisar no site
                 </button>
@@ -295,7 +301,10 @@ function Shell({ email }: { email?: string }) {
       })()}
 
       <div className="py-8">
-        {loading && tab !== "preview" && tab !== "conteudo" && tab !== "textos" && tab !== "telas" && tab !== "roteiro" && tab !== "acessos" && tab !== "cobertura" ? (
+        {viewer ? (
+          loading ? <p className="text-center text-muted">Carregando dados…</p>
+                  : <Reservas acts={acts} parts={parts} res={res} onChange={reload} readOnly />
+        ) : loading && tab !== "preview" && tab !== "conteudo" && tab !== "textos" && tab !== "telas" && tab !== "roteiro" && tab !== "acessos" && tab !== "cobertura" ? (
           <p className="text-center text-muted">Carregando dados…</p>
         ) : tab === "inicio" ? (
           <OperationsCenter acts={acts} parts={parts} res={res} publishing={false}
@@ -667,7 +676,7 @@ function Participantes({ parts, onChange }: { parts: BxParticipant[]; onChange: 
 }
 
 /* ---------------- Reservas ---------------- */
-function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; parts: BxParticipant[]; res: BxReservation[]; onChange: () => void }) {
+function Reservas({ acts, parts, res, onChange, readOnly = false }: { acts: BxActivityFull[]; parts: BxParticipant[]; res: BxReservation[]; onChange: () => void; readOnly?: boolean }) {
   const [activityId, setActivityId] = useState("");
   const [participantId, setParticipantId] = useState("");
   const [guest, setGuest] = useState("");
@@ -956,9 +965,11 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
           <div className="flex flex-wrap items-center gap-2 font-sans text-[11px]">
             <span className="rounded-full bg-olive/15 px-3 py-1 text-olive-deep">{confirmedSeats} confirmados</span>
             <span className="rounded-full bg-gold/15 px-3 py-1 text-gold-deep">{waitlistSeats} em espera</span>
-            <button type="button" onClick={() => { setMsg(null); setShowNew(true); }} className="inline-flex items-center gap-1 rounded-full bg-petrol-600 px-3 py-1 font-semibold text-cream hover:bg-petrol-700">
-              <Icon name="Plus" size={13} /> Nova reserva
-            </button>
+            {!readOnly && (
+              <button type="button" onClick={() => { setMsg(null); setShowNew(true); }} className="inline-flex items-center gap-1 rounded-full bg-petrol-600 px-3 py-1 font-semibold text-cream hover:bg-petrol-700">
+                <Icon name="Plus" size={13} /> Nova reserva
+              </button>
+            )}
             <button type="button" onClick={exportExcel} className="rounded-full border px-3 py-1 font-semibold text-petrol-600 hover:border-gold" style={{ borderColor: "var(--line)" }}>
               Exportar Excel
             </button>
@@ -1073,7 +1084,7 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
                   <p className="font-serif text-[17px] font-light leading-tight">{a.title}</p>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
-                  {linkableInActivity(a.id, list).length > 0 && (
+                  {!readOnly && linkableInActivity(a.id, list).length > 0 && (
                     <button onClick={() => linkAllPairs(a.id, list)} disabled={addBusy === "all:" + a.id}
                       className="btn-ghost whitespace-nowrap !px-3 !py-1.5 text-[11px] disabled:opacity-50" title="Vincular o par de cada reserva-solo deste passeio (vira uma linha, 2 lugares)">
                       <Icon name="UserPlus" size={13} /> {addBusy === "all:" + a.id ? "…" : `Vincular ${linkableInActivity(a.id, list).length} par(es)`}
@@ -1092,13 +1103,13 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
                   const comps = companions(r);
                   const partner = partnerOf(r);
                   // só oferece nas reservas SOLO (1 lugar) cujo par ainda não é o titular de um par com esta pessoa
-                  const showAdd = partner && (r.seats ?? 1) <= 1 && !partnerHostsMe(a.id, r, partner);
+                  const showAdd = !readOnly && partner && (r.seats ?? 1) <= 1 && !partnerHostsMe(a.id, r, partner);
                   return (
                     <div key={r.id} className="flex items-start gap-3 px-5 py-3">
                       <div className="min-w-0 flex-1">
                         <div className="flex flex-wrap items-center gap-2">
                           <span className="font-serif text-[16px] font-light">{personLabel(r)}</span>
-                          {comps.length > 0 && (
+                          {!readOnly && comps.length > 0 && (
                             <button onClick={() => removePersonAt(r, 0)} disabled={addBusy === "rm:" + r.id + ":0"}
                               aria-label={`Desvincular ${personLabel(r)}`} title="Desvincular esta pessoa (o próximo acompanhante vira o responsável)"
                               className="grid h-5 w-5 place-items-center rounded-full text-muted transition-colors hover:bg-[#8f2f2f]/10 hover:text-[#8f2f2f] disabled:opacity-40">
@@ -1118,11 +1129,13 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
                             {comps.map((c, i) => (
                               <span key={i} className="inline-flex items-center gap-1 rounded-full bg-black/[0.04] py-0.5 pl-2 pr-1 font-sans text-[11px]">
                                 <Icon name="Users" size={11} className="text-gold-deep" /> {c}
-                                <button onClick={() => removePersonAt(r, i + 1)} disabled={addBusy === "rm:" + r.id + ":" + (i + 1)}
-                                  aria-label={`Desvincular ${c}`} title={`Desvincular ${c} desta reserva`}
-                                  className="grid h-4 w-4 place-items-center rounded-full text-muted transition-colors hover:bg-[#8f2f2f]/12 hover:text-[#8f2f2f] disabled:opacity-40">
-                                  <Icon name="X" size={11} />
-                                </button>
+                                {!readOnly && (
+                                  <button onClick={() => removePersonAt(r, i + 1)} disabled={addBusy === "rm:" + r.id + ":" + (i + 1)}
+                                    aria-label={`Desvincular ${c}`} title={`Desvincular ${c} desta reserva`}
+                                    className="grid h-4 w-4 place-items-center rounded-full text-muted transition-colors hover:bg-[#8f2f2f]/12 hover:text-[#8f2f2f] disabled:opacity-40">
+                                    <Icon name="X" size={11} />
+                                  </button>
+                                )}
                               </span>
                             ))}
                           </div>
@@ -1134,7 +1147,9 @@ function Reservas({ acts, parts, res, onChange }: { acts: BxActivityFull[]; part
                           <Icon name="UserPlus" size={13} /> {addBusy === "link:" + r.id ? "…" : `Vincular ${partner!.full_name.split(" ")[0]}`}
                         </button>
                       )}
-                      <button onClick={async () => { if (!confirm(`Cancelar a reserva inteira de ${personLabel(r)}${comps.length ? ` (+${comps.length})` : ""} neste passeio?`)) return; await cancelReservation(r.id); onChange(); }} aria-label="Cancelar reserva inteira" title="Cancelar a reserva inteira neste passeio" className="shrink-0 text-muted hover:text-[#8f2f2f]"><Icon name="X" size={16} /></button>
+                      {!readOnly && (
+                        <button onClick={async () => { if (!confirm(`Cancelar a reserva inteira de ${personLabel(r)}${comps.length ? ` (+${comps.length})` : ""} neste passeio?`)) return; await cancelReservation(r.id); onChange(); }} aria-label="Cancelar reserva inteira" title="Cancelar a reserva inteira neste passeio" className="shrink-0 text-muted hover:text-[#8f2f2f]"><Icon name="X" size={16} /></button>
+                      )}
                     </div>
                   );
                 })}
