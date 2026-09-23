@@ -1046,18 +1046,31 @@ function Reservas({ acts, parts, res, onChange, readOnly = false }: { acts: BxAc
 
         <div className="min-w-0">
           <div className="mb-4 rounded-[14px] border p-4" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div>
-                <p className="kicker">Linha do tempo</p>
-                <p className="mt-1 font-sans text-[12px] text-muted">Resumo por dia e horario para a operacao.</p>
-              </div>
+            <div>
+              <p className="kicker">Linha do tempo</p>
+              <p className="mt-1 font-sans text-[12px] text-muted">Resumo por dia e horario para a operacao.</p>
+            </div>
+            <div className="relative mt-3">
+              <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-gold-deep">
+                <Icon name="Search" size={20} />
+              </span>
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Buscar por nome, grupo, telefone ou passeio"
-                className="min-w-[220px] rounded-[10px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold"
-                style={{ borderColor: "var(--line)" }}
+                placeholder="Buscar reserva por nome, grupo, telefone ou passeio…"
+                className="w-full rounded-[12px] border-2 bg-white/60 py-3.5 pl-12 pr-11 font-sans text-[15px] outline-none transition-colors placeholder:text-muted focus:border-gold"
+                style={{ borderColor: "color-mix(in srgb, var(--gold) 40%, var(--line))" }}
               />
+              {query && (
+                <button
+                  type="button"
+                  onClick={() => setQuery("")}
+                  aria-label="Limpar busca"
+                  className="absolute right-3 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full text-muted transition-colors hover:bg-black/[0.06] hover:text-petrol-600"
+                >
+                  <Icon name="X" size={16} />
+                </button>
+              )}
             </div>
             <div className="mt-3 flex max-w-full gap-2 overflow-x-auto pb-1">
               {timeline.length === 0 && <span className="font-sans text-[12px] text-muted">Nenhuma reserva confirmada ainda.</span>}
