@@ -59,7 +59,7 @@ const NAV_GROUPS: { title: string; items: Tab[] }[] = [
 
 // Acessos somente-visualização: veem APENAS a página de Reservas, em modo leitura
 // (sem criar/cancelar/vincular/desvincular). Entram normalmente (senha ou código).
-const VIEWER_EMAILS = new Set<string>(["luis.perdigao@qimobr.com"]);
+const VIEWER_EMAILS = new Set<string>(["luis.perdigao@qimobr.com", "castellorj+viewer@gmail.com"]);
 const isViewer = (email?: string | null) => !!email && VIEWER_EMAILS.has(email.trim().toLowerCase());
 
 export function AdminApp() {
