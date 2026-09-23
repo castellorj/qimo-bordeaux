@@ -236,10 +236,11 @@ function Shell({ email }: { email?: string }) {
         </div>
       </div>
 
-      <div className="mt-6 grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]">
+      <div className={clsx("mt-6", !viewer && "grid gap-4 lg:grid-cols-[260px_minmax(0,1fr)]")}>
+        {!viewer && (
         <aside className="lg:sticky lg:top-5 lg:self-start">
           <div className="card overflow-hidden p-3">
-            {(viewer ? [{ title: "Reservas", items: ["reservas"] as Tab[] }] : NAV_GROUPS).map((group) => (
+            {NAV_GROUPS.map((group) => (
               <div key={group.title} className="border-b py-3 last:border-b-0" style={{ borderColor: "var(--line)" }}>
                 <p className="px-2 pb-2 font-sans text-[10px] font-semibold uppercase tracking-wide2 text-muted">{group.title}</p>
                 <div className="space-y-1">
@@ -265,6 +266,7 @@ function Shell({ email }: { email?: string }) {
             ))}
           </div>
         </aside>
+        )}
 
         <section className="min-w-0">
           <div className="rounded-[14px] border px-5 py-4" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
