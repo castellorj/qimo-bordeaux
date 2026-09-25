@@ -21,6 +21,12 @@ function activityTimeKey(activity: Activity) {
   return start || `sem-horario-${activity.id}`;
 }
 
+// Minutos do horário de início (para ordenar cronologicamente). Sem horário = fim.
+function startMinutes(time?: string | null) {
+  const m = (time || "").match(/(\d{1,2}):(\d{2})/);
+  return m ? parseInt(m[1], 10) * 60 + parseInt(m[2], 10) : Number.MAX_SAFE_INTEGER;
+}
+
 function groupActivities(activities: Activity[]) {
   const groups: Array<{ key: string; time?: string | null; items: Activity[] }> = [];
   activities.forEach((activity) => {
@@ -29,7 +35,9 @@ function groupActivities(activities: Activity[]) {
     if (group) group.items.push(activity);
     else groups.push({ key, time: activity.time?.split(/[–—-]/)[0]?.trim() || activity.time, items: [activity] });
   });
-  return groups;
+  // Ordena por horário de início — assim café/almoço/jantar e passeios ficam
+  // sempre alinhados na linha do tempo, independentemente da ordem no banco.
+  return groups.sort((a, b) => startMinutes(a.time) - startMinutes(b.time));
 }
 
 function isOnBoardActivity(activity: Activity) {
