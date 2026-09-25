@@ -25,6 +25,7 @@ export interface Activity {
   title: string;
   type: ActivityType;
   location?: string;
+  address?: string; // endereço exato (mostra chip "Como chegar" no Google Maps)
   capacity?: number;
   paid?: boolean; // atividade paga a parte
   price?: string; // valor exibido no guia, ex.: "US$ 90 por pessoa"
