@@ -979,16 +979,25 @@ function Reservas({ acts, parts, res, onChange, readOnly = false }: { acts: BxAc
     active.forEach((r) => { const k = groupKeyForRes(r); if (k && map.has(k)) map.get(k)!.count++; });
     return [...map.values()].sort((a, b) => (groupNum(a.family) - groupNum(b.family)) || a.family.localeCompare(b.family));
   })();
-  const resForGroup = (key: string) => active
-    .filter((r) => groupKeyForRes(r) === key)
-    .map((r) => { const act = acts.find((a) => a.id === r.activity_id); return { r, dia: act?.day_number ?? r.activity?.day_number ?? null, start: act?.start_time ?? r.activity?.start_time ?? "", title: act?.title ?? r.activity?.title ?? "Reserva", status: r.status }; })
-    .sort((x, y) => ((x.dia ?? 99) - (y.dia ?? 99)) || String(x.start).localeCompare(String(y.start)));
+  // Reservas do grupo, DEDUPLICADAS por atividade (uma linha por experiência,
+  // unindo as pessoas — evita a mesma experiência aparecer 2x quando o casal
+  // reservou em linhas separadas).
+  const resForGroup = (key: string) => {
+    const byAct = new Map<string, { dia: number | null; start: string; title: string; people: string[]; confirmed: boolean }>();
+    active.filter((r) => groupKeyForRes(r) === key).forEach((r) => {
+      const act = acts.find((a) => a.id === r.activity_id);
+      const cur = byAct.get(r.activity_id) || { dia: act?.day_number ?? r.activity?.day_number ?? null, start: act?.start_time ?? r.activity?.start_time ?? "", title: act?.title ?? r.activity?.title ?? "Reserva", people: [] as string[], confirmed: false };
+      [personLabel(r), ...companions(r)].forEach((p) => { if (p && !cur.people.includes(p)) cur.people.push(p); });
+      if (r.status === "confirmed") cur.confirmed = true;
+      byAct.set(r.activity_id, cur);
+    });
+    return [...byAct.values()].sort((x, y) => ((x.dia ?? 99) - (y.dia ?? 99)) || String(x.start).localeCompare(String(y.start)));
+  };
   const groupPageHtml = (g: { key: string; family: string; members: string[] }) => {
     const rows = resForGroup(g.key).map((x) => {
-      const pessoas = [personLabel(x.r), ...companions(x.r)].join(", ");
       const quando = [pdfDayDate(x.dia) || (x.dia != null ? `Dia ${x.dia}` : ""), x.start].filter(Boolean).join(" · ");
-      const st = x.status === "waitlist" ? ' <span class="wl">(lista de espera)</span>' : "";
-      return `<tr><td>${escHtml(quando)}</td><td>${escHtml(x.title)}${st}</td><td>${escHtml(pessoas)}</td></tr>`;
+      const st = x.confirmed ? "" : ' <span class="wl">(lista de espera)</span>';
+      return `<tr><td>${escHtml(quando)}</td><td>${escHtml(x.title)}${st}</td><td>${escHtml(x.people.join(", "))}</td></tr>`;
     }).join("");
     const body = rows || '<tr><td colspan="3" class="empty">Nenhuma reserva registrada até o momento.</td></tr>';
     return `<section class="page">
