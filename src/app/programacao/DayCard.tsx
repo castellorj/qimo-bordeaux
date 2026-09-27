@@ -198,7 +198,7 @@ export function DayCard({
                             {onBoard && <span className="chip border-gold/50 bg-gold/10 text-gold-deep"><Icon name="Ship" size={13} /> A bordo</span>}
                             {a.qimoSelect && <QimoSeal />}
                             {a.location && <span className="chip">{a.location}</span>}
-                            {a.address && <a href={mapsUrl(a.address, a.title)} target="_blank" rel="noopener noreferrer" className="chip hover:text-gold"><Icon name="Navigation" size={13} /> Como chegar</a>}
+                            {a.address && <a href={mapsUrl(a.address, a.title)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 rounded-full bg-petrol-600 px-3.5 py-1.5 font-sans text-[12px] font-semibold text-cream transition-colors hover:bg-petrol-700"><Icon name="Navigation" size={13} /> Como chegar</a>}
                             {a.linkedWinery && <Link href={`/vinicolas/${a.linkedWinery}`} className="chip hover:text-gold"><Icon name="Grape" size={13} /> Ver vinícola</Link>}
                             {a.linkedCity && <Link href={`/cidades/${a.linkedCity}`} className="chip hover:text-gold"><Icon name="Landmark" size={13} /> Ver cidade</Link>}
                           </div>

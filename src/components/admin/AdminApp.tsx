@@ -1043,12 +1043,16 @@ function Reservas({ acts, parts, res, onChange, readOnly = false }: { acts: BxAc
                 <Icon name="Plus" size={13} /> Nova reserva
               </button>
             )}
-            <button type="button" onClick={exportExcel} className="rounded-full border px-3 py-1 font-semibold text-petrol-600 hover:border-gold" style={{ borderColor: "var(--line)" }}>
-              Exportar Excel
-            </button>
-            <button type="button" onClick={() => { setPdfQuery(""); setPdfOpen(true); }} className="inline-flex items-center gap-1 rounded-full border px-3 py-1 font-semibold text-petrol-600 hover:border-gold" style={{ borderColor: "var(--line)" }}>
-              <Icon name="FileText" size={13} /> PDF por cliente
-            </button>
+            {!readOnly && (
+              <>
+                <button type="button" onClick={exportExcel} className="rounded-full border px-3 py-1 font-semibold text-petrol-600 hover:border-gold" style={{ borderColor: "var(--line)" }}>
+                  Exportar Excel
+                </button>
+                <button type="button" onClick={() => { setPdfQuery(""); setPdfOpen(true); }} className="inline-flex items-center gap-1 rounded-full border px-3 py-1 font-semibold text-petrol-600 hover:border-gold" style={{ borderColor: "var(--line)" }}>
+                  <Icon name="FileText" size={13} /> PDF por cliente
+                </button>
+              </>
+            )}
           </div>
         </div>
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
