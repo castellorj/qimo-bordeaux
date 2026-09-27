@@ -690,6 +690,8 @@ function Reservas({ acts, parts, res, onChange, readOnly = false }: { acts: BxAc
   const [busy, setBusy] = useState(false);
   const [addBusy, setAddBusy] = useState<string | null>(null);
   const [showNew, setShowNew] = useState(false);
+  const [pdfOpen, setPdfOpen] = useState(false);
+  const [pdfQuery, setPdfQuery] = useState("");
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -955,6 +957,75 @@ function Reservas({ acts, parts, res, onChange, readOnly = false }: { acts: BxAc
     URL.revokeObjectURL(url);
   };
 
+  // ---- PDF de reservas por cliente (via impressão → "Salvar como PDF") ----
+  const escHtml = (v: unknown) => String(v ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  const pdfDayDate = (n?: number | null) => {
+    if (n == null) return null;
+    const d = new Date(2026, 9, 24 + Number(n)); // Dia 1 = 25/10/2026
+    const s = d.toLocaleDateString("pt-BR", { weekday: "long", day: "2-digit", month: "long" });
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  };
+  const groupKeyForRes = (r: BxReservation) => { const me = participantForReservation(r); return me ? (groupKeyOf(me.family) || me.id) : null; };
+  const groupNum = (fam: string) => parseInt((fam.match(/\d+/) || ["999999"])[0], 10);
+  // Grupos (a partir dos clientes) + nº de reservas de cada um
+  const pdfGroups = (() => {
+    const map = new Map<string, { key: string; family: string; members: string[]; count: number }>();
+    parts.forEach((p) => {
+      const key = groupKeyOf(p.family) || p.id;
+      const g = map.get(key) || { key, family: p.family || "Sem grupo", members: [], count: 0 };
+      g.members.push(p.full_name);
+      map.set(key, g);
+    });
+    active.forEach((r) => { const k = groupKeyForRes(r); if (k && map.has(k)) map.get(k)!.count++; });
+    return [...map.values()].sort((a, b) => (groupNum(a.family) - groupNum(b.family)) || a.family.localeCompare(b.family));
+  })();
+  const resForGroup = (key: string) => active
+    .filter((r) => groupKeyForRes(r) === key)
+    .map((r) => { const act = acts.find((a) => a.id === r.activity_id); return { r, dia: act?.day_number ?? r.activity?.day_number ?? null, start: act?.start_time ?? r.activity?.start_time ?? "", title: act?.title ?? r.activity?.title ?? "Reserva", status: r.status }; })
+    .sort((x, y) => ((x.dia ?? 99) - (y.dia ?? 99)) || String(x.start).localeCompare(String(y.start)));
+  const groupPageHtml = (g: { key: string; family: string; members: string[] }) => {
+    const rows = resForGroup(g.key).map((x) => {
+      const pessoas = [personLabel(x.r), ...companions(x.r)].join(", ");
+      const quando = [pdfDayDate(x.dia) || (x.dia != null ? `Dia ${x.dia}` : ""), x.start].filter(Boolean).join(" · ");
+      const st = x.status === "waitlist" ? ' <span class="wl">(lista de espera)</span>' : "";
+      return `<tr><td>${escHtml(quando)}</td><td>${escHtml(x.title)}${st}</td><td>${escHtml(pessoas)}</td></tr>`;
+    }).join("");
+    const body = rows || '<tr><td colspan="3" class="empty">Nenhuma reserva registrada até o momento.</td></tr>';
+    return `<section class="page">
+      <div class="head"><div class="brand">QIMO · Bordeaux</div><div class="sub">Cruzeiro fluvial · 25 out – 01 nov 2026</div></div>
+      <h1>Suas reservas</h1>
+      <p class="grp">${escHtml(g.family)}</p>
+      <p class="mem">${escHtml(g.members.join(" · "))}</p>
+      <table><thead><tr><th>Quando</th><th>Experiência</th><th>Quem</th></tr></thead><tbody>${body}</tbody></table>
+      <p class="foot">Reservas sujeitas a alteração. Dúvidas? Fale com a equipe QIMO.</p>
+    </section>`;
+  };
+  const printHtml = (inner: string, title: string) => {
+    const doc = `<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><title>${escHtml(title)}</title><style>
+      *{box-sizing:border-box} body{font-family:Georgia,'Times New Roman',serif;color:#2b2b2b;margin:0;padding:28px}
+      .page{max-width:720px;margin:0 auto;padding:6px 4px;page-break-after:always}
+      .page:last-child{page-break-after:auto}
+      .head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #C9A34A;padding-bottom:8px}
+      .brand{font-weight:bold;letter-spacing:.08em;color:#3f1d25} .sub{font-size:12px;color:#7a7a7a;font-family:Arial,sans-serif}
+      h1{font-size:26px;font-weight:normal;color:#3f1d25;margin:22px 0 4px} .grp{font-size:15px;font-weight:bold;margin:0}
+      .mem{color:#666;margin:2px 0 18px;font-family:Arial,sans-serif;font-size:13px}
+      table{width:100%;border-collapse:collapse;font-size:13px;font-family:Arial,sans-serif}
+      th{background:#3f1d25;color:#fff;text-align:left;padding:8px 10px;font-size:11px;text-transform:uppercase;letter-spacing:.04em}
+      td{border:1px solid #e2dcd3;padding:8px 10px;vertical-align:top} .empty{color:#888;text-align:center;font-style:italic}
+      .wl{color:#9a7b12;font-family:Arial,sans-serif;font-size:11px} .foot{margin-top:18px;font-size:11px;color:#999;font-family:Arial,sans-serif}
+      @media print{body{padding:0}}
+    </style></head><body>${inner}<script>window.onload=function(){setTimeout(function(){window.focus();window.print();},300);};<\/script></body></html>`;
+    const w = window.open("", "_blank");
+    if (!w) { alert("Libere os pop-ups do navegador para gerar o PDF."); return; }
+    w.document.write(doc); w.document.close();
+  };
+  const openGroupPdf = (g: { key: string; family: string; members: string[] }) => printHtml(groupPageHtml(g), `QIMO reservas — ${g.family}`);
+  const openAllPdf = () => {
+    const gs = pdfGroups.filter((g) => g.count > 0);
+    if (!gs.length) { alert("Nenhum grupo com reservas."); return; }
+    printHtml(gs.map(groupPageHtml).join(""), "QIMO reservas — todos os clientes");
+  };
+
   return (
     <div className="space-y-6">
       <div className="rounded-[14px] border p-4" style={{ borderColor: "var(--line)", background: "var(--bg-elev)" }}>
@@ -974,6 +1045,9 @@ function Reservas({ acts, parts, res, onChange, readOnly = false }: { acts: BxAc
             )}
             <button type="button" onClick={exportExcel} className="rounded-full border px-3 py-1 font-semibold text-petrol-600 hover:border-gold" style={{ borderColor: "var(--line)" }}>
               Exportar Excel
+            </button>
+            <button type="button" onClick={() => { setPdfQuery(""); setPdfOpen(true); }} className="inline-flex items-center gap-1 rounded-full border px-3 py-1 font-semibold text-petrol-600 hover:border-gold" style={{ borderColor: "var(--line)" }}>
+              <Icon name="FileText" size={13} /> PDF por cliente
             </button>
           </div>
         </div>
@@ -1043,6 +1117,38 @@ function Reservas({ acts, parts, res, onChange, readOnly = false }: { acts: BxAc
                 <button disabled={busy} className="btn-primary w-full">{busy ? "…" : "Reservar"}</button>
               </div>
             </form>
+          </div>
+        )}
+
+        {pdfOpen && (
+          <div className="fixed inset-0 z-[60] grid place-items-center bg-black/40 p-4" onClick={() => setPdfOpen(false)}>
+            <div className="card flex max-h-[90vh] w-full max-w-lg flex-col overflow-hidden p-0" onClick={(e) => e.stopPropagation()}>
+              <div className="flex items-start justify-between gap-3 border-b p-5" style={{ borderColor: "var(--line)" }}>
+                <div>
+                  <h3 className="font-serif text-xl font-light">PDF de reservas por cliente</h3>
+                  <p className="mt-1 font-sans text-[12px] leading-relaxed text-muted">Gere o PDF das reservas de cada cliente para enviar por e-mail/WhatsApp. Abre a janela de impressão — escolha <strong>“Salvar como PDF”</strong>.</p>
+                </div>
+                <button type="button" onClick={() => setPdfOpen(false)} className="shrink-0 text-muted hover:text-petrol-600" aria-label="Fechar"><Icon name="X" size={18} /></button>
+              </div>
+              <div className="p-5 pb-3">
+                <input value={pdfQuery} onChange={(e) => setPdfQuery(e.target.value)} placeholder="Buscar cliente ou grupo" className="w-full rounded-[10px] border bg-transparent px-3 py-2 font-sans text-sm outline-none focus:border-gold" style={{ borderColor: "var(--line)" }} />
+                <button type="button" onClick={openAllPdf} className="btn-ghost mt-3 w-full !py-2 text-[12px]"><Icon name="FileText" size={13} /> Gerar todos com reserva (1 por página)</button>
+              </div>
+              <div className="min-h-0 flex-1 space-y-2 overflow-y-auto px-5 pb-5">
+                {pdfGroups
+                  .filter((g) => { const q = pdfQuery.trim().toLowerCase(); return !q || g.family.toLowerCase().includes(q) || g.members.some((m) => m.toLowerCase().includes(q)); })
+                  .map((g) => (
+                    <div key={g.key} className="flex items-center gap-3 rounded-[10px] border p-3" style={{ borderColor: "var(--line)" }}>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-serif text-[15px] leading-tight">{g.family}</p>
+                        <p className="truncate font-sans text-[12px] text-muted">{g.members.join(" · ")}</p>
+                        <p className="font-sans text-[11px] text-muted">{g.count} {g.count === 1 ? "reserva" : "reservas"}</p>
+                      </div>
+                      <button type="button" onClick={() => openGroupPdf(g)} className="btn-ghost shrink-0 !px-3 !py-1.5 text-[12px]"><Icon name="Download" size={13} /> PDF</button>
+                    </div>
+                  ))}
+              </div>
+            </div>
           </div>
         )}
 
