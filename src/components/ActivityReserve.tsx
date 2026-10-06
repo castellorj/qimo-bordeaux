@@ -67,15 +67,11 @@ export function ActivityReserve({ contentKey, inline = false }: { contentKey: st
           {my.status === "waitlist" ? "Na lista de espera" : "Reservado"} · {my.seats} {my.seats > 1 ? "pessoas" : "pessoa"}
           <Icon name="Pencil" size={12} className="opacity-70" />
         </button>
-      ) : closed ? (
-        // Reservas encerradas pela organização (Chef, Golf): sem nova inscrição.
+      ) : closed || full ? (
+        // Reservas encerradas: encerradas pela organização (Chef, Golf) OU sem
+        // vaga/ com fila de espera. Sem nova inscrição e sem lista de espera.
         <div className={esgotadoCls} style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--text) 4%, transparent)" }} aria-disabled="true">
           <Icon name="CircleMinus" size={15} /> Reservas encerradas
-        </div>
-      ) : full ? (
-        // Reservas pausadas para passeios sem vaga: sem opção de lista de espera.
-        <div className={esgotadoCls} style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--text) 4%, transparent)" }} aria-disabled="true">
-          <Icon name="CircleMinus" size={15} /> Esgotado
         </div>
       ) : (
         <button
