@@ -28,6 +28,7 @@ function activeSection(pathname: string): string {
   if (p.startsWith("/chef")) return "/chef";
   if (/^\/(descobrir|vinicolas|restaurantes|vinhos|gastronomia|experiencias|compras|cidades)/.test(p)) return "/descobrir";
   if (p.startsWith("/reservas")) return "/reservas";
+  if (p.startsWith("/transfer")) return "/transfer";
   if (/^\/(mais|concierge|informacoes|paginas|barco|mapa|documentos)/.test(p)) return "/concierge";
   return "";
 }

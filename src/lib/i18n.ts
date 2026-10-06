@@ -62,6 +62,7 @@ export const ui: Dict = {
   "nav.informacoes": { pt: "Informações úteis", en: "Useful info", es: "Información útil" },
   "nav.documentos": { pt: "Documentos", en: "Documents", es: "Documentos" },
   "nav.reservas": { pt: "Reservas", en: "Bookings", es: "Reservas" },
+  "nav.transfer": { pt: "Transfer", en: "Transfer", es: "Transfer" },
   "nav.paginas": { pt: "Páginas", en: "Pages", es: "Páginas" },
   "navd.paginas": { pt: "Guias e conteúdos extras", en: "Extra guides & content", es: "Guías y contenidos extra" },
   "nav.roteiro": { pt: "Roteiro", en: "Route", es: "Ruta" },
@@ -100,6 +101,7 @@ export const ui: Dict = {
   "navd.informacoes": { pt: "Clima, moeda, etiqueta", en: "Weather, currency, etiquette", es: "Clima, moneda, etiqueta" },
   "navd.documentos": { pt: "Passaporte, vouchers, seguro", en: "Passport, vouchers, insurance", es: "Pasaporte, vouchers, seguro" },
   "navd.reservas": { pt: "Seus passeios reservados", en: "Your booked activities", es: "Tus paseos reservados" },
+  "navd.transfer": { pt: "Transfer ao aeroporto (01/11)", en: "Airport transfer (Nov 1)", es: "Transfer al aeropuerto (01/11)" },
   "docs.intro": {
     pt: "Seus documentos ficam armazenados apenas neste aparelho e continuam disponiveis mesmo sem conexao. Recomendamos manter tambem as vias oficiais.",
     en: "Your documents stay stored only on this device and remain available offline. We recommend keeping the official copies too.",
@@ -435,7 +437,7 @@ export function makeT(locale: Locale, overrides?: UiOverrides) {
 export const EDITABLE_LABELS: { key: string; grp: string }[] = [
   { key: "share.title", grp: "Compartilhamento do link" }, { key: "share.description", grp: "Compartilhamento do link" },
   { key: "nav.viagem", grp: "Menu" }, { key: "nav.descobrir", grp: "Menu" },
-  { key: "nav.reservas", grp: "Menu" }, { key: "nav.mais", grp: "Menu" },
+  { key: "nav.reservas", grp: "Menu" }, { key: "nav.transfer", grp: "Menu" }, { key: "nav.mais", grp: "Menu" },
   { key: "nav.programacao", grp: "Menu" }, { key: "nav.barco", grp: "Menu" }, { key: "nav.mapa", grp: "Menu" },
   { key: "nav.cidades", grp: "Menu" }, { key: "nav.vinicolas", grp: "Menu" }, { key: "nav.restaurantes", grp: "Menu" },
   { key: "nav.vinhos", grp: "Menu" }, { key: "nav.gastronomia", grp: "Menu" }, { key: "nav.experiencias", grp: "Menu" },

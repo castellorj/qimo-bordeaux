@@ -20,6 +20,7 @@ export const primaryNav: NavItem[] = [
   { key: "descobrir", href: "/descobrir", icon: "Grape" },
   { key: "chef", href: "/chef", icon: "Utensils" },
   { key: "reservas", href: "/reservas", icon: "CalendarCheck" },
+  { key: "transfer", href: "/transfer", icon: "Bus" },
   // "Mais" abre direto o Concierge (que reúne contatos, navio, etiqueta e utilidades).
   { key: "mais", href: "/concierge", icon: "Menu" },
 ];
