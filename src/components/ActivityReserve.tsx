@@ -44,7 +44,13 @@ export function ActivityReserve({ contentKey, inline = false }: { contentKey: st
         r.startTime === rv.startTime
       )
     : undefined;
-  const full = rv.available != null && rv.available <= 0;
+  // Esgotado = sem vaga OU já existe fila de espera. A fila pode existir mesmo
+  // com 1 lugar "livre" (ex.: só casais na espera, que não cabem em 1 lugar);
+  // nesse caso não oferecemos a vaga solitária a novos hóspedes.
+  const full = (rv.available != null && rv.available <= 0) || rv.waitlisted > 0;
+  // Reservas encerradas pela organização (ex.: Chef e Golf): não aceita nova
+  // inscrição, mas quem já reservou continua vendo sua reserva.
+  const closed = rv.status === "closed";
 
   return (
     <>
@@ -61,6 +67,11 @@ export function ActivityReserve({ contentKey, inline = false }: { contentKey: st
           {my.status === "waitlist" ? "Na lista de espera" : "Reservado"} · {my.seats} {my.seats > 1 ? "pessoas" : "pessoa"}
           <Icon name="Pencil" size={12} className="opacity-70" />
         </button>
+      ) : closed ? (
+        // Reservas encerradas pela organização (Chef, Golf): sem nova inscrição.
+        <div className={esgotadoCls} style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--text) 4%, transparent)" }} aria-disabled="true">
+          <Icon name="CircleMinus" size={15} /> Reservas encerradas
+        </div>
       ) : full ? (
         // Reservas pausadas para passeios sem vaga: sem opção de lista de espera.
         <div className={esgotadoCls} style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--text) 4%, transparent)" }} aria-disabled="true">
@@ -135,8 +146,18 @@ function ReserveSheet({
   const submit = async () => {
     const party = names.map((n) => n.trim()).filter(Boolean);
     if (!party.length) { setErr("Selecione ao menos uma pessoa."); return; }
-    // Reservas pausadas: passeio sem vaga não aceita nova inscrição (sem lista de espera).
-    if (!my && rv.available != null && rv.available <= 0) {
+    // Reservas encerradas pela organização (Chef, Golf): não aceita nova inscrição.
+    if (!my && rv.status === "closed") {
+      setErr("As reservas para esta experiência estão encerradas.");
+      return;
+    }
+    // Reservas pausadas: sem vaga, com fila de espera, ou quando o grupo não cabe
+    // nos lugares livres (evita criar nova inscrição na lista de espera).
+    if (!my && (
+      (rv.available != null && rv.available <= 0) ||
+      rv.waitlisted > 0 ||
+      (rv.available != null && party.length > rv.available)
+    )) {
       setErr("Este passeio está esgotado — as reservas estão encerradas.");
       return;
     }

@@ -13,6 +13,7 @@ export interface Reservable {
   capacityTotal: number | null;
   reserved: number;
   available: number | null; // null = sem limite
+  waitlisted: number; // lugares já na lista de espera
   qimoSelect: boolean;
   status: string;
 }
@@ -82,6 +83,7 @@ export async function fetchReservable(): Promise<Reservable[]> {
     capacityTotal: r.capacity_total,
     reserved: r.reserved,
     available: r.available,
+    waitlisted: r.waitlisted ?? 0,
     qimoSelect: r.qimo_select,
     status: r.status,
   }));

@@ -112,6 +112,7 @@ function fallbackReservables(remote: Reservable[]): Reservable[] {
         capacityTotal: activity.capacity ?? null,
         reserved: 0,
         available: activity.capacity ?? null,
+        waitlisted: 0,
         qimoSelect: !!activity.qimoSelect,
         status: "local",
       });
