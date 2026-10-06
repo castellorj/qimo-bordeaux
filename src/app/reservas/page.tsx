@@ -102,8 +102,14 @@ export default function ReservasPage() {
                   </div>
 
                   <div className="space-y-3">
-                    {group.items.map((r) => (
-                      <div key={r.reservationId} className="card p-5">
+                    {group.items.map((r) => {
+                      const waitlisted = r.status !== "confirmed";
+                      return (
+                      <div
+                        key={r.reservationId}
+                        className="card p-5"
+                        style={waitlisted ? { borderColor: "color-mix(in srgb, var(--gold) 60%, var(--line))", background: "color-mix(in srgb, var(--gold) 7%, transparent)" } : undefined}
+                      >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0">
                             <p className="font-sans text-[11px] uppercase tracking-wide2 text-gold-deep">
@@ -111,8 +117,9 @@ export default function ReservasPage() {
                             </p>
                             <h3 className="mt-1 font-serif text-xl font-light leading-snug">{r.title}</h3>
                           </div>
-                          <span className={`shrink-0 rounded-full px-3 py-1 font-sans text-[11px] font-medium ${r.status === "confirmed" ? "bg-olive/15 text-olive-deep" : "bg-gold/15 text-gold-deep"}`}>
-                            {r.status === "confirmed" ? "Confirmada" : "Lista de espera"}
+                          <span className={`inline-flex shrink-0 items-center gap-1 rounded-full px-3 py-1 font-sans text-[11px] font-semibold ${waitlisted ? "bg-gold/25 text-gold-deep" : "bg-olive/15 text-olive-deep"}`}>
+                            <Icon name={waitlisted ? "Clock" : "CircleCheck"} size={12} />
+                            {waitlisted ? "Lista de espera" : "Confirmada"}
                           </span>
                         </div>
 
@@ -126,9 +133,17 @@ export default function ReservasPage() {
                           </div>
                         )}
 
+                        {waitlisted && (
+                          <p className="mt-3 flex items-start gap-1.5 rounded-[10px] border px-3 py-2 font-sans text-[12px] leading-relaxed text-gold-deep" style={{ borderColor: "color-mix(in srgb, var(--gold) 50%, var(--line))", background: "color-mix(in srgb, var(--gold) 12%, transparent)" }}>
+                            <Icon name="Info" size={13} className="mt-0.5 shrink-0" />
+                            <span>Você está na <strong>lista de espera</strong> deste passeio. Se abrir uma vaga, a equipe QIMO avisa — não é preciso fazer nada.</span>
+                          </p>
+                        )}
+
                         {r.contentKey && <ActivityReserve contentKey={r.contentKey} />}
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </section>
               ))}

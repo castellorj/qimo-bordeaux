@@ -53,9 +53,11 @@ export function ActivityReserve({ contentKey, inline = false }: { contentKey: st
           type="button"
           onClick={() => setOpen(true)}
           className={reservedCls}
-          style={{ borderColor: "var(--olive)", color: "var(--olive-deep)", background: "color-mix(in srgb, var(--olive) 10%, transparent)" }}
+          style={my.status === "waitlist"
+            ? { borderColor: "color-mix(in srgb, var(--gold) 60%, var(--line))", color: "#a5884e", background: "color-mix(in srgb, var(--gold) 12%, transparent)" }
+            : { borderColor: "var(--olive)", color: "var(--olive-deep)", background: "color-mix(in srgb, var(--olive) 10%, transparent)" }}
         >
-          <Icon name="CircleCheck" size={15} />
+          <Icon name={my.status === "waitlist" ? "Clock" : "CircleCheck"} size={15} />
           {my.status === "waitlist" ? "Na lista de espera" : "Reservado"} · {my.seats} {my.seats > 1 ? "pessoas" : "pessoa"}
           <Icon name="Pencil" size={12} className="opacity-70" />
         </button>
