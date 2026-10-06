@@ -5,7 +5,7 @@
    - API de clima (open-meteo): network-first com fallback ao cache
    Resultado: todo conteúdo já acessado funciona offline.
 */
-const VERSION = "qimo-v3";
+const VERSION = "qimo-v4";
 const SHELL = `${VERSION}-shell`;
 const IMG = `${VERSION}-img`;
 
