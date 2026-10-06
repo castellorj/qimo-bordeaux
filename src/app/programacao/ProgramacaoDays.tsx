@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import clsx from "clsx";
 import { DayCard } from "./DayCard";
+import { Icon } from "@/components/Icon";
 import { useGuideList } from "@/components/GuideContent";
 import { cities, wineries } from "@/content";
 import { cleanSiteImage } from "@/lib/siteImages";
@@ -86,9 +87,18 @@ export function ProgramacaoDays() {
       </nav>
 
       <div className="container-editorial pt-6">
-        <p className="font-sans text-[12px] italic text-muted">
-          Toque em um dia para ver a programação. Horários sujeitos a alterações — confirmados a bordo.
-        </p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="font-sans text-[12px] italic text-muted">
+            Toque em um dia para ver a programação. Horários sujeitos a alterações — confirmados a bordo.
+          </p>
+          <a
+            href="/programacao-bordeaux.pdf"
+            download
+            className="btn-primary shrink-0 !rounded-[10px] !px-4 !py-2.5 text-[12px]"
+          >
+            <Icon name="Download" size={15} /> Baixar programação (PDF)
+          </a>
+        </div>
       </div>
 
       <div className="container-editorial space-y-10 pb-10 pt-6">
