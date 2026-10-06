@@ -171,7 +171,14 @@ function ReserveSheet({
     const res = await reserve(rv.activityId, party);
     setBusy(false);
     if (!res.ok) {
-      setErr(res.error === "phone" ? "Entre no guia com seu telefone pessoal para confirmar." : "Não foi possível reservar agora. Tente de novo.");
+      if (res.error === "phone") {
+        setErr("Entre no guia com seu telefone pessoal para confirmar.");
+      } else if (res.error && /conflito de hor/i.test(res.error)) {
+        // Rede de segurança do servidor: alguém do grupo já tem reserva neste horário.
+        setErr("Conflito de horário: alguém do seu grupo já tem outra reserva neste mesmo horário. Cancele a outra opção para escolher esta.");
+      } else {
+        setErr("Não foi possível reservar agora. Tente de novo.");
+      }
       return;
     }
     onClose();
