@@ -30,6 +30,9 @@ export function ActivityReserve({ contentKey, inline = false }: { contentKey: st
   const primaryCls = inline
     ? "btn-primary w-full !rounded-[10px] !px-4 !py-3 text-[12px]"
     : "btn-primary mt-3 w-full !rounded-[10px] !px-4 !py-2 !tracking-wide text-[12px]";
+  const esgotadoCls = inline
+    ? "flex w-full items-center justify-center gap-2 rounded-[10px] border px-4 py-3 font-sans text-[12px] font-semibold text-muted"
+    : "mt-3 flex w-full items-center justify-center gap-2 rounded-[10px] border px-4 py-2 font-sans text-[12px] font-semibold text-muted";
 
   const my = mine.get(rv.activityId);
   // Conflito de horário só quando há dia E horário definidos (experiências do Chef
@@ -56,6 +59,11 @@ export function ActivityReserve({ contentKey, inline = false }: { contentKey: st
           {my.status === "waitlist" ? "Na lista de espera" : "Reservado"} · {my.seats} {my.seats > 1 ? "pessoas" : "pessoa"}
           <Icon name="Pencil" size={12} className="opacity-70" />
         </button>
+      ) : full ? (
+        // Reservas pausadas para passeios sem vaga: sem opção de lista de espera.
+        <div className={esgotadoCls} style={{ borderColor: "var(--line)", background: "color-mix(in srgb, var(--text) 4%, transparent)" }} aria-disabled="true">
+          <Icon name="CircleMinus" size={15} /> Esgotado
+        </div>
       ) : (
         <button
           type="button"
@@ -64,7 +72,7 @@ export function ActivityReserve({ contentKey, inline = false }: { contentKey: st
         >
           <Icon name="CalendarCheck" size={15} /> Reservar
           {rv.available != null && (
-            <span className="font-normal opacity-80">· {full ? "lista de espera" : `${rv.available} ${rv.available === 1 ? "vaga" : "vagas"}`}</span>
+            <span className="font-normal opacity-80">· {rv.available} {rv.available === 1 ? "vaga" : "vagas"}</span>
           )}
         </button>
       )}
@@ -125,6 +133,11 @@ function ReserveSheet({
   const submit = async () => {
     const party = names.map((n) => n.trim()).filter(Boolean);
     if (!party.length) { setErr("Selecione ao menos uma pessoa."); return; }
+    // Reservas pausadas: passeio sem vaga não aceita nova inscrição (sem lista de espera).
+    if (!my && rv.available != null && rv.available <= 0) {
+      setErr("Este passeio está esgotado — as reservas estão encerradas.");
+      return;
+    }
     if (conflict && !my && !replace) {
       setErr(`Marque "Substituir" para trocar a reserva de "${conflict.title}" por esta.`);
       return;
