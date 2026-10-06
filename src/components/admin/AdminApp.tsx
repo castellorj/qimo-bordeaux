@@ -993,6 +993,7 @@ function Reservas({ acts, parts, res, onChange, readOnly = false }: { acts: BxAc
     });
     return [...byAct.values()].sort((x, y) => ((x.dia ?? 99) - (y.dia ?? 99)) || String(x.start).localeCompare(String(y.start)));
   };
+  const siteOrigin = typeof window !== "undefined" ? window.location.origin : "";
   const groupPageHtml = (g: { key: string; family: string; members: string[] }) => {
     const rows = resForGroup(g.key).map((x) => {
       const quando = [pdfDayDate(x.dia) || (x.dia != null ? `Dia ${x.dia}` : ""), x.start].filter(Boolean).join(" · ");
@@ -1001,7 +1002,7 @@ function Reservas({ acts, parts, res, onChange, readOnly = false }: { acts: BxAc
     }).join("");
     const body = rows || '<tr><td colspan="3" class="empty">Nenhuma reserva registrada até o momento.</td></tr>';
     return `<section class="page">
-      <div class="head"><div class="brand">QIMO · Bordeaux</div><div class="sub">Cruzeiro fluvial · 25 out – 01 nov 2026</div></div>
+      <div class="head"><img class="logo" src="${siteOrigin}/qimo-logo-dark.png" alt="QIMO"><div class="sub">Cruzeiro fluvial · 25 out – 01 nov 2026</div></div>
       <h1>Suas reservas</h1>
       <p class="grp">${escHtml(g.family)}</p>
       <p class="mem">${escHtml(g.members.join(" · "))}</p>
@@ -1014,8 +1015,8 @@ function Reservas({ acts, parts, res, onChange, readOnly = false }: { acts: BxAc
       *{box-sizing:border-box} body{font-family:Georgia,'Times New Roman',serif;color:#2b2b2b;margin:0;padding:28px}
       .page{max-width:720px;margin:0 auto;padding:6px 4px;page-break-after:always}
       .page:last-child{page-break-after:auto}
-      .head{display:flex;justify-content:space-between;align-items:baseline;border-bottom:2px solid #C9A34A;padding-bottom:8px}
-      .brand{font-weight:bold;letter-spacing:.08em;color:#3f1d25} .sub{font-size:12px;color:#7a7a7a;font-family:Arial,sans-serif}
+      .head{display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #C9A34A;padding-bottom:8px}
+      .logo{height:30px;width:auto} .brand{font-weight:bold;letter-spacing:.08em;color:#3f1d25} .sub{font-size:12px;color:#7a7a7a;font-family:Arial,sans-serif}
       h1{font-size:26px;font-weight:normal;color:#3f1d25;margin:22px 0 4px} .grp{font-size:15px;font-weight:bold;margin:0}
       .mem{color:#666;margin:2px 0 18px;font-family:Arial,sans-serif;font-size:13px}
       table{width:100%;border-collapse:collapse;font-size:13px;font-family:Arial,sans-serif}
