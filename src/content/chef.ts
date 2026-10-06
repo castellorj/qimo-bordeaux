@@ -199,7 +199,7 @@ export const chefExperiences: ChefExperience[] = [
     ],
     tagline: "Visita privada a um Premier Grand Cru Classé “A” — apenas 8 lugares.",
     description:
-      "Na quinta-feira, 29 de outubro, abrimos um pequeno grupo da QIMO para uma visita privada ao Château Figeac, em Saint-Émilion, um dos grandes nomes de Bordeaux e Premier Grand Cru Classé “A”. Figeac ocupa uma posição muito particular: são 54 hectares contínuos, sobre um terroir marcado por grandes formações de cascalho, quartzo e sílex — a combinação de solo e paisagem que dá aos seus vinhos uma identidade tão própria. Para apenas 8 pessoas da QIMO, faremos o Le Temps Private Tour, conduzido pela equipe do château, em uma visita de 1h30 dedicada a conhecer a propriedade e sua filosofia, seguida de uma degustação de três vinhos especialmente selecionados — duas safras de Château-Figeac e uma safra de Petit-Figeac. A partir das 17h, com transporte de ida e volta do porto de Libourne.",
+      "Na quinta-feira, 29 de outubro, abrimos um pequeno grupo da QIMO para uma visita privada ao Château Figeac, em Saint-Émilion, um dos grandes nomes de Bordeaux e Premier Grand Cru Classé “A”. Figeac ocupa uma posição muito particular: são 54 hectares contínuos, sobre um terroir marcado por grandes formações de cascalho, quartzo e sílex — a combinação de solo e paisagem que dá aos seus vinhos uma identidade tão própria. Para apenas 8 pessoas da QIMO, faremos o Le Temps Private Tour, conduzido pela equipe do château, em uma visita de 1h30 dedicada a conhecer a propriedade e sua filosofia, seguida de uma degustação de três vinhos especialmente selecionados — duas safras de Château-Figeac e uma safra de Petit-Figeac. Saída do porto de Libourne às 15h, com transporte de ida e volta e retorno previsto para as 18h.",
     highlights: [
       "Premier Grand Cru Classé “A” — 54 hectares contínuos em Saint-Émilion",
       "Le Temps Private Tour (1h30), conduzido pela equipe do château",
@@ -207,10 +207,10 @@ export const chefExperiences: ChefExperience[] = [
       "Apenas 8 lugares — uma visita realmente privada",
       "Transporte ida e volta do porto de Libourne (incluído)",
     ],
-    duration: "A partir das 17h",
+    duration: "15h às 18h",
     price: "€ 185 por pessoa (tour privado + degustação + transporte)",
     qimoSelect: true,
-    reserva: { vagas: 8, dia: 5, horario: "17:00" },
+    reserva: { vagas: 8, dia: 5, horario: "15:00" },
   },
   {
     slug: "chateau-pavie-discovery-tour",
