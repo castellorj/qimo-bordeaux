@@ -14,7 +14,7 @@ import { PIPELINE_STAGES } from "@/domain/types";
 import { STAGE_LABEL, DaysBadge } from "@/components/status";
 
 export default function Dashboard() {
-  const { db, today, user, visible } = useStore();
+  const { db, today, user, visible, can } = useStore();
   const m = useMemo(() => dashboardMetrics(db, today, user), [db, today, user]);
   const queue = useMemo(() => operationsQueue(db, today, user), [db, today, user]);
   const policies = db.policies.filter((p) => p.status === "vigente" && visible(p.holder));
@@ -50,7 +50,7 @@ export default function Dashboard() {
         <Stat label="Apólices ativas" value={n(m.activePolicies)} sub={`${moneyK(m.activePremium)} em prêmio/ano`} href="/apolices" icon={<Icons.ShieldCheck className="h-4 w-4" />} tone="ok" />
         <Stat label="Propostas abertas" value={m.proposalsOpen} sub={`${m.proposalsWaiting} aguardando cliente`} href="/propostas" icon={<Icons.FileText className="h-4 w-4" />} />
         <Stat label="Aprovadas / perdidas" value={<>{m.proposalsApproved}<span className="text-ink-faint"> / </span>{m.proposalsLost}</>} sub={`conversão ${pct(m.conversion)}`} href="/crm" icon={<Icons.Target className="h-4 w-4" />} />
-        <Stat label="Comissão do mês" value={moneyK(m.commissionExpectedMonth)} sub={`${moneyK(m.commissionReceivedMonth)} recebida`} href="/comissoes" icon={<Icons.Wallet className="h-4 w-4" />} tone="ok" />
+        {can("commissions.view") ? <Stat label="Comissão do mês" value={moneyK(m.commissionExpectedMonth)} sub={`${moneyK(m.commissionReceivedMonth)} recebida`} href="/comissoes" icon={<Icons.Wallet className="h-4 w-4" />} tone="ok" /> : <Stat label="Vendas do mês" value={moneyK(m.salesMonth)} sub={`${m.salesMonthCount} apólice(s) novas`} href="/apolices" icon={<Icons.TrendingUp className="h-4 w-4" />} tone="ok" />}
         <Stat label="Horas economizadas" value={`${m.hoursSaved30.toFixed(1).replace(".", ",")} h`} sub={`${m.automationRuns30} automações em 30 dias`} href="/automacoes" icon={<Icons.Zap className="h-4 w-4" />} tone="warn" />
       </div>
 
@@ -97,9 +97,11 @@ export default function Dashboard() {
       </div>
 
       <div className="mt-4 grid gap-4 lg:grid-cols-3">
-        <Card title="Comissão prevista × recebida" subtitle="Por competência" className="lg:col-span-1">
-          <Columns data={commSeries} series={[{ name: "Prevista", color: "#bcd2ff" }, { name: "Recebida", color: "#1f4fe0" }]} format={money0} />
-        </Card>
+        {can("commissions.view") && (
+          <Card title="Comissão prevista × recebida" subtitle="Por competência" className="lg:col-span-1">
+            <Columns data={commSeries} series={[{ name: "Prevista", color: "#bcd2ff" }, { name: "Recebida", color: "#1f4fe0" }]} format={money0} />
+          </Card>
+        )}
         <Card title="Performance por produto" subtitle="Prêmio anual ativo">
           <BarList items={byLine.map((x) => ({ label: lineLabel(x.key as never), value: x.value, color: PRODUCT[x.key as keyof typeof PRODUCT]?.color, href: `/apolices?ramo=${x.key}` }))} format={moneyK} />
         </Card>

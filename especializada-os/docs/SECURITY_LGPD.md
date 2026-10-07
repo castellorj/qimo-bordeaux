@@ -42,20 +42,23 @@ Cada operador precisa de **contrato/DPA** com cláusulas LGPD e, quando houver *
 - Dados de saúde não entram em busca global, relatórios agregados, logs nem prompts de LLM.
 - Payloads enviados a provedores de IA: apenas os campos necessários; identificadores substituídos por pseudônimos quando possível.
 
-## 4. Retenção (proposta — **a confirmar com jurídico**)
+## 4. Retenção — decisão do cliente: "de acordo com a LGPD"
 
-| Dado | Prazo proposto | Racional |
-|---|---|---|
-| Lead não convertido | 24 meses após último contato → anonimizar | Sem contrato; consentimento/legítimo interesse expiram |
-| Cliente com apólice | Vigência + prazo prescricional/regulatório aplicável | A SUSEP regula guarda de documentos (Circular SUSEP 605/2020 substituiu a Circular 74/1999, com prazos que podem chegar a 20 anos para certos documentos); o novo marco legal dos contratos de seguro (Lei 15.040/2024) também afeta prazos prescricionais — **confirmar prazos aplicáveis à corretora** |
-| Documentos de saúde (DPS etc.) | Mínimo necessário após emissão/recusa; cópia de referência fica com a operadora | Sensível; reduzir superfície |
-| Cotações/propostas não aceitas | 24 meses | Histórico comercial |
-| Audit log | 5 anos | Prestação de contas |
-| Logs técnicos | 6 meses (Marco Civil exige guarda de registros de acesso a aplicações por 6 meses para provedores de aplicação) | |
-| Mensagens WhatsApp/e-mail (conteúdo) | 24 meses ou vigência do contrato relacionado | |
-| Backups | Rotação 35 dias; eliminações refletidas no ciclo seguinte | |
+A LGPD **não fixa prazos**: cada dado é mantido enquanto houver finalidade, obrigação legal/regulatória ou necessidade de exercício regular de direitos, e depois é **eliminado ou anonimizado** (arts. 15 e 16). A política padrão abaixo está implementada em `src/domain/engines/retention.ts` e visível em **Configurações → Retenção de dados** (na DEMO a tela só simula; nada é apagado). **Validar os prazos com jurídico/DPO antes da produção.**
 
-Implementação: `retention_until` em documentos; job mensal de anonimização/eliminação com relatório; exceções por *legal hold*.
+| Dado | Prazo | Conta a partir de | Ao final | Base legal / racional |
+|---|---|---|---|---|
+| Cadastro de clientes ativos | Enquanto durar a relação | — | manter | Execução de contrato (art. 7º, V) |
+| Apólices, propostas aceitas, documentos contratuais, comissões | **mín. 5 anos** | Fim da última vigência | anonimizar | Obrigação legal/regulatória e defesa de direitos (art. 7º, II e VI; art. 16, I). A guarda de documentos regulada pela SUSEP (Circular 605/2020) pode exigir prazos maiores para certos documentos; a Lei 15.040/2024 afeta prazos prescricionais — **confirmar** |
+| Dados de saúde de cotações não convertidas (beneficiários, idades, hospitais/médicos preferidos) | 6 meses | Última atualização da cotação | excluir | Dado sensível (art. 11): minimização (art. 6º, III) |
+| Leads não convertidos | 24 meses | Último contato/cotação | anonimizar | Legítimo interesse/consentimento (art. 7º, IX e I) |
+| Consentimento de marketing (WhatsApp/e-mail) | Até a revogação; prova do opt-in/out por 5 anos | — | manter | Consentimento (art. 8º) e prestação de contas (art. 6º, X) |
+| Documentos pessoais de ex-clientes (RG, CNH, comprovantes) | 5 anos | Fim da última vigência | excluir | Necessidade e defesa de direitos |
+| Logs de auditoria e de acesso | 5 anos (mín. legal de 6 meses para registros de acesso — Marco Civil, art. 15) | Registro | excluir | Segurança e prestação de contas (arts. 6º, 37, 46) |
+| Mensagens WhatsApp/e-mail (conteúdo) | Acompanham o registro relacionado (apólice: 5 anos após a vigência; lead: 24 meses) | — | conforme registro | Finalidade |
+| Backups | Rotação de 35 dias | — | excluir | Itens expurgados não são restaurados para uso |
+
+Implementação: job mensal (pg-boss) gera a lista, o encarregado aprova, o sistema anonimiza/exclui (banco + storage) e registra na auditoria; *legal hold* (sinistro, processo, pedido de autoridade) suspende o prazo do titular afetado.
 
 ## 5. Direitos do titular (art. 18) — suporte no sistema
 

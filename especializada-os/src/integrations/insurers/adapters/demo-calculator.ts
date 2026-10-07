@@ -1,7 +1,7 @@
 /**
  * Calculadora SIMULADA da DEMO. Gera prêmios plausíveis e determinísticos
  * para demonstrar o fluxo de multicálculo. NÃO representa tarifa de nenhuma
- * seguradora real — os nomes de seguradoras da DEMO são fictícios.
+ * seguradora: os valores são fictícios mesmo quando o nome da seguradora é real.
  */
 import type { AutoQuoteRequest, GenericQuoteRequest, QuoteResult, Vehicle } from "@/domain/types";
 import { lineLabel } from "@/domain/products";
@@ -76,6 +76,9 @@ export function demoAutoQuote(p: DemoProfile, req: AutoQuoteRequest, v: Vehicle,
 
 export function demoGenericQuote(p: DemoProfile, req: GenericQuoteRequest, adapterName: string): QuoteResult {
   const receivedAt = new Date().toISOString();
+  if (p.manualOnly) {
+    return { id: `qr-${p.insurerId}-${req.line}-manual`, insurerId: p.insurerId, productName: `${lineLabel(req.line)} (cotação manual)`, annualPremium: 0, coverages: [], assistance: [], commissionPct: p.commissionPct, status: "manual_pendente", message: "Seguradora sem integração automática. Registrar cotação manualmente.", source: { adapter: adapterName, method: "manual", receivedAt } };
+  }
   const value = req.insuredValue ?? 100000;
   const rate = { vida: 0.0021, residencial: 0.0009, empresarial: 0.0035, viagem: 0.004, odonto: 0.01, condominio: 0.0011, fianca: 0.08, rc: 0.006, cyber: 0.012, transportes: 0.003, nautico: 0.018, aeronautico: 0.025, garantia: 0.009, previdencia: 0, equipamentos: 0.02, outros: 0.01 }[req.line] ?? 0.01;
   const annual = Math.max(180, Math.round(value * rate * p.genericFactor * (0.92 + hash(p.insurerId + req.line) * 0.2) * 100) / 100);

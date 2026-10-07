@@ -11,7 +11,7 @@ import { daysBetween, ageOn } from "@/lib/dates";
 import { money0, date, firstName } from "@/lib/format";
 import { norm, providerSimilarity } from "@/lib/text";
 import { lineLabel } from "../products";
-import { canSeeParty } from "../rbac";
+import { can, canSeeParty } from "../rbac";
 import { operationsQueue } from "./priority";
 import { crossSellFor } from "./crosssell";
 import { activePolicies, clientValue, insurerName, partyHref, partyName, partyPhone, policiesExpiring, policiesOfParty, sameParty } from "./queries";
@@ -34,7 +34,7 @@ export const SUGGESTED_QUESTIONS = [
   "Quais clientes têm Auto mas não Residencial?",
   "Qual plano atende a Família Pereira?",
   "Quais planos atendem o Hospital Atlântico D'Or?",
-  "Compare os planos Vitalis Prime e Carioca Plus",
+  "Compare os planos Bradesco Demo Prime e Amil Demo Plus",
   "Escreva um WhatsApp para o Thiago Mendes",
   "Quem está há mais de 5 dias sem resposta?",
   "Quanto temos de comissão prevista?",
@@ -244,6 +244,7 @@ export function ask(db: DB, question: string, today: string, user?: User | null)
 
   // ── Comissão prevista
   if (/comiss/.test(q)) {
+    if (!can(db, user, "commissions.view")) return { intent: "commission_forecast", text: "Seu perfil não tem acesso a informações de comissão (liberadas apenas para o Administrador).", sources: ["Perfis e permissões"] };
     const month = today.slice(0, 7);
     const visPol = new Set(db.policies.filter((p) => vis(p.holder)).map((p) => p.id));
     const cs = db.commissions.filter((c) => visPol.has(c.policyId));

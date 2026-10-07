@@ -109,9 +109,9 @@ test("document AI: extrai campos da apólice de exemplo", async () => {
   const r = await regexParser.parse({ fileName: s.fileName, text: fillSample(s.text(TODAY), db.persons), knownInsurers: db.insurers });
   assert.equal(r.kind, "apolice");
   const f = Object.fromEntries(r.fields.map((x) => [x.key, x.value]));
-  assert.equal(f.policyNumber, "HOR-RE-552901");
+  assert.equal(f.policyNumber, "TOK-RE-552901");
   assert.equal(f.premium, "1036");
-  assert.equal(f.insurer, "Horizonte Seguros");
+  assert.equal(f.insurer, "Tokio Marine");
 });
 
 test("dashboard: métricas coerentes", () => {
@@ -119,4 +119,31 @@ test("dashboard: métricas coerentes", () => {
   assert.equal(m.activeClients, 16);
   assert.ok(m.hoursSaved30 > 0);
   assert.ok(m.renew30.length > 3);
+});
+
+import { can } from "../src/domain/rbac";
+import { manualPlaceholders } from "../src/integrations/insurers/registry";
+import { retentionPreview, RETENTION_RULES } from "../src/domain/engines/retention";
+
+test("decisão 1: comissões visíveis só para o Administrador", () => {
+  for (const u of db.users) assert.equal(can(db, u, "commissions.view"), u.role === "admin", u.role);
+  const corretor = db.users.find((u) => u.role === "corretor")!;
+  assert.match(ask(db, "Quanto temos de comissão prevista?", TODAY, corretor).text, /não tem acesso/);
+});
+
+test("decisão 2: carteira restrita ao corretor por padrão", () => {
+  assert.equal(db.settings.restrictWalletToOwner, true);
+});
+
+test("decisões 3/4: catálogo real + seguradoras sem adapter entram como cotação manual", () => {
+  assert.ok(db.insurers.length >= 25);
+  const manual = manualPlaceholders(db.insurers, "auto");
+  assert.ok(manual.length > 0 && manual.every((r) => r.status === "manual_pendente"));
+  assert.ok(manual.some((r) => r.insurerId === "ins-mapfre"));
+});
+
+test("decisão 6: política de retenção com prévia", () => {
+  const prev = retentionPreview(db, TODAY);
+  assert.equal(prev.length, RETENTION_RULES.length);
+  assert.ok(prev.every((p) => p.count >= 0));
 });

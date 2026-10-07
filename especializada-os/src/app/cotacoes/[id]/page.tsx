@@ -138,7 +138,7 @@ function HealthResult({ q }: { q: Quote }) {
           <div className="space-y-1 text-sm">{q.results.filter((r) => r.status !== "ok").map((r) => <div key={r.id} className="flex gap-2"><span className="w-44 shrink-0 font-medium">{r.productName}</span><span className="text-ink-muted">{r.message}</span></div>)}</div>
         </Card>
       )}
-      <p className="text-2xs text-ink-muted">{okResults.length} planos calculados · tabelas e redes fictícias da DEMO.</p>
+      <p className="text-2xs text-ink-muted">{okResults.length} planos calculados · tabelas e redes simuladas da DEMO (não são produtos reais das operadoras).</p>
     </div>
   );
 }

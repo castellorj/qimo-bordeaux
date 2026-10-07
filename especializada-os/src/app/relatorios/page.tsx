@@ -191,7 +191,15 @@ export default function RelatoriosPage() {
   const [key, setKey] = useState(available[0]?.key ?? "carteira");
   const report = available.find((r) => r.key === key) ?? available[0];
   const policies = useMemo(() => db.policies.filter((p) => visible(p.holder)), [db.policies, visible]);
-  const data = useMemo(() => (report ? report.build({ db, today, user, visible, policies }) : null), [report, db, today, user, visible, policies]);
+  const showCommission = can("commissions.view");
+  const data = useMemo(() => {
+    if (!report) return null;
+    const d = report.build({ db, today, user, visible, policies });
+    if (showCommission) return d;
+    // comissões só para quem tem permissão (padrão: Administrador)
+    const keep = d.cols.map((c) => !/comiss/i.test(c.label));
+    return { ...d, cols: d.cols.filter((_, i) => keep[i]), rows: d.rows.map((r) => r.filter((_, i) => keep[i])) };
+  }, [report, db, today, user, visible, policies, showCommission]);
 
   if (!can("reports.view")) return <Empty icon={<Icons.Lock className="h-5 w-5" />} title="Sem permissão">Seu perfil não tem acesso aos relatórios.</Empty>;
 

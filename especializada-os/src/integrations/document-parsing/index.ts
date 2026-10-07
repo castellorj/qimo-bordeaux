@@ -69,7 +69,10 @@ export const regexParser: DocumentParser = {
     else if (/crlv|certificado de registro/i.test(t)) { kind = "crlv"; kindConfidence = 0.85; }
     else if (/condi[çc][õo]es gerais/i.test(t)) { kind = "condicoes_gerais"; kindConfidence = 0.8; }
 
-    const insurer = knownInsurers.find((i) => lower.includes(i.name.toLowerCase()) || lower.includes(i.name.toLowerCase().replace(" seguros", "").replace(" saúde", "")));
+    // nome completo primeiro (ex.: "Bradesco Saúde" antes de "Bradesco Seguros"); depois o nome sem sufixo
+    const insurer =
+      [...knownInsurers].sort((a, b) => b.name.length - a.name.length).find((i) => lower.includes(i.name.toLowerCase())) ??
+      knownInsurers.find((i) => { const core = i.name.toLowerCase().replace(/ (seguros|seguradora|saúde|do brasil)$/, ""); return core.length >= 4 && lower.includes(core); });
     if (insurer) add("insurer", "Seguradora", insurer.name, 0.92);
 
     const line = LINE_HINTS.find(([, rx]) => rx.test(t));

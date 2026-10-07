@@ -8,7 +8,7 @@ import { PRODUCT, PRODUCTS, lineLabel } from "@/domain/products";
 import type { AutoQuoteRequest, GenericQuoteRequest, HealthQuoteRequest, PartyRef, ProductLine, QuoteResult, Vehicle, Accommodation, Coverage, ReimbursementLevel } from "@/domain/types";
 import { ageOn } from "@/lib/dates";
 import { householdOf, partyName, peopleOf, sameParty } from "@/domain/engines/queries";
-import { adaptersFor } from "@/integrations/insurers/registry";
+import { adaptersFor, manualPlaceholders } from "@/integrations/insurers/registry";
 import { recommend, COVERAGE_LABEL, REIMB_LABEL } from "@/domain/engines/health";
 import { demoGeocoder } from "@/integrations/maps";
 import { money0 } from "@/lib/format";
@@ -239,6 +239,7 @@ function AutoFlow({ party, renewalOf }: { party: PartyRef; renewalOf?: string })
         return { id: uid("qr"), insurerId: a.insurerId, productName: "Auto", annualPremium: 0, coverages: [], assistance: [], commissionPct: 0, status: "erro" as const, message: "Falha na integração", source: { adapter: a.adapterName, method: a.method, receivedAt: new Date().toISOString() } };
       }
     }));
+    results.push(...manualPlaceholders(db.insurers, "auto"));
     const opp = renewalOf ? db.opportunities.find((o) => o.renewalOfPolicyId === renewalOf)?.id : undefined;
     let id = "";
     update((d, u) => { const r = saveQuote(d, u, { party, line: "auto", status: "calculado", request: req, results, opportunityId: opp }); id = r.id; return r.db; });
@@ -314,7 +315,8 @@ function AutoFlow({ party, renewalOf }: { party: PartyRef; renewalOf?: string })
                 {adaptersFor("auto").map((a) => { const ins = db.insurers.find((i) => i.id === a.insurerId)!; return (
                   <div key={a.insurerId} className="flex items-center gap-2 text-sm"><span className="h-2 w-2 rounded-full" style={{ background: ins.color }} /><span className="flex-1">{ins.name}</span><Badge tone={a.automatic ? "brand" : "neutral"}>{a.automatic ? "automático (DEMO)" : "manual"}</Badge></div>); })}
               </div>
-              <p className="mt-3 text-2xs text-ink-muted">DEMO: calculadora simulada, seguradoras fictícias. Em produção cada seguradora usa o meio permitido — API oficial, agregador contratado, integração autorizada, importação ou entrada manual. Nunca scraping.</p>
+              {manualPlaceholders(db.insurers, "auto").length > 0 && <div className="mt-2 text-xs text-ink-muted">+ {manualPlaceholders(db.insurers, "auto").length} seguradoras do catálogo entram como cotação manual ({db.insurers.filter((i) => i.lines.includes("auto") && !adaptersFor("auto").some((a) => a.insurerId === i.id)).map((i) => i.short).join(", ")})</div>}
+              <p className="mt-3 text-2xs text-ink-muted">DEMO: valores simulados (não são tarifas reais). Integração própria: cada seguradora terá seu adapter; enquanto não estiver pronta, entra como cotação manual. Meios permitidos — API oficial ou liberada pela seguradora, integração autorizada, importação ou entrada manual. Nunca scraping.</p>
               <Button className="mt-4 w-full" disabled={!v} onClick={run} icon={<Icons.Zap className="h-4 w-4" />}>Calcular em {adaptersFor("auto").length} seguradoras</Button>
             </>
           ) : (
@@ -353,11 +355,11 @@ function GenericFlow({ party, line, renewalOf }: { party: PartyRef; line: Produc
     setRunning(true);
     const req: GenericQuoteRequest = { line: line as GenericQuoteRequest["line"], description: desc || `${mod.label} — ${partyName(db, party)}`, insuredValue, fields: vals };
     const adapters = adaptersFor(line);
-    const results = await Promise.all(adapters.map((a) => a.quoteGeneric!(req)));
+    const results = [...(await Promise.all(adapters.map((a) => a.quoteGeneric!(req)))), ...manualPlaceholders(db.insurers, line)];
     const opp = renewalOf ? db.opportunities.find((o) => o.renewalOfPolicyId === renewalOf)?.id : undefined;
     let id = "";
-    update((d, u) => { const r = saveQuote(d, u, { party, line, status: results.length ? "calculado" : "rascunho", request: req, results, opportunityId: opp }); id = r.id; return r.db; });
-    toast(results.length ? `${results.length} cotações recebidas` : "Cotação salva — sem seguradora integrada para este ramo; registre resultados manualmente");
+    update((d, u) => { const r = saveQuote(d, u, { party, line, status: results.some((r) => r.status === "ok") ? "calculado" : "rascunho", request: req, results, opportunityId: opp }); id = r.id; return r.db; });
+    toast(results.some((r) => r.status === "ok") ? `${results.filter((r) => r.status === "ok").length} cotações recebidas` : "Cotação salva — sem seguradora integrada para este ramo; registre resultados manualmente");
     setTimeout(() => router.push(`/cotacoes/${id}`), 50);
   }
   return (
@@ -373,7 +375,7 @@ function GenericFlow({ party, line, renewalOf }: { party: PartyRef; line: Produc
         ))}
       </div>
       <div className="mt-4 flex items-center justify-between">
-        <span className="text-xs text-ink-muted">{adaptersFor(line).length} seguradora(s) com adapter para {mod.label} na DEMO.</span>
+        <span className="text-xs text-ink-muted">{adaptersFor(line).length} seguradora(s) com cotação automática (simulada) para {mod.label}; as demais do catálogo entram como cotação manual.</span>
         <Button onClick={run} disabled={running} icon={running ? <Icons.Loader2 className="h-4 w-4 animate-spin" /> : <Icons.Zap className="h-4 w-4" />}>Cotar</Button>
       </div>
     </Card>

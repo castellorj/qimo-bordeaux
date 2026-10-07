@@ -8,11 +8,12 @@ import { ALL_PERMISSIONS, DEFAULT_ROLE_PERMISSIONS, ROLE_LABEL } from "@/domain/
 import { INSURER_ADAPTERS } from "@/integrations/insurers/registry";
 import { Badge, Button, Card, DemoBadge, Dialog, Empty, Icons, Input, PageHeader, Select, Stat, Table, Tabs, Td, Th, Toggle } from "@/components/ui";
 import { insurerName, userName } from "@/domain/engines/queries";
+import { RETENTION_RULES, retentionPreview } from "@/domain/engines/retention";
 import { date, dateTime, n } from "@/lib/format";
 import { norm } from "@/lib/text";
 import { cn } from "@/lib/cn";
 
-type TabKey = "perfis" | "carteira" | "auditoria" | "integracoes" | "lgpd" | "demo";
+type TabKey = "perfis" | "carteira" | "auditoria" | "integracoes" | "whatsapp" | "lgpd" | "retencao" | "demo";
 const ROLES = Object.keys(ROLE_LABEL) as RoleKey[];
 
 export default function ConfiguracoesPage() {
@@ -42,7 +43,9 @@ function Configuracoes() {
           { value: "carteira", label: "Carteira e regras" },
           { value: "auditoria", label: "Auditoria" },
           { value: "integracoes", label: "Integrações" },
+          { value: "whatsapp", label: "WhatsApp" },
           { value: "lgpd", label: "LGPD e segurança" },
+          { value: "retencao", label: "Retenção de dados" },
           { value: "demo", label: "Dados DEMO" },
         ]} />
       </div>
@@ -50,7 +53,9 @@ function Configuracoes() {
       {tab === "carteira" && <Carteira />}
       {tab === "auditoria" && <Auditoria />}
       {tab === "integracoes" && <Integracoes />}
+      {tab === "whatsapp" && <WhatsAppRec />}
       {tab === "lgpd" && <Lgpd />}
+      {tab === "retencao" && <Retencao />}
       {tab === "demo" && <DadosDemo />}
     </div>
   );
@@ -339,7 +344,7 @@ function Integracoes() {
           </div>
         </IntegrationCard>
         <IntegrationCard icon="Map" title="Mapas" status="demo" demo="OpenStreetMap / Leaflet" prod="Google Maps ou Mapbox (geocodificação e rotas)" depends={["API", "contrato"]} />
-        <IntegrationCard icon="MessageCircle" title="WhatsApp" status="demo" demo="Links wa.me com mensagem pré-preenchida (envio manual)" prod="WhatsApp Business Cloud API com templates aprovados e opt-in" depends={["API", "contrato"]} />
+        <IntegrationCard icon="MessageCircle" title="WhatsApp" status="demo" demo="Links wa.me com mensagem pré-preenchida (envio manual)" prod="Recomendado: WhatsApp Cloud API da Meta, integração própria (ver aba WhatsApp)" depends={["API", "contrato"]} />
         <IntegrationCard icon="Mail" title="E-mail" status="off" demo="Não conectado" prod="Caixa compartilhada (IMAP/Graph/Gmail API) → Document AI; envio transacional" depends={["API", "contrato"]} />
         <IntegrationCard icon="Sparkles" title="IA (Especializada AI)" status="demo" demo="Motor determinístico de intenções (sem LLM)" prod="LLM via camada de abstração, chamando as mesmas ferramentas com controle de acesso" depends={["API", "contrato"]} />
         <IntegrationCard icon="HardDrive" title="Storage de documentos" status="demo" demo="Local (navegador); só documentos de texto" prod="S3 com criptografia, URLs assinadas de curta duração e retenção" depends={["contrato"]} />
@@ -420,6 +425,94 @@ function DadosDemo() {
       <Dialog open={confirm} onClose={() => setConfirm(false)} title="Restaurar dados DEMO?" footer={<><Button variant="secondary" onClick={() => setConfirm(false)}>Cancelar</Button><Button variant="danger" onClick={() => { reset(); setConfirm(false); }}>Restaurar</Button></>}>
         <p className="text-sm text-ink-soft">Todas as alterações feitas neste navegador serão perdidas e a base fictícia original será recriada. Esta ação não pode ser desfeita.</p>
       </Dialog>
+    </div>
+  );
+}
+
+// ───────── WhatsApp — recomendação (decisão pendente: o cliente pediu a sugestão)
+function WhatsAppRec() {
+  const options: { name: string; verdict: "recomendado" | "alternativa" | "evitar"; what: string; pros: string[]; cons: string[] }[] = [
+    { name: "WhatsApp Cloud API (Meta) — direto, integração própria", verdict: "recomendado", what: "API oficial hospedada pela Meta. O sistema envia e recebe mensagens pelo número da corretora; histórico gravado no cliente via webhook.", pros: ["Oficial: sem risco de banimento por uso não autorizado", "Sem mensalidade de intermediário — paga só as mensagens de template à Meta", "Coerente com a decisão de integração própria (sem dependência de terceiros)", "Respostas dentro da janela de 24h aberta pelo cliente não são cobradas"], cons: ["Exige verificação do Meta Business Manager e aprovação de templates", "Desenvolvimento e manutenção do webhook ficam com o time"] },
+    { name: "BSP (provedor oficial): 360dialog, Twilio, Gupshup, Blip, Zenvia", verdict: "alternativa", what: "Parceiros oficiais da Meta que revendem o acesso à mesma API, com painel e suporte.", pros: ["Onboarding assistido e suporte (Blip e Zenvia em português)", "Painel pronto para atendimento humano"], cons: ["Custo mensal e/ou margem por mensagem", "Mais um fornecedor com acesso a dados pessoais (contrato de operador LGPD)"] },
+    { name: "APIs não oficiais (ex.: automação de WhatsApp Web)", verdict: "evitar", what: "Ferramentas que simulam o WhatsApp Web/celular.", pros: ["Baratas e rápidas de ligar"], cons: ["Violam os termos do WhatsApp — risco de bloqueio do número", "Sem garantias de segurança/LGPD", "Contraria o princípio do produto: nada de integração que viole termos de uso"] },
+  ];
+  const tone = { recomendado: "ok", alternativa: "brand", evitar: "danger" } as const;
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border border-emerald-200 bg-ok-soft px-4 py-3 text-sm text-ok-strong">
+        <b>Sugestão:</b> WhatsApp Cloud API da Meta, conectada diretamente pelo sistema (integração própria), com um número exclusivo da corretora. Se a equipe preferir um painel de atendimento pronto e suporte em português, a alternativa é um BSP oficial.
+      </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        {options.map((o) => (
+          <Card key={o.name} title={o.name} action={<Badge tone={tone[o.verdict]}>{o.verdict}</Badge>}>
+            <p className="text-xs text-ink-muted">{o.what}</p>
+            <div className="mt-3 space-y-1 text-xs">{o.pros.map((x) => <div key={x} className="flex gap-1.5 text-ink-soft"><Icons.Check className="mt-0.5 h-3 w-3 shrink-0 text-ok" />{x}</div>)}</div>
+            <div className="mt-2 space-y-1 text-xs">{o.cons.map((x) => <div key={x} className="flex gap-1.5 text-ink-soft"><Icons.X className="mt-0.5 h-3 w-3 shrink-0 text-danger" />{x}</div>)}</div>
+          </Card>
+        ))}
+      </div>
+      <Card title="Passos para ativar (produção)">
+        <ol className="list-decimal space-y-1.5 pl-5 text-sm text-ink-soft">
+          <li>Número de telefone exclusivo para a corretora (não pode estar ativo no app WhatsApp comum).</li>
+          <li>Verificação da empresa no Meta Business Manager (CNPJ, site, domínio).</li>
+          <li>Criar o app na Meta e gerar as credenciais da Cloud API (guardadas no servidor, nunca no navegador).</li>
+          <li>Aprovar os templates: lembrete de renovação, envio de proposta, solicitação de documentos, follow-up, envio de apólice.</li>
+          <li>Registrar o opt-in de cada cliente (data, canal, texto aceito) — exigência da Meta e da LGPD; opt-out a qualquer momento.</li>
+          <li>Webhook de mensagens recebidas → histórico do cliente e anexos → Document AI.</li>
+        </ol>
+        <p className="mt-3 text-2xs text-ink-muted">Preços por mensagem de template no Brasil devem ser conferidos na tabela vigente da Meta antes da contratação. Na DEMO, o envio usa links wa.me (abre o WhatsApp do usuário com a mensagem pronta).</p>
+      </Card>
+    </div>
+  );
+}
+
+// ───────── Retenção de dados (LGPD)
+function Retencao() {
+  const { db, today } = useStore();
+  const preview = useMemo(() => retentionPreview(db, today), [db, today]);
+  const ACTION = { manter: { label: "manter", tone: "neutral" }, anonimizar: { label: "anonimizar", tone: "warn" }, excluir: { label: "excluir", tone: "danger" } } as const;
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border border-brand-100 bg-brand-50 px-4 py-3 text-sm text-brand-900">
+        <b>Política “de acordo com a LGPD”.</b> A lei não fixa prazos: cada dado é mantido enquanto houver finalidade, obrigação legal/regulatória ou necessidade de defesa de direitos, e depois é <b>eliminado ou anonimizado</b> (arts. 15 e 16). Abaixo está a proposta padrão — os prazos devem ser validados com o jurídico/DPO antes da produção.
+      </div>
+      <Card padded={false} title="Regras de retenção" subtitle="Executadas por um job mensal na produção, com relatório e aprovação do encarregado (DPO)">
+        <Table>
+          <thead><tr><Th>Dado</Th><Th>Prazo</Th><Th>Conta a partir de</Th><Th>Ao final</Th><Th>Base legal</Th><Th className="text-right">Vencidos hoje</Th></tr></thead>
+          <tbody>
+            {preview.map(({ rule, count, examples, nextDue }) => (
+              <tr key={rule.key} className="align-top">
+                <Td className="text-sm font-medium text-ink">{rule.label}</Td>
+                <Td className="whitespace-nowrap text-sm">{rule.key === "backups" ? "35 dias" : rule.months == null ? "Enquanto durar a finalidade" : rule.months >= 12 ? `${rule.months / 12} ano(s)` : `${rule.months} mês(es)`}</Td>
+                <Td className="text-xs text-ink-soft">{rule.trigger}</Td>
+                <Td><Badge tone={ACTION[rule.action].tone}>{ACTION[rule.action].label}</Badge></Td>
+                <Td className="max-w-xs text-2xs text-ink-muted">{rule.basis}</Td>
+                <Td className="text-right text-sm tabular-nums">{count}{examples.length > 0 && <div className="text-2xs text-ink-muted">{examples.join(", ")}</div>}{!count && nextDue && <div className="text-2xs text-ink-faint">próximo: {date(nextDue.split("|")[0])}</div>}</Td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </Card>
+      <div className="grid gap-4 md:grid-cols-2">
+        <Card title="Direitos do titular (art. 18)">
+          <ul className="space-y-1 text-sm text-ink-soft">
+            <li>• Confirmação e acesso: exportação dos dados do cliente a partir do Cliente 360º.</li>
+            <li>• Correção: edição com histórico (auditoria guarda o valor anterior).</li>
+            <li>• Eliminação/anonimização: respeitando os prazos de guarda obrigatória acima.</li>
+            <li>• Revogação de consentimento de marketing: opt-out imediato no WhatsApp/e-mail.</li>
+            <li>• Portabilidade e informação sobre compartilhamento (seguradoras/operadoras).</li>
+          </ul>
+        </Card>
+        <Card title="Como o expurgo funciona">
+          <ul className="space-y-1 text-sm text-ink-soft">
+            <li>• Anonimizar = remover nome, CPF, contatos e endereço, mantendo números agregados (prêmio, ramo) para relatórios.</li>
+            <li>• Excluir = apagar o registro e o arquivo no storage; backups expiram em até 35 dias.</li>
+            <li>• Pedidos judiciais ou sinistros em aberto suspendem o prazo (bloqueio legal).</li>
+            <li>• Tudo registrado na auditoria. Na DEMO, esta tela apenas simula — nada é apagado.</li>
+          </ul>
+        </Card>
+      </div>
+      <p className="text-2xs text-ink-muted">{RETENTION_RULES.length} regras · detalhamento em docs/SECURITY_LGPD.md.</p>
     </div>
   );
 }

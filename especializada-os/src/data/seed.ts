@@ -18,7 +18,7 @@ import { recommend, planMonthlyPrice } from "@/domain/engines/health";
 import { DEMO_PROFILES } from "@/integrations/insurers/registry";
 import { demoAutoQuote, demoGenericQuote } from "@/integrations/insurers/adapters/demo-calculator";
 
-export const SEED_VERSION = 3;
+export const SEED_VERSION = 4;
 
 // PRNG determinístico (mulberry32)
 function rng(seed: number) {
@@ -198,28 +198,54 @@ export function createSeed(today = todayISO()): DB {
     { id: "bt-eduardo", owner: person("p-eduardo"), type: "boat", name: "Brisa", lengthFt: 38, value: 1200000, marina: "Marina da Glória", demo: D },
   ];
 
-  // ───────── Seguradoras / operadoras (FICTÍCIAS)
-  const I = (id: string, name: string, short: string, color: string, lines: Insurer["lines"], method: Insurer["integration"]["method"], status: Insurer["integration"]["status"] = "demo", note?: string): Insurer =>
-    ({ id, name, short, color, lines, integration: { method, status, note }, demo: D });
+  // ───────── Seguradoras / operadoras — catálogo inicial das principais do mercado.
+  // Os NOMES são reais; ramos atendidos "a confirmar" pela corretora. Preços, planos, redes e
+  // cotações exibidos na DEMO são SIMULADOS e não representam produtos/tarifas dessas empresas.
+  // Decisão de negócio: integração própria (adapter por seguradora), sem agregador.
+  const PENDING = "Integração própria a desenvolver — depende de acesso/API liberado pela seguradora";
+  const SIM = "DEMO: cotação simulada (calculadora fictícia). Integração própria pendente.";
+  const I = (id: string, name: string, short: string, color: string, lines: Insurer["lines"], status: Insurer["integration"]["status"] = "nao_configurada", note = PENDING): Insurer =>
+    ({ id, name, short, color, lines, integration: { method: "manual", status, note }, demo: D });
   const insurers: Insurer[] = [
-    I("ins-atlantica", "Atlântica Seguros", "Atlântica", "#1d4ed8", ["auto", "residencial", "vida", "empresarial"], "api_parceiro", "demo", "Simulada (calculadora DEMO)"),
-    I("ins-horizonte", "Horizonte Seguros", "Horizonte", "#ea580c", ["auto", "residencial", "vida", "viagem"], "api_parceiro"),
-    I("ins-pilar", "Pilar Seguros", "Pilar", "#0f766e", ["auto", "empresarial", "rc", "cyber", "garantia"], "api_oficial"),
-    I("ins-bussola", "Bússola Seguros", "Bússola", "#7c3aed", ["auto", "residencial", "condominio", "fianca"], "integracao_autorizada"),
-    I("ins-aurora", "Aurora Seguros", "Aurora", "#db2777", ["auto", "vida", "previdencia", "viagem", "odonto"], "api_parceiro"),
-    I("ins-meridiano", "Meridiano Seguros", "Meridiano", "#475569", ["auto", "nautico", "transportes", "aeronautico"], "manual", "demo", "Sem integração: cotação manual pelo portal do corretor"),
-    I("ins-vitalis", "Vitalis Saúde", "Vitalis", "#be123c", ["saude", "odonto"], "importacao", "demo", "Rede e tabelas por planilha"),
-    I("ins-carioca", "Carioca Saúde", "Carioca", "#0369a1", ["saude"], "importacao", "demo", "Rede por PDF"),
-    I("ins-amparo", "Amparo Saúde", "Amparo", "#15803d", ["saude", "odonto"], "api_parceiro", "demo", "Rede via API de parceiro (simulada)"),
-    I("ins-essencial", "Essencial Saúde", "Essencial", "#a16207", ["saude"], "importacao", "demo", "Rede por CSV"),
+    I("ins-porto", "Porto Seguro", "Porto", "#1d4ed8", ["auto", "residencial", "vida", "empresarial", "viagem", "fianca", "condominio", "equipamentos"], "demo", SIM),
+    I("ins-tokio", "Tokio Marine", "Tokio Marine", "#0e7490", ["auto", "residencial", "vida", "empresarial", "rc", "transportes", "garantia"], "demo", SIM),
+    I("ins-allianz", "Allianz Seguros", "Allianz", "#1e3a8a", ["auto", "residencial", "empresarial", "rc", "cyber", "transportes"], "demo", SIM),
+    I("ins-hdi", "HDI Seguros", "HDI", "#15803d", ["auto", "residencial", "empresarial", "rc"], "demo", SIM),
+    I("ins-bradesco", "Bradesco Seguros", "Bradesco", "#cc092f", ["auto", "residencial", "vida", "previdencia", "empresarial"], "demo", SIM),
+    I("ins-zurich", "Zurich Seguros", "Zurich", "#2563eb", ["auto", "residencial", "vida", "empresarial", "rc"], "demo", "DEMO: simula seguradora sem integração — cotação registrada manualmente."),
+    I("ins-mapfre", "Mapfre Seguros", "Mapfre", "#dc2626", ["auto", "residencial", "vida", "empresarial", "viagem", "nautico"]),
+    I("ins-azul", "Azul Seguros", "Azul", "#0284c7", ["auto"]),
+    I("ins-yelum", "Yelum Seguros", "Yelum", "#ca8a04", ["auto", "residencial", "empresarial", "vida"]),
+    I("ins-suhai", "Suhai Seguradora", "Suhai", "#4d7c0f", ["auto"]),
+    I("ins-sompo", "Sompo Seguros", "Sompo", "#b91c1c", ["auto", "empresarial", "transportes", "rc"]),
+    I("ins-chubb", "Chubb Seguros", "Chubb", "#334155", ["residencial", "empresarial", "rc", "cyber", "viagem", "vida"]),
+    I("ins-axa", "AXA Seguros", "AXA", "#1e40af", ["empresarial", "rc", "cyber", "transportes"]),
+    I("ins-sulamerica", "SulAmérica Vida e Previdência", "SulAmérica", "#ea580c", ["vida", "previdencia"]),
+    I("ins-icatu", "Icatu Seguros", "Icatu", "#0f766e", ["vida", "previdencia"]),
+    I("ins-mag", "MAG Seguros", "MAG", "#7c2d12", ["vida", "previdencia"]),
+    I("ins-prudential", "Prudential do Brasil", "Prudential", "#1d4ed8", ["vida"]),
+    I("ins-metlife", "MetLife", "MetLife", "#0369a1", ["vida", "odonto"]),
+    I("ins-junto", "Junto Seguros", "Junto", "#7c3aed", ["garantia"]),
+    I("ins-pottencial", "Pottencial Seguradora", "Pottencial", "#9333ea", ["garantia", "fianca"]),
+    I("ins-bradesco-saude", "Bradesco Saúde", "Bradesco Saúde", "#be123c", ["saude", "odonto"], "demo", "DEMO: planos, preços e rede simulados (importação de tabela/rede)."),
+    I("ins-sulamerica-saude", "SulAmérica Saúde", "SulAmérica Saúde", "#f97316", ["saude", "odonto"], "demo", "DEMO: planos, preços e rede simulados."),
+    I("ins-amil", "Amil", "Amil", "#0369a1", ["saude", "odonto"], "demo", "DEMO: planos, preços e rede simulados."),
+    I("ins-assim", "Assim Saúde", "Assim", "#a16207", ["saude"], "demo", "DEMO: planos, preços e rede simulados."),
+    I("ins-porto-saude", "Porto Saúde", "Porto Saúde", "#2563eb", ["saude"]),
+    I("ins-unimed", "Unimed", "Unimed", "#047857", ["saude", "odonto"]),
+    I("ins-hapvida", "Hapvida NotreDame Intermédica", "Hapvida GNDI", "#ea580c", ["saude", "odonto"]),
+    I("ins-omint", "Omint", "Omint", "#1f2937", ["saude", "odonto"]),
+    I("ins-careplus", "Care Plus", "Care Plus", "#0891b2", ["saude"]),
+    I("ins-odontoprev", "OdontoPrev", "OdontoPrev", "#0ea5e9", ["odonto"]),
   ];
+
 
   // ───────── Fontes de rede
   const networkSources: NetworkDataSource[] = [
-    { id: "ns-vitalis", insurerId: "ins-vitalis", kind: "xlsx", label: "Rede Vitalis RJ (planilha)", importedAt: addDays(today, -20), validUntil: addDays(today, 70), status: "valida", confidence: 0.95, demo: D },
-    { id: "ns-carioca", insurerId: "ins-carioca", kind: "pdf", label: "Guia médico Carioca (PDF)", importedAt: addDays(today, -78), validUntil: addDays(today, 12), status: "expirando", confidence: 0.82, demo: D },
-    { id: "ns-amparo", insurerId: "ins-amparo", kind: "api", label: "API de rede Amparo (parceiro)", importedAt: addDays(today, -1), validUntil: addDays(today, 6), status: "valida", confidence: 0.98, demo: D },
-    { id: "ns-essencial", insurerId: "ins-essencial", kind: "csv", label: "Rede Essencial (CSV)", importedAt: addDays(today, -132), validUntil: addDays(today, -42), status: "expirada", confidence: 0.7, demo: D },
+    { id: "ns-vitalis", insurerId: "ins-bradesco-saude", kind: "xlsx", label: "Rede Bradesco Saúde RJ (planilha DEMO)", importedAt: addDays(today, -20), validUntil: addDays(today, 70), status: "valida", confidence: 0.95, demo: D },
+    { id: "ns-carioca", insurerId: "ins-amil", kind: "pdf", label: "Guia médico Amil (PDF DEMO)", importedAt: addDays(today, -78), validUntil: addDays(today, 12), status: "expirando", confidence: 0.82, demo: D },
+    { id: "ns-amparo", insurerId: "ins-sulamerica-saude", kind: "api", label: "API de rede SulAmérica (simulada)", importedAt: addDays(today, -1), validUntil: addDays(today, 6), status: "valida", confidence: 0.98, demo: D },
+    { id: "ns-essencial", insurerId: "ins-assim", kind: "csv", label: "Rede Assim (CSV DEMO)", importedAt: addDays(today, -132), validUntil: addDays(today, -42), status: "expirada", confidence: 0.7, demo: D },
   ];
 
   // ───────── Planos de saúde (FICTÍCIOS)
@@ -228,17 +254,17 @@ export function createSeed(today = todayISO()): DB {
   const HP = (id: string, insurerId: string, name: string, tier: HealthPlan["tier"], segment: HealthPlan["segment"], accommodation: HealthPlan["accommodation"], coparticipation: boolean, reimbursement: HealthPlan["reimbursement"], reimbursementConsultation: number, coverage: HealthPlan["coverage"], base: number, networkSourceId: string): HealthPlan =>
     ({ id, insurerId, name, tier, segment, accommodation, coparticipation, reimbursement, reimbursementConsultation, coverage, pricesByBand: prices(base), networkSourceId, demo: D });
   const healthPlans: HealthPlan[] = [
-    HP("hp-ess-bairro", "ins-essencial", "Essencial Bairro", 1, "individual", "enfermaria", true, "nenhum", 0, "municipal", 165, "ns-essencial"),
-    HP("hp-ess-mais", "ins-essencial", "Essencial Mais", 1, "individual", "apartamento", false, "nenhum", 0, "municipal", 238, "ns-essencial"),
-    HP("hp-car-flex", "ins-carioca", "Carioca Flex", 2, "individual", "apartamento", true, "nenhum", 0, "regional", 296, "ns-carioca"),
-    HP("hp-car-plus", "ins-carioca", "Carioca Plus", 3, "individual", "apartamento", false, "basico", 120, "estadual", 432, "ns-carioca"),
-    HP("hp-amp-classico", "ins-amparo", "Amparo Clássico", 2, "adesao", "apartamento", false, "basico", 100, "estadual", 388, "ns-amparo"),
-    HP("hp-amp-exec", "ins-amparo", "Amparo Executivo", 4, "adesao", "apartamento", false, "alto", 450, "nacional", 845, "ns-amparo"),
-    HP("hp-vit-essencial", "ins-vitalis", "Vitalis Essencial", 2, "individual", "enfermaria", false, "nenhum", 0, "regional", 342, "ns-vitalis"),
-    HP("hp-vit-prime", "ins-vitalis", "Vitalis Prime", 3, "individual", "apartamento", false, "intermediario", 250, "nacional", 568, "ns-vitalis"),
-    HP("hp-vit-black", "ins-vitalis", "Vitalis Black", 4, "individual", "apartamento", false, "premium", 700, "nacional", 1160, "ns-vitalis"),
-    HP("hp-vit-pme", "ins-vitalis", "Vitalis Empresa", 3, "pme", "apartamento", false, "basico", 150, "nacional", 395, "ns-vitalis"),
-    HP("hp-amp-pme", "ins-amparo", "Amparo PME", 2, "pme", "apartamento", true, "nenhum", 0, "estadual", 318, "ns-amparo"),
+    HP("hp-ess-bairro", "ins-assim", "Assim Demo Bairro", 1, "individual", "enfermaria", true, "nenhum", 0, "municipal", 165, "ns-essencial"),
+    HP("hp-ess-mais", "ins-assim", "Assim Demo Mais", 1, "individual", "apartamento", false, "nenhum", 0, "municipal", 238, "ns-essencial"),
+    HP("hp-car-flex", "ins-amil", "Amil Demo Flex", 2, "individual", "apartamento", true, "nenhum", 0, "regional", 296, "ns-carioca"),
+    HP("hp-car-plus", "ins-amil", "Amil Demo Plus", 3, "individual", "apartamento", false, "basico", 120, "estadual", 432, "ns-carioca"),
+    HP("hp-amp-classico", "ins-sulamerica-saude", "SulAmérica Demo Clássico", 2, "adesao", "apartamento", false, "basico", 100, "estadual", 388, "ns-amparo"),
+    HP("hp-amp-exec", "ins-sulamerica-saude", "SulAmérica Demo Executivo", 4, "adesao", "apartamento", false, "alto", 450, "nacional", 845, "ns-amparo"),
+    HP("hp-vit-essencial", "ins-bradesco-saude", "Bradesco Demo Essencial", 2, "individual", "enfermaria", false, "nenhum", 0, "regional", 342, "ns-vitalis"),
+    HP("hp-vit-prime", "ins-bradesco-saude", "Bradesco Demo Prime", 3, "individual", "apartamento", false, "intermediario", 250, "nacional", 568, "ns-vitalis"),
+    HP("hp-vit-black", "ins-bradesco-saude", "Bradesco Demo Black", 4, "individual", "apartamento", false, "premium", 700, "nacional", 1160, "ns-vitalis"),
+    HP("hp-vit-pme", "ins-bradesco-saude", "Bradesco Demo Empresa", 3, "pme", "apartamento", false, "basico", 150, "nacional", 395, "ns-vitalis"),
+    HP("hp-amp-pme", "ins-sulamerica-saude", "SulAmérica Demo PME", 2, "pme", "apartamento", true, "nenhum", 0, "estadual", 318, "ns-amparo"),
   ];
 
   // ───────── Prestadores (FICTÍCIOS)
@@ -277,10 +303,10 @@ export function createSeed(today = todayISO()): DB {
     return { id, name, aliases, type, specialties, address, district, city: city ?? "Rio de Janeiro", lat, lng, demo: D };
   });
   const exclusions: Record<string, string[]> = {
-    "ins-carioca": ["pr-saoconrado", "pr-lab-leblon", "pr-cli-onco"],
-    "ins-amparo": ["pr-barra", "pr-mat-botafogo"],
-    "ins-vitalis": ["pr-tijuca"],
-    "ins-essencial": ["pr-icarai", "pr-lab-niteroi"],
+    "ins-amil": ["pr-saoconrado", "pr-lab-leblon", "pr-cli-onco"],
+    "ins-sulamerica-saude": ["pr-barra", "pr-mat-botafogo"],
+    "ins-bradesco-saude": ["pr-tijuca"],
+    "ins-assim": ["pr-icarai", "pr-lab-niteroi"],
   };
   const servicesFor = (t: ProviderType): NetworkService[] =>
     t === "hospital" ? ["internacao", "pronto-socorro", "exames"] : t === "maternidade" ? ["internacao", "maternidade"] : t === "laboratorio" ? ["exames"] : t === "pronto-socorro" ? ["pronto-socorro"] : ["consultas", "exames"];
@@ -312,47 +338,47 @@ export function createSeed(today = todayISO()): DB {
   };
   const silva = ["p-joao", "p-maria", "p-pedro", "p-anasilva"];
   const policies: Policy[] = [
-    PO("pol-joao-saude", person("p-joao"), "ins-vitalis", "saude", "Vitalis Prime", 48, hpPrice("hp-vit-prime", silva), 0.04, "u-juliana", { beneficiaryIds: silva, healthPlanId: "hp-vit-prime" }),
-    PO("pol-joao-auto", person("p-joao"), "ins-atlantica", "auto", "Auto Individual", 7, 9840, 0.18, "u-juliana", { insuredAssetId: "v-joao", deductible: 19800 }),
-    PO("pol-joao-resid", person("p-joao"), "ins-horizonte", "residencial", "Residencial Completo", 122, 1890, 0.25, "u-juliana", { insuredAssetId: "im-silva" }),
-    PO("pol-maria-auto", person("p-maria"), "ins-horizonte", "auto", "Auto Individual", 204, 4320, 0.15, "u-juliana", { insuredAssetId: "v-maria", deductible: 7600 }),
-    PO("pol-abc-emp", company("c-abc"), "ins-pilar", "empresarial", "Empresarial Comércio", 19, 14600, 0.22, "u-juliana"),
-    PO("pol-abc-saude", company("c-abc"), "ins-vitalis", "saude", "Vitalis Empresa (34 vidas)", 200, 34 * 395 * 1.9 * 12, 0.03, "u-juliana", { healthPlanId: "hp-vit-pme" }),
-    PO("pol-roberto-saude", person("p-roberto"), "ins-amparo", "saude", "Amparo Executivo", 25, hpPrice("hp-amp-exec", ["p-roberto", "p-helena"]), 0.04, "u-rafael", { beneficiaryIds: ["p-roberto", "p-helena"], healthPlanId: "hp-amp-exec" }),
-    PO("pol-roberto-auto", person("p-roberto"), "ins-horizonte", "auto", "Auto Individual", 150, 4980, 0.15, "u-rafael", { insuredAssetId: "v-roberto", deductible: 8100 }),
-    PO("pol-roberto-resid", person("p-roberto"), "ins-bussola", "residencial", "Residencial Casa", 29, 2240, 0.25, "u-rafael", { insuredAssetId: "im-oliveira" }),
-    PO("pol-paulo-auto", person("p-paulo"), "ins-aurora", "auto", "Auto Individual", 13, 5120, 0.16, "u-rafael", { insuredAssetId: "v-paulo", deductible: 7400 }),
-    PO("pol-luciana-auto", person("p-luciana"), "ins-bussola", "auto", "Auto Individual", 62, 4650, 0.17, "u-rafael", { insuredAssetId: "v-luciana", deductible: 7900 }),
-    PO("pol-paulo-saude", person("p-paulo"), "ins-carioca", "saude", "Carioca Plus", 210, hpPrice("hp-car-plus", ["p-paulo", "p-luciana", "p-gabriel", "p-beatriz"]), 0.04, "u-rafael", { beneficiaryIds: ["p-paulo", "p-luciana", "p-gabriel", "p-beatriz"], healthPlanId: "hp-car-plus" }),
-    PO("pol-eduardo-nautico", person("p-eduardo"), "ins-meridiano", "nautico", "Náutico Lazer", 90, 21600, 0.2, "u-juliana", { insuredAssetId: "bt-eduardo", dataSource: { kind: "manual", at: ts(-275), by: "u-bianca" } }),
-    PO("pol-eduardo-auto", person("p-eduardo"), "ins-pilar", "auto", "Auto Prestige", 33, 11900, 0.2, "u-juliana", { insuredAssetId: "v-eduardo", deductible: 17200 }),
-    PO("pol-eduardo-saude", person("p-eduardo"), "ins-vitalis", "saude", "Vitalis Black", 300, hpPrice("hp-vit-black", ["p-eduardo", "p-patricia"]), 0.04, "u-juliana", { beneficiaryIds: ["p-eduardo", "p-patricia"], healthPlanId: "hp-vit-black" }),
-    PO("pol-eduardo-vida", person("p-eduardo"), "ins-aurora", "vida", "Vida Individual Plus", 170, 7800, 0.3, "u-juliana", { capitalInsured: 2000000 }),
-    PO("pol-nogeng-emp", company("c-nogeng"), "ins-atlantica", "empresarial", "Empresarial Construção", 58, 38900, 0.2, "u-juliana"),
-    PO("pol-nogeng-rc", company("c-nogeng"), "ins-pilar", "rc", "RC Obras", 140, 26400, 0.2, "u-juliana"),
-    PO("pol-nogeng-garantia", company("c-nogeng"), "ins-pilar", "garantia", "Garantia Executante", 40, 18200, 0.25, "u-juliana"),
-    PO("pol-nogeng-vida", company("c-nogeng"), "ins-atlantica", "vida", "Vida em Grupo (120 vidas)", 260, 31200, 0.25, "u-juliana", { capitalInsured: 50000 }),
-    PO("pol-nogeng-auto", company("c-nogeng"), "ins-pilar", "auto", "Auto Frota", 95, 9600, 0.15, "u-juliana", { insuredAssetId: "v-nogeng" }),
-    PO("pol-larissa-resid", person("p-larissa"), "ins-horizonte", "residencial", "Residencial Apartamento", 15, 980, 0.25, "u-juliana", { insuredAssetId: "im-larissa" }),
-    PO("pol-larissa-saude", person("p-larissa"), "ins-carioca", "saude", "Carioca Flex", 190, hpPrice("hp-car-flex", ["p-larissa"]), 0.04, "u-juliana", { beneficiaryIds: ["p-larissa"], healthPlanId: "hp-car-flex" }),
-    PO("pol-andre-rc", person("p-andre"), "ins-pilar", "rc", "RC Profissional Médico", 75, 3900, 0.22, "u-rafael"),
-    PO("pol-andre-auto", person("p-andre"), "ins-horizonte", "auto", "Auto Individual", 100, 6200, 0.15, "u-rafael", { insuredAssetId: "v-andre", deductible: 9800 }),
-    PO("pol-gustavo-auto", person("p-gustavo"), "ins-bussola", "auto", "Auto Individual", 9, 4380, 0.17, "u-rafael", { insuredAssetId: "v-gustavo", deductible: 6100 }),
-    PO("pol-gustavo-resid", person("p-gustavo"), "ins-atlantica", "residencial", "Residencial Casa", -3, 1740, 0.25, "u-rafael", { insuredAssetId: "im-gustavo" }),
-    PO("pol-renata-vida", person("p-renata"), "ins-aurora", "vida", "Vida Individual", 220, 1680, 0.3, "u-juliana", { capitalInsured: 500000 }),
-    PO("pol-renata-odonto", person("p-renata"), "ins-amparo", "odonto", "Amparo Odonto", 18, 720, 0.2, "u-juliana"),
-    PO("pol-felipe-auto", person("p-felipe"), "ins-aurora", "auto", "Auto Aplicativo", 44, 5980, 0.16, "u-rafael", { insuredAssetId: "v-felipe", deductible: 4200 }),
-    PO("pol-sergio-saude", person("p-sergio"), "ins-amparo", "saude", "Amparo Clássico", 88, hpPrice("hp-amp-classico", ["p-sergio"]), 0.04, "u-juliana", { beneficiaryIds: ["p-sergio"], healthPlanId: "hp-amp-classico" }),
-    PO("pol-sergio-vida", person("p-sergio"), "ins-horizonte", "vida", "Vida Sênior", 31, 4100, 0.3, "u-juliana", { capitalInsured: 300000 }),
-    PO("pol-clinica-emp", company("c-clinica"), "ins-bussola", "empresarial", "Empresarial Clínicas", 110, 8700, 0.22, "u-rafael", { insuredAssetId: "im-clinica" }),
-    PO("pol-clinica-rc", company("c-clinica"), "ins-pilar", "rc", "RC Estabelecimentos de Saúde", 52, 6400, 0.22, "u-rafael"),
-    PO("pol-cafe-emp", company("c-cafe"), "ins-atlantica", "empresarial", "Empresarial Alimentação", 27, 3200, 0.22, "u-juliana"),
-    PO("pol-technova-saude", company("c-technova"), "ins-amparo", "saude", "Amparo PME (46 vidas)", 70, 46 * 318 * 1.7 * 12, 0.03, "u-rafael", { healthPlanId: "hp-amp-pme" }),
-    PO("pol-technova-cyber", company("c-technova"), "ins-pilar", "cyber", "Cyber Protect", 160, 12800, 0.2, "u-rafael"),
-    PO("pol-fernanda-auto", person("p-fernanda"), "ins-horizonte", "auto", "Auto Individual", 190, 3850, 0.15, "u-juliana", { insuredAssetId: "v-fernanda", deductible: 5600 }),
+    PO("pol-joao-saude", person("p-joao"), "ins-bradesco-saude", "saude", "Bradesco Demo Prime", 48, hpPrice("hp-vit-prime", silva), 0.04, "u-juliana", { beneficiaryIds: silva, healthPlanId: "hp-vit-prime" }),
+    PO("pol-joao-auto", person("p-joao"), "ins-porto", "auto", "Auto Individual", 7, 9840, 0.18, "u-juliana", { insuredAssetId: "v-joao", deductible: 19800 }),
+    PO("pol-joao-resid", person("p-joao"), "ins-tokio", "residencial", "Residencial Completo", 122, 1890, 0.25, "u-juliana", { insuredAssetId: "im-silva" }),
+    PO("pol-maria-auto", person("p-maria"), "ins-tokio", "auto", "Auto Individual", 204, 4320, 0.15, "u-juliana", { insuredAssetId: "v-maria", deductible: 7600 }),
+    PO("pol-abc-emp", company("c-abc"), "ins-allianz", "empresarial", "Empresarial Comércio", 19, 14600, 0.22, "u-juliana"),
+    PO("pol-abc-saude", company("c-abc"), "ins-bradesco-saude", "saude", "Bradesco Demo Empresa (34 vidas)", 200, 34 * 395 * 1.9 * 12, 0.03, "u-juliana", { healthPlanId: "hp-vit-pme" }),
+    PO("pol-roberto-saude", person("p-roberto"), "ins-sulamerica-saude", "saude", "SulAmérica Demo Executivo", 25, hpPrice("hp-amp-exec", ["p-roberto", "p-helena"]), 0.04, "u-rafael", { beneficiaryIds: ["p-roberto", "p-helena"], healthPlanId: "hp-amp-exec" }),
+    PO("pol-roberto-auto", person("p-roberto"), "ins-tokio", "auto", "Auto Individual", 150, 4980, 0.15, "u-rafael", { insuredAssetId: "v-roberto", deductible: 8100 }),
+    PO("pol-roberto-resid", person("p-roberto"), "ins-hdi", "residencial", "Residencial Casa", 29, 2240, 0.25, "u-rafael", { insuredAssetId: "im-oliveira" }),
+    PO("pol-paulo-auto", person("p-paulo"), "ins-bradesco", "auto", "Auto Individual", 13, 5120, 0.16, "u-rafael", { insuredAssetId: "v-paulo", deductible: 7400 }),
+    PO("pol-luciana-auto", person("p-luciana"), "ins-hdi", "auto", "Auto Individual", 62, 4650, 0.17, "u-rafael", { insuredAssetId: "v-luciana", deductible: 7900 }),
+    PO("pol-paulo-saude", person("p-paulo"), "ins-amil", "saude", "Amil Demo Plus", 210, hpPrice("hp-car-plus", ["p-paulo", "p-luciana", "p-gabriel", "p-beatriz"]), 0.04, "u-rafael", { beneficiaryIds: ["p-paulo", "p-luciana", "p-gabriel", "p-beatriz"], healthPlanId: "hp-car-plus" }),
+    PO("pol-eduardo-nautico", person("p-eduardo"), "ins-mapfre", "nautico", "Náutico Lazer", 90, 21600, 0.2, "u-juliana", { insuredAssetId: "bt-eduardo", dataSource: { kind: "manual", at: ts(-275), by: "u-bianca" } }),
+    PO("pol-eduardo-auto", person("p-eduardo"), "ins-allianz", "auto", "Auto Prestige", 33, 11900, 0.2, "u-juliana", { insuredAssetId: "v-eduardo", deductible: 17200 }),
+    PO("pol-eduardo-saude", person("p-eduardo"), "ins-bradesco-saude", "saude", "Bradesco Demo Black", 300, hpPrice("hp-vit-black", ["p-eduardo", "p-patricia"]), 0.04, "u-juliana", { beneficiaryIds: ["p-eduardo", "p-patricia"], healthPlanId: "hp-vit-black" }),
+    PO("pol-eduardo-vida", person("p-eduardo"), "ins-bradesco", "vida", "Vida Individual Plus", 170, 7800, 0.3, "u-juliana", { capitalInsured: 2000000 }),
+    PO("pol-nogeng-emp", company("c-nogeng"), "ins-porto", "empresarial", "Empresarial Construção", 58, 38900, 0.2, "u-juliana"),
+    PO("pol-nogeng-rc", company("c-nogeng"), "ins-allianz", "rc", "RC Obras", 140, 26400, 0.2, "u-juliana"),
+    PO("pol-nogeng-garantia", company("c-nogeng"), "ins-junto", "garantia", "Garantia Executante", 40, 18200, 0.25, "u-juliana"),
+    PO("pol-nogeng-vida", company("c-nogeng"), "ins-porto", "vida", "Vida em Grupo (120 vidas)", 260, 31200, 0.25, "u-juliana", { capitalInsured: 50000 }),
+    PO("pol-nogeng-auto", company("c-nogeng"), "ins-allianz", "auto", "Auto Frota", 95, 9600, 0.15, "u-juliana", { insuredAssetId: "v-nogeng" }),
+    PO("pol-larissa-resid", person("p-larissa"), "ins-tokio", "residencial", "Residencial Apartamento", 15, 980, 0.25, "u-juliana", { insuredAssetId: "im-larissa" }),
+    PO("pol-larissa-saude", person("p-larissa"), "ins-amil", "saude", "Amil Demo Flex", 190, hpPrice("hp-car-flex", ["p-larissa"]), 0.04, "u-juliana", { beneficiaryIds: ["p-larissa"], healthPlanId: "hp-car-flex" }),
+    PO("pol-andre-rc", person("p-andre"), "ins-allianz", "rc", "RC Profissional Médico", 75, 3900, 0.22, "u-rafael"),
+    PO("pol-andre-auto", person("p-andre"), "ins-tokio", "auto", "Auto Individual", 100, 6200, 0.15, "u-rafael", { insuredAssetId: "v-andre", deductible: 9800 }),
+    PO("pol-gustavo-auto", person("p-gustavo"), "ins-hdi", "auto", "Auto Individual", 9, 4380, 0.17, "u-rafael", { insuredAssetId: "v-gustavo", deductible: 6100 }),
+    PO("pol-gustavo-resid", person("p-gustavo"), "ins-porto", "residencial", "Residencial Casa", -3, 1740, 0.25, "u-rafael", { insuredAssetId: "im-gustavo" }),
+    PO("pol-renata-vida", person("p-renata"), "ins-icatu", "vida", "Vida Individual", 220, 1680, 0.3, "u-juliana", { capitalInsured: 500000 }),
+    PO("pol-renata-odonto", person("p-renata"), "ins-odontoprev", "odonto", "Odonto DEMO", 18, 720, 0.2, "u-juliana"),
+    PO("pol-felipe-auto", person("p-felipe"), "ins-bradesco", "auto", "Auto Aplicativo", 44, 5980, 0.16, "u-rafael", { insuredAssetId: "v-felipe", deductible: 4200 }),
+    PO("pol-sergio-saude", person("p-sergio"), "ins-sulamerica-saude", "saude", "SulAmérica Demo Clássico", 88, hpPrice("hp-amp-classico", ["p-sergio"]), 0.04, "u-juliana", { beneficiaryIds: ["p-sergio"], healthPlanId: "hp-amp-classico" }),
+    PO("pol-sergio-vida", person("p-sergio"), "ins-tokio", "vida", "Vida Sênior", 31, 4100, 0.3, "u-juliana", { capitalInsured: 300000 }),
+    PO("pol-clinica-emp", company("c-clinica"), "ins-hdi", "empresarial", "Empresarial Clínicas", 110, 8700, 0.22, "u-rafael", { insuredAssetId: "im-clinica" }),
+    PO("pol-clinica-rc", company("c-clinica"), "ins-allianz", "rc", "RC Estabelecimentos de Saúde", 52, 6400, 0.22, "u-rafael"),
+    PO("pol-cafe-emp", company("c-cafe"), "ins-porto", "empresarial", "Empresarial Alimentação", 27, 3200, 0.22, "u-juliana"),
+    PO("pol-technova-saude", company("c-technova"), "ins-sulamerica-saude", "saude", "SulAmérica Demo PME (46 vidas)", 70, 46 * 318 * 1.7 * 12, 0.03, "u-rafael", { healthPlanId: "hp-amp-pme" }),
+    PO("pol-technova-cyber", company("c-technova"), "ins-allianz", "cyber", "Cyber Protect", 160, 12800, 0.2, "u-rafael"),
+    PO("pol-fernanda-auto", person("p-fernanda"), "ins-tokio", "auto", "Auto Individual", 190, 3850, 0.15, "u-juliana", { insuredAssetId: "v-fernanda", deductible: 5600 }),
   ];
   // histórico: apólice anterior renovada (mostra a cadeia de renovação)
-  policies.push(PO("pol-joao-auto-2024", person("p-joao"), "ins-atlantica", "auto", "Auto Individual", -358, 9120, 0.18, "u-juliana", { insuredAssetId: "v-joao", status: "renovada" }));
+  policies.push(PO("pol-joao-auto-2024", person("p-joao"), "ins-porto", "auto", "Auto Individual", -358, 9120, 0.18, "u-juliana", { insuredAssetId: "v-joao", status: "renovada" }));
   policies.find((p) => p.id === "pol-joao-auto")!.renewedFromId = "pol-joao-auto-2024";
 
   // ───────── Cotações
@@ -436,13 +462,13 @@ export function createSeed(today = todayISO()): DB {
     ({ id, title, category, due: addDays(today, dueOffset), ownerId, status: "aberta", origin: "manual", createdAt: ts(Math.min(dueOffset, 0) - 2, 9), demo: D, ...extra });
   const tasks: Task[] = [
     T("t-fernanda-docs", "Solicitar RG/CPF do Lucas e comprovante de residência", "documento", 0, "u-juliana", { party: person("p-fernanda"), related: { type: "opportunity", id: "o-fernanda" }, waitingOn: "cliente", waitingSince: addDays(today, -2), value: 32000 }),
-    T("t-roberto-emissao", "Acompanhar emissão Amparo Executivo (proposta aceita)", "emissao", 1, "u-bianca", { party: person("p-roberto"), related: { type: "proposal", id: "pr-roberto" }, waitingOn: "seguradora", waitingSince: addDays(today, -1), value: 30000 }),
+    T("t-roberto-emissao", "Acompanhar emissão SulAmérica Demo Executivo (proposta aceita)", "emissao", 1, "u-bianca", { party: person("p-roberto"), related: { type: "proposal", id: "pr-roberto" }, waitingOn: "seguradora", waitingSince: addDays(today, -1), value: 30000 }),
     T("t-camila-levantamento", "Levantar hospitais de preferência, pediatra e orçamento", "cotacao", 1, "u-juliana", { party: person("p-camila"), related: { type: "opportunity", id: "o-camila" }, value: 26000 }),
-    T("t-clinica-tabela", "Enviar tabela PME negociada com a Vitalis", "pendencia", 2, "u-rafael", { party: company("c-clinica"), related: { type: "opportunity", id: "o-clinica-saude" }, value: 61000 }),
+    T("t-clinica-tabela", "Enviar tabela PME negociada com a Bradesco Saúde", "pendencia", 2, "u-rafael", { party: company("c-clinica"), related: { type: "opportunity", id: "o-clinica-saude" }, value: 61000 }),
     T("t-gustavo-vencida", "Residencial venceu há 3 dias — contato urgente com cliente", "renovacao", -1, "u-rafael", { party: person("p-gustavo"), related: { type: "policy", id: "pol-gustavo-resid" }, value: 1740 }),
     T("t-mariana-contato", "Primeiro contato com lead (site) — seguro de vida", "follow_up", 0, "u-juliana", { party: person("p-mariana"), related: { type: "opportunity", id: "o-mariana" }, value: 1200 }),
     T("t-vanessa-datas", "Confirmar datas da viagem para fechar cotação", "cotacao", 4, "u-rafael", { party: person("p-vanessa"), related: { type: "opportunity", id: "o-vanessa" }, waitingOn: "cliente", waitingSince: addDays(today, -1), value: 520 }),
-    T("t-financeiro-horizonte", "Conciliar comissões divergentes da Horizonte", "pendencia", 2, "u-marcos", { value: 0 }),
+    T("t-financeiro-horizonte", "Conciliar comissões divergentes da Tokio Marine", "pendencia", 2, "u-ana", { value: 0 }),
     T("t-felipe-cnh", "Atualizar CNH e confirmar uso (aplicativo) para renovação", "documento", -2, "u-rafael", { party: person("p-felipe"), related: { type: "policy", id: "pol-felipe-auto" }, waitingOn: "cliente", waitingSince: addDays(today, -6), value: 5980 }),
     T("t-andre-vida", "Apresentar proposta de vida com invalidez profissional", "cross_sell", 3, "u-rafael", { party: person("p-andre"), related: { type: "opportunity", id: "o-andre-vida" }, value: 3600 }),
     T("t-joao-auto-cotacao", "Revisar multicálculo da renovação do BMW X3 e enviar proposta", "renovacao", 0, "u-juliana", { party: person("p-joao"), related: { type: "quote", id: "q-joao-auto" }, value: 9840 }),
@@ -469,8 +495,8 @@ export function createSeed(today = todayISO()): DB {
     IN("i-13", person("p-camila"), -6, "telefone", "entrada", "Indicada pela Fernanda. Quer plano para a família (bebê de 4 meses).", undefined, 16),
     IN("i-14", person("p-gustavo"), -10, "whatsapp", "saida", "Lembrete de renovação do residencial enviado.", "u-rafael", 10),
     IN("i-15", person("p-gustavo"), -4, "telefone", "saida", "Sem resposta. Deixado recado.", "u-rafael", 17),
-    IN("i-16", company("c-clinica"), -5, "reuniao", "saida", "Reunião com sócios: comparação Vitalis Empresa × Amparo PME para 18 vidas.", "u-rafael", 15),
-    IN("i-17", person("p-eduardo"), -20, "email", "entrada", "Enviou apólice do náutico renovada (Meridiano) — cadastrada manualmente.", undefined, 12),
+    IN("i-16", company("c-clinica"), -5, "reuniao", "saida", "Reunião com sócios: comparação Bradesco Demo Empresa × SulAmérica Demo PME para 18 vidas.", "u-rafael", 15),
+    IN("i-17", person("p-eduardo"), -20, "email", "entrada", "Enviou apólice do náutico renovada (Mapfre) — cadastrada manualmente.", undefined, 12),
     IN("i-18", person("p-larissa"), -1, "sistema", "interno", "Lembrete de renovação (15 dias) gerado."),
     IN("i-19", person("p-mariana"), 0, "email", "entrada", "Lead do site: interesse em seguro de vida.", undefined, 8),
     IN("i-20", person("p-sergio"), -5, "whatsapp", "saida", "Boleto da 1ª parcela enviado.", "u-bianca", 11),
@@ -490,9 +516,9 @@ export function createSeed(today = todayISO()): DB {
       id: "d-inbox-felipe", name: "apolice_auto_aurora_felipe.txt", kind: "apolice", party: person("p-felipe"), sizeKb: 4, mime: "text/plain", uploadedAt: ts(0, 8, 12), uploadedBy: "u-bianca", channel: "email", status: "aguardando_revisao",
       textContent: fillSample(SAMPLE_DOCS[1].text(today), persons),
       extraction: { parser: "demo-regex-extractor@1", at: ts(0, 8, 13), fields: [
-        { key: "insurer", label: "Seguradora", value: "Aurora Seguros", confidence: 0.92 },
+        { key: "insurer", label: "Seguradora", value: "Bradesco Seguros", confidence: 0.92 },
         { key: "line", label: "Ramo", value: "auto", confidence: 0.8 },
-        { key: "policyNumber", label: "Nº da apólice", value: "AUR-AU-778120", confidence: 0.93 },
+        { key: "policyNumber", label: "Nº da apólice", value: "BRA-AU-778120", confidence: 0.93 },
         { key: "cpf", label: "CPF", value: persons.find((p) => p.id === "p-felipe")!.cpf, confidence: 0.97 },
         { key: "insuredName", label: "Segurado", value: "Felipe Araújo", confidence: 0.75 },
         { key: "start", label: "Início de vigência", value: addDays(today, 44), confidence: 0.9 },
@@ -517,7 +543,7 @@ export function createSeed(today = todayISO()): DB {
       let c: Commission = { id: `cm-${pol.id}-${comp}`, policyId: pol.id, competence: comp, expected: monthly, status: "prevista", demo: D };
       if (k < 0 || (k === 0 && roll < 0.55)) {
         if (roll < 0.06 && k < -1) c = { ...c, status: "atrasada" };
-        else if (roll < 0.14 || (pol.insurerId === "ins-horizonte" && k === -1)) c = { ...c, status: "divergente", received: Math.round(monthly * 0.82 * 100) / 100, receivedAt: `${addMonths(comp + "-01", 1).slice(0, 7)}-10` };
+        else if (roll < 0.14 || (pol.insurerId === "ins-tokio" && k === -1)) c = { ...c, status: "divergente", received: Math.round(monthly * 0.82 * 100) / 100, receivedAt: `${addMonths(comp + "-01", 1).slice(0, 7)}-10` };
         else c = { ...c, status: "recebida", received: monthly, receivedAt: k === 0 ? addDays(today, -Math.round(r() * 5)) : `${addMonths(comp + "-01", 1).slice(0, 7)}-10` };
       }
       commissions.push(c);
@@ -582,9 +608,9 @@ export const SAMPLE_DOCS: { id: string; title: string; fileName: string; text: (
     text: (today) => {
       const s = addDays(today, 15).split("-").reverse().join("/");
       const e = addDays(today, 380).split("-").reverse().join("/");
-      return `HORIZONTE SEGUROS — DOCUMENTO DEMO (FICTÍCIO)
+      return `TOKIO MARINE — DOCUMENTO DEMO (FICTÍCIO)
 APÓLICE DE SEGURO RESIDENCIAL
-Apólice nº HOR-RE-552901
+Apólice nº TOK-RE-552901
 Segurado: Larissa Campos
 CPF: {{CPF:p-larissa}}
 Local de risco: Rua Marquês de Abrantes, 88 apto 901 — Flamengo — Rio de Janeiro/RJ
@@ -602,8 +628,8 @@ Comissão: 25%`;
     text: (today) => {
       const s = addDays(today, 44).split("-").reverse().join("/");
       const e = addDays(today, 409).split("-").reverse().join("/");
-      return `AURORA SEGUROS — DOCUMENTO DEMO (FICTÍCIO)
-Seguro de Automóvel — Apólice nº AUR-AU-778120
+      return `BRADESCO SEGUROS — DOCUMENTO DEMO (FICTÍCIO)
+Seguro de Automóvel — Apólice nº BRA-AU-778120
 Segurado: Felipe Araújo
 CPF: {{CPF:p-felipe}}
 Veículo: Chevrolet Onix LT 1.0 Turbo 2023 — Placa: FEL6I23 — Uso: aplicativo
@@ -620,9 +646,9 @@ Comissão: 16%`;
     text: (today) => {
       const s = today.split("-").reverse().join("/");
       const e = addDays(today, 365).split("-").reverse().join("/");
-      return `AURORA SEGUROS — DOCUMENTO DEMO (FICTÍCIO)
+      return `BRADESCO SEGUROS — DOCUMENTO DEMO (FICTÍCIO)
 Seguro de Vida Individual
-Apólice nº AUR-VI-430017
+Apólice nº BRA-VI-430017
 Segurado: Mariana Teixeira
 CPF: {{CPF:p-mariana}}
 Capital segurado: R$ 400.000,00
@@ -635,8 +661,8 @@ Comissão: 30%`;
     id: "sample-boleto",
     title: "Boleto (João Silva)",
     fileName: "boleto_vitalis_joao.txt",
-    text: (today) => `VITALIS SAÚDE — DOCUMENTO DEMO (FICTÍCIO)
-Boleto bancário — mensalidade plano Vitalis Prime
+    text: (today) => `BRADESCO SAÚDE — DOCUMENTO DEMO (FICTÍCIO)
+Boleto bancário — mensalidade plano Bradesco Demo Prime
 Cliente: João Silva
 CPF: {{CPF:p-joao}}
 Vencimento: ${addDays(today, 10).split("-").reverse().join("/")}

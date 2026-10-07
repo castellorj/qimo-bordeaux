@@ -12,7 +12,7 @@ Pesquisa feita em out/2026. Itens marcados **(a confirmar)** precisam de valida�
 
 ```
 src/integrations/
-  insurers/          InsurerAdapter: agregadores de multicálculo, APIs de parceiro, importação, manual, demo
+  insurers/          InsurerAdapter: um adapter próprio por seguradora (API liberada, arquivo, manual), demo
   health-networks/   NetworkSourceAdapter: tabelas de operadoras, dados abertos ANS
   maps/              MapsAdapter: geocode, reverseGeocode, tiles (osm | google | mapbox)
   whatsapp/          MessagingAdapter: Cloud API direto ou BSP; demo = wa.me
@@ -89,7 +89,7 @@ Legenda de dependência: **D** = dados, **A** = API, **C** = contrato/parceria.
 
 | Integração | Método | Dependência | Fase | Status na DEMO |
 |---|---|---|---|---|
-| Multicálculo auto/residencial/vida | Agregador (api_parceiro) | C + A | 3 | Simulador determinístico, seguradoras fictícias |
+| Multicálculo auto/residencial/vida | Integração própria por seguradora (API liberada/arquivo/manual) | C + A | 3 | Simulador determinístico (valores fictícios) para 6 seguradoras; demais como cotação manual |
 | APIs diretas de seguradoras | api_parceiro / integracao_autorizada | C + A | 4+ | — |
 | Saúde: preços e rede | importacao (tabelas das operadoras) | D + C | 2 | Planos/rede fictícios |
 | ANS dados abertos | importacao (dados públicos) | D | 2 | — |
@@ -117,6 +117,7 @@ Legenda de dependência: **D** = dados, **A** = API, **C** = contrato/parceria.
 - **Opt-in:** a política de mensagens exige **opt-in** antes de contatar a pessoa: deixar claro que ela aceita receber mensagens e **de qual empresa**, e cumprir a lei local (LGPD). O opt-in pode ser coletado por site, SMS, telefone/IVR, papel. Fonte: [Get opt-in for WhatsApp](https://developers.facebook.com/documentation/business-messaging/whatsapp/getting-opt-in).
 - **No sistema:** `ConsentRecord(purpose='marketing_whatsapp')` obrigatório para templates de marketing; comunicação operacional (proposta solicitada, renovação de apólice existente) usa categoria utility com base legal de execução de contrato — **classificação de cada template a validar com a Meta e o jurídico**. Webhook de entrada cria `Interaction` e, se houver anexo, `Document` (→ Document AI).
 - **Dependência:** A + C (conta Meta Business verificada, número dedicado, BSP opcional). **Fase 3.** DEMO: `wa.me/<numero>?text=` (abre o WhatsApp do usuário; nada é enviado pelo sistema).
+- **Recomendação (pedida pelo cliente):** **Cloud API da Meta conectada diretamente pelo sistema** (integração própria), número exclusivo da corretora. Motivos: oficial (sem risco de bloqueio), sem mensalidade de intermediário (paga-se à Meta por mensagem de template; respostas na janela de 24h aberta pelo cliente não são cobradas), coerente com a decisão de integração própria e um operador de dados a menos (LGPD). **Alternativa:** BSP oficial (360dialog, Twilio, Gupshup; Blip ou Zenvia com suporte em português) se a equipe quiser painel de atendimento pronto. **Evitar:** APIs não oficiais (automação do WhatsApp Web) — violam os termos e arriscam o número. Conferir a tabela vigente de preços da Meta para o Brasil antes de contratar.
 
 ### 4.2 Open Insurance Brasil (SUSEP)
 
@@ -141,7 +142,7 @@ Legenda de dependência: **D** = dados, **A** = API, **C** = contrato/parceria.
 - A FIPE publica a tabela no seu site, mas **não oferece API pública oficial documentada**; endpoints usados por bibliotecas são internos ao site, sem garantia de estabilidade ou termos de uso formais, e há bloqueio por volume. Fonte: [TabNews — guia da API FIPE](https://www.tabnews.com.br/dedx/guia-completo-da-api-fipe-como-consultar-precos-de-veiculos-no-brasil).
 - **Opções:** APIs de terceiros (ex.: BrasilAPI, Parallelum/"FIPE API" e provedores comerciais de dados veiculares). **Ressalvas:** verificar a origem dos dados e a licença de cada provedor; preferir provedor com contrato/SLA; armazenar `fipeRefMonth` e a fonte; em produção, o **valor FIPE oficial da cotação é o retornado pelo agregador/seguradora**, não o da nossa consulta. **Status DEMO:** valores fictícios. **Fase 2.**
 
-### 4.5 Agregadores de multicálculo (caminho realista para multicálculo)
+### 4.5 Agregadores de multicálculo — avaliados e **não adotados** (decisão: integração própria)
 
 | Fornecedor | O que oferece (fontes públicas) | Observações |
 |---|---|---|
@@ -151,7 +152,10 @@ Legenda de dependência: **D** = dados, **A** = API, **C** = contrato/parceria.
 | **Infocap** | Multicálculo e gestão (MultiGestor) para auto, vida, residencial | Sediada em Novo Hamburgo/RS, parceira do Sincor-RS ([Revista Apólice](https://revistaapolice.com.br/?p=87474)) |
 
 - **A confirmar com cada fornecedor:** existência de **API para integração** (não apenas uso pela interface deles), ramos e seguradoras cobertos, se a cotação retorna coberturas estruturadas, termos de uso de dados, preço (por usuário/por cálculo), SLA, e se permitem armazenar o resultado.
-- **Recomendação:** contratar 1 agregador com API para auto/residencial/vida e implementar `InsurerAdapter` sobre ele (cobre dezenas de seguradoras com um contrato). Adapters diretos só para seguradoras estratégicas com API de parceiro. **Dependência:** C + A. **Fase 3.**
+- **Decisão do cliente (07/10/2026): integração própria.** Um `InsurerAdapter` por seguradora, desenvolvido pela corretora sobre a via que cada seguradora liberar (API para corretores credenciados, layout de arquivo ou integração autorizada). Sem agregador. A tabela acima fica como referência caso a decisão seja revista.
+- **Implicações:** (1) o esforço cresce por seguradora — priorizar pelas de maior volume da carteira; (2) cada seguradora precisa **liberar acesso** (convênio/credenciamento) — sem isso ela entra como **cotação manual** no mesmo comparativo, com origem e responsável registrados; (3) nada de scraping/RPA em portais.
+- **Onboarding por seguradora** (checklist em /seguradoras): código de corretor/convênio ativo → acesso técnico solicitado → contrato/termos de dados (LGPD) → credenciais de homologação no cofre → adapter desenvolvido e testado → produção com monitoramento e fallback para manual.
+- **Catálogo inicial:** ~30 seguradoras e operadoras principais (Porto, Tokio Marine, Allianz, HDI, Bradesco, Zurich, Mapfre, Azul, Yelum, Suhai, Sompo, Chubb, AXA, SulAmérica, Icatu, MAG, Prudential, MetLife, Junto, Pottencial; saúde: Bradesco Saúde, SulAmérica Saúde, Amil, Assim, Porto Saúde, Unimed, Hapvida NotreDame Intermédica, Omint, Care Plus; odonto: OdontoPrev). Ramos de cada uma **a confirmar** pela corretora. **Fase 3.**
 
 ### 4.6 Portais de seguradoras
 
@@ -203,7 +207,7 @@ Legenda de dependência: **D** = dados, **A** = API, **C** = contrato/parceria.
 | ANS | **Dados abertos** (arquivos), não API transacional; rede apenas hospitalar, por produto registrado |
 | FIPE | **Não** há API pública oficial; apenas terceiros |
 | Seguradoras | **Não**, em geral; APIs de parceiro mediante contrato |
-| Multicálculo | **Via agregadores comerciais** (contrato) |
+| Multicálculo | **Integração própria** por seguradora (decisão do cliente); agregadores existem mas não serão usados |
 | CEP | ViaCEP (pública, não oficial dos Correios); Correios com contrato |
 | Geocoding | Google/Mapbox (pagos, com termos de cache); Nominatim com limites rígidos |
 | E-mail | Gmail API / Microsoft Graph (oficiais) |

@@ -137,8 +137,8 @@ export function analyzeRows(db: DB, rows: string[][], mapping: TargetField[]): I
 }
 
 export const SAMPLE_IMPORT_CSV = `Nome;CPF;Nascimento;Celular;E-mail;CEP;Seguradora;Ramo;Apólice;Início;Fim;Prêmio
-Beatriz Monteiro;529.982.247-25;12/03/1985;(21) 98111-2233;beatriz.m@exemplo.demo;22290-030;Horizonte Seguros;Residencial;HOR-RE-900112;01/02/2026;01/02/2027;1.120,00
-Larissa Campos;{{CPF:p-larissa}};;(21) 99109-8765;larissa.campos@exemplo.demo;22230-061;Horizonte Seguros;Residencial;HOR-RE-552901;;;
-Otávio Prado;111.111.111-11;05/07/1979;(21) 97777-0000;otavio@exemplo;20540-001;Bússola Seguros;Auto;BUS-AU-332211;10/11/2025;10/11/2026;3.980,00
+Beatriz Monteiro;529.982.247-25;12/03/1985;(21) 98111-2233;beatriz.m@exemplo.demo;22290-030;Tokio Marine;Residencial;TOK-RE-900112;01/02/2026;01/02/2027;1.120,00
+Larissa Campos;{{CPF:p-larissa}};;(21) 99109-8765;larissa.campos@exemplo.demo;22230-061;Tokio Marine;Residencial;TOK-RE-552901;;;
+Otávio Prado;111.111.111-11;05/07/1979;(21) 97777-0000;otavio@exemplo;20540-001;HDI Seguros;Auto;BUS-AU-332211;10/11/2025;10/11/2026;3.980,00
 Joao da Silva;;;21998761234;;;;;;;;
-Helena Brito;153.509.460-56;30/09/1990;(21) 96666-1212;helena.b@exemplo.demo;22440-000;Aurora Seguros;Vida;AUR-VI-120044;15/01/2026;15/01/2027;890,00`;
+Helena Brito;153.509.460-56;30/09/1990;(21) 96666-1212;helena.b@exemplo.demo;22440-000;Bradesco Seguros;Vida;BRA-VI-120044;15/01/2026;15/01/2027;890,00`;

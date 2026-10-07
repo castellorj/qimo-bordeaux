@@ -176,16 +176,23 @@ Multicálculo (agregador como Agger/Quiver, Segfy, Infocap etc., ou parceria dir
 8. **CNPJ alfanumérico**: a Receita Federal passa a emitir CNPJ alfanumérico a partir de jul/2026 — o campo é `varchar(14)` e a validação deve aceitar o novo formato (a confirmar a regra final de DV com a especificação oficial).
 9. **Atalhos de teclado e ⌘K** para uso intensivo pela equipe.
 
-### (h) Decisões de negócio que precisam do cliente
+### (h) Decisões de negócio
+
+**Decididas pelo cliente (07/10/2026):**
+
+| # | Decisão | Resposta | Onde está no sistema |
+|---|---|---|---|
+| 1 | Quem vê comissões (valores e %)? | **Somente o Administrador** | `DEFAULT_ROLE_PERMISSIONS` (rbac.ts): `commissions.view` só no perfil admin; colunas/indicadores/relatórios de comissão ocultos para os demais; configurável em Configurações → Perfis |
+| 2 | Corretor vê só a própria carteira por padrão? | **Sim** | `restrictWalletToOwner = true` (padrão) |
+| 3 | Com quais seguradoras/operadoras a corretora trabalha? | **Começar pelas principais do mercado; a corretora adiciona as demais** | Catálogo inicial com ~30 seguradoras/operadoras reais + botão "Adicionar" e edição de ramos em /seguradoras. Preços/planos/redes da DEMO continuam **simulados** |
+| 4 | Agregador de multicálculo ou integração própria? | **Integração própria** (adapter por seguradora, sem agregador) | `InsurerAdapter` por seguradora; checklist de onboarding (convênio → acesso técnico → contrato de dados → credenciais → adapter → produção); sem integração pronta = cotação manual no mesmo comparativo |
+| 5 | WhatsApp | **Cliente pediu sugestão** → recomendado: **WhatsApp Cloud API da Meta, conectada diretamente** (integração própria, número exclusivo); alternativa: BSP oficial; nunca APIs não oficiais | Configurações → WhatsApp; INTEGRATIONS §4.1 |
+| 6 | Prazos de retenção | **De acordo com a LGPD** → política proposta por categoria (finalidade + obrigação legal + defesa de direitos), a validar com jurídico/DPO | Configurações → Retenção de dados; SECURITY_LGPD §4 |
+
+**Ainda em aberto:**
 
 | # | Decisão | Proposta padrão |
 |---|---|---|
-| 1 | Quem vê comissões (valores e %)? | Admin, Gestor e Financeiro; corretor vê apenas as próprias |
-| 2 | Corretor vê só a própria carteira por padrão? | Sim (`restrictWalletToOwner = true`); gestor vê tudo |
-| 3 | Com quais seguradoras/operadoras a corretora realmente trabalha (e em quais ramos)? | Levantar lista; a DEMO usa nomes fictícios |
-| 4 | Contratar agregador de multicálculo ou construir adapters próprios? | Contratar agregador para auto/residencial/vida; adapters próprios só onde houver API de parceiro |
-| 5 | WhatsApp: qual BSP (ou conta direta na Meta) e qual número? | Avaliar 2–3 BSPs; número dedicado da corretora |
-| 6 | Prazos de retenção (leads perdidos, documentos, gravações) | Ver proposta em SECURITY_LGPD; validar com jurídico |
 | 7 | Baselines de tempo por tarefa | Cronometrar 1–2 semanas |
 | 8 | Regras de cross-sell aceitáveis (frequência, canais) | Máx. 1 sugestão ativa por cliente/ramo; sem envio automático ao cliente |
 | 9 | Quem pode enviar proposta ao cliente sem revisão? | Corretor dono; operacional precisa de aprovação |

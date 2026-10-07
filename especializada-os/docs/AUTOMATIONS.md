@@ -91,4 +91,4 @@ Exemplo: **"Renove todos os seguros que vencem nos próximos 30 dias."**
 4. O corretor revisa item a item (aprovar e enviar / editar / descartar), com atalhos de teclado.
 5. Log completo do lote, com horas economizadas estimadas.
 
-Pré-requisitos: multicálculo real (contrato com agregador), WhatsApp API, Document AI em produção.
+Pré-requisitos: multicálculo real (integrações próprias com as seguradoras), WhatsApp API, Document AI em produção.

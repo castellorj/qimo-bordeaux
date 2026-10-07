@@ -93,7 +93,7 @@ export const RENEWAL_NEXT_STEP: Record<RenewalStatus, string> = {
 
 export const INTEGRATION_INFO: Record<IntegrationMethod, { label: string; explain: string }> = {
   api_oficial: { label: "API oficial", explain: "A seguradora publica uma API oficial; cotação e emissão trafegam direto, com contrato e credenciais próprias da corretora." },
-  api_parceiro: { label: "API de parceiro", explain: "Integração via parceiro homologado (ex.: agregador de multicálculo) com contrato; os preços chegam pela API do parceiro." },
+  api_parceiro: { label: "API para corretores", explain: "API que a seguradora libera a corretoras credenciadas; a corretora desenvolve o próprio adapter (integração própria) com as credenciais recebidas." },
   integracao_autorizada: { label: "Integração autorizada", explain: "Troca de dados autorizada formalmente pela seguradora (arquivos ou endpoints dedicados), conforme contrato." },
   importacao: { label: "Importação de arquivos", explain: "A operadora fornece planilhas, PDFs ou CSVs (tabelas, rede, extratos) que a equipe importa e o sistema versiona com data de validade." },
   manual: { label: "Manual", explain: "Sem via técnica legítima disponível: o sistema cria uma tarefa e a cotação é feita no portal pelo corretor, registrando o resultado." },

@@ -16,7 +16,7 @@ Decisões em formato ADR curto (Contexto → Decisão → Consequências). Duas 
 | Integrações | Simuladores determinísticos rotulados "DEMO" (multicálculo, envio WhatsApp via `wa.me`, geocodificação por base local) | Adapters reais por contrato/API |
 | IA | Motor de intenções determinístico em português usando as mesmas ferramentas; Document AI por regex/heurística em documentos de texto | Tool-calling com LLM (Claude por padrão) + OCR |
 | Mapas | Leaflet + tiles OpenStreetMap | Adapter: Google Maps ou Mapbox (geocodificação com cache) |
-| Marcas | Seguradoras, operadoras e hospitais com **nomes fictícios**, de propósito: nunca atribuir preços/redes inventados a marcas reais | Cadastro real da corretora |
+| Marcas | Catálogo com os **nomes reais** das principais seguradoras/operadoras (decisão do cliente), mas planos, preços, redes e cotações **simulados** e sinalizados como tal; hospitais e clientes fictícios | Dados reais vindos das integrações próprias e importações |
 | Sinalização | Badge/banner **"DEMO"** permanente (cor `demo`, fúcsia) | Sem badge |
 
 **Regra:** a DEMO nunca deve receber dados reais de clientes (o `localStorage` não é cifrado nem auditado). Ver [SECURITY_LGPD](SECURITY_LGPD.md).
@@ -157,8 +157,8 @@ especializada-os/
 | Mapas | `MapsAdapter` | Google, Mapbox, OSM/Nominatim próprio |
 | LLM | `LLMProvider` | Claude (padrão), outros |
 | OCR | `DocumentParser` | Textract, Google Document AI, Azure, Tesseract |
-| WhatsApp | `MessagingAdapter` | Cloud API direto ou BSP |
-| Multicálculo | `InsurerAdapter` | Agregador A/B, APIs diretas |
+| WhatsApp | `MessagingAdapter` | Cloud API da Meta direto (recomendado) ou BSP |
+| Multicálculo | `InsurerAdapter` | Integração própria: um adapter por seguradora (sem agregador) |
 | Busca | `SearchProvider` | Postgres, Meilisearch, Typesense |
 | Hospedagem | Next.js padrão (Node) | Vercel, container (Fly, Render, AWS) |
 
@@ -178,7 +178,7 @@ flowchart LR
   APP --> S3[(Storage S3)]
   W[Worker pg-boss] --> DB
   W --> S3
-  W --> INS[Agregador / APIs de seguradoras]
+  W --> INS[APIs/arquivos liberados por cada seguradora]
   W --> WA[WhatsApp Cloud API / BSP]
   W --> OCR[OCR]
   APP --> LLM[LLM Claude]

@@ -40,8 +40,8 @@ export function applyNetworkImport(db: DB, user: User | null, insurerId: string,
 }
 
 export const SAMPLE_NETWORK_CSV = `Operadora;Plano;Prestador;Tipo;Endereço;Bairro;Cidade;Especialidades;Serviços
-Carioca Saúde;Carioca Plus;Atlantico Dor;Hospital;Rua Figueiredo de Magalhães, 875;Copacabana;Rio de Janeiro;Emergência|Cardiologia;internacao|pronto-socorro
-Carioca Saúde;Carioca Plus;Hospital Atlântico D'Or RJ;Hospital;R. Figueiredo Magalhães 875;Copacabana;Rio de Janeiro;Emergência;internacao
-Carioca Saúde;Carioca Plus;Clínica Dermato Leblon;Clínica;Rua Dias Ferreira, 400;Leblon;Rio de Janeiro;Dermatologia;consultas
-Carioca Saúde;Carioca Flex;Lab Barra Imagem;Laboratório;Av. das Américas, 7700;Barra da Tijuca;Rio de Janeiro;Imagem;exames
-Carioca Saúde;Carioca Flex;Centro Médico Tijuca Saúde;Clínica;Rua Conde de Bonfim, 500;Tijuca;Rio de Janeiro;Clínica geral|Pediatria;consultas|exames`;
+Amil;Amil Demo Plus;Atlantico Dor;Hospital;Rua Figueiredo de Magalhães, 875;Copacabana;Rio de Janeiro;Emergência|Cardiologia;internacao|pronto-socorro
+Amil;Amil Demo Plus;Hospital Atlântico D'Or RJ;Hospital;R. Figueiredo Magalhães 875;Copacabana;Rio de Janeiro;Emergência;internacao
+Amil;Amil Demo Plus;Clínica Dermato Leblon;Clínica;Rua Dias Ferreira, 400;Leblon;Rio de Janeiro;Dermatologia;consultas
+Amil;Amil Demo Flex;Lab Barra Imagem;Laboratório;Av. das Américas, 7700;Barra da Tijuca;Rio de Janeiro;Imagem;exames
+Amil;Amil Demo Flex;Centro Médico Tijuca Saúde;Clínica;Rua Conde de Bonfim, 500;Tijuca;Rio de Janeiro;Clínica geral|Pediatria;consultas|exames`;

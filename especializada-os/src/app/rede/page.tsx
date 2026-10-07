@@ -244,7 +244,7 @@ function ComparePlans({ initial }: { initial?: string[] }) {
 function Importer() {
   const { db, update, toast } = useStore();
   const [text, setText] = useState("");
-  const [insurerId, setInsurerId] = useState("ins-carioca");
+  const [insurerId, setInsurerId] = useState("ins-amil");
   const [rows, setRows] = useState<ReviewedRow[] | null>(null);
   const [done, setDone] = useState<{ created: number; linked: number } | null>(null);
   const analyze = async (t: string) => {

@@ -186,7 +186,7 @@ function Topbar() {
         </div>
       </div>
       <div className="flex items-center justify-center gap-2 border-t border-fuchsia-100 bg-demo-soft px-4 py-1 text-2xs text-demo">
-        <Icons.FlaskConical className="h-3 w-3" /> Ambiente DEMO — dados, seguradoras, operadoras e hospitais fictícios. Cálculos simulados. Não insira dados reais de clientes.
+        <Icons.FlaskConical className="h-3 w-3" /> Ambiente DEMO — clientes e hospitais fictícios; planos, preços, redes e cotações simulados (não são tarifas reais das seguradoras). Não insira dados reais de clientes.
       </div>
       {searchOpen && <CommandPalette onClose={() => setSearchOpen(false)} />}
       {mobileNav && <MobileNav onClose={() => setMobileNav(false)} />}

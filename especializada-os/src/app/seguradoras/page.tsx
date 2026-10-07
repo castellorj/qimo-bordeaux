@@ -2,7 +2,10 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useStore } from "@/data/store";
-import { Badge, Card, DemoBadge, Icons, LineBadge, PageHeader, Segmented, SourceChip } from "@/components/ui";
+import { Badge, Button, Card, DemoBadge, Dialog, Field, Icons, Input, LineBadge, PageHeader, Progress, Segmented, SourceChip } from "@/components/ui";
+import { addInsurer, updateInsurer, toggleIntegrationStep, INTEGRATION_STEPS } from "@/data/actions-insurers";
+import { PRODUCTS } from "@/domain/products";
+import type { ProductLine } from "@/domain/types";
 import type { Insurer } from "@/domain/types";
 import { COVERAGE_LABEL, REIMB_LABEL } from "@/domain/engines/health";
 import { INTEGRATION_INFO } from "@/components/commercial/helpers";
@@ -19,7 +22,9 @@ const TIER = ["", "Básico", "Intermediário", "Superior", "Premium"];
 const SOURCE_KIND: Record<string, string> = { xlsx: "Planilha", csv: "CSV", pdf: "PDF", api: "API", manual: "Manual" };
 
 export default function SeguradorasPage() {
-  const { db, visible } = useStore();
+  const { db, visible, can, update, toast } = useStore();
+  const [editing, setEditing] = useState<Insurer | "new" | null>(null);
+  const canManage = can("settings.manage") || can("policies.edit");
   const [kind, setKind] = useState<"todas" | "seguradoras" | "saude">("todas");
   const [hash, setHash] = useState("");
 
@@ -34,7 +39,6 @@ export default function SeguradorasPage() {
   const policies = db.policies.filter((p) => (p.status === "vigente" || p.status === "em_emissao") && visible(p.holder));
   const isHealth = (i: Insurer) => i.lines.includes("saude");
   const list = db.insurers.filter((i) => (kind === "todas" ? true : kind === "saude" ? isHealth(i) : !isHealth(i)));
-  const methods = Array.from(new Set(db.insurers.map((i) => i.integration.method)));
 
   return (
     <div>
@@ -42,25 +46,26 @@ export default function SeguradorasPage() {
         icon={<Icons.Landmark className="h-5 w-5" />}
         title="Seguradoras e operadoras"
         subtitle={`${db.insurers.filter((i) => !isHealth(i)).length} seguradoras · ${db.insurers.filter(isHealth).length} operadoras de saúde · ${db.healthPlans.length} planos`}
-        actions={<Segmented value={kind} onChange={setKind} options={[{ value: "todas", label: "Todas" }, { value: "seguradoras", label: "Seguradoras" }, { value: "saude", label: "Saúde" }]} />}
+        actions={<><Segmented value={kind} onChange={setKind} options={[{ value: "todas", label: "Todas" }, { value: "seguradoras", label: "Seguradoras" }, { value: "saude", label: "Saúde" }]} />{canManage && <Button icon={<Icons.Plus className="h-4 w-4" />} onClick={() => setEditing("new")}>Adicionar</Button>}</>}
       />
 
       <div className="mb-4 flex items-start gap-3 rounded-xl border border-demo/20 bg-demo-soft px-4 py-3 text-xs text-ink-soft">
         <Icons.Info className="mt-0.5 h-4 w-4 shrink-0 text-demo" />
         <p>
-          <b className="font-semibold text-ink">Nomes fictícios para a DEMO.</b> Seguradoras, operadoras, planos, preços e redes desta versão são ilustrativos. Integrações reais dependem de contratos e APIs disponibilizadas por cada parceiro (ver <span className="font-mono">docs/INTEGRATIONS.md</span>): API oficial, API de parceiro, integração autorizada, importação de arquivos fornecidos ou processo manual. <b className="font-semibold text-ink">Nenhum scraping</b> ou automação de portal com credenciais do corretor é utilizado.
+          <b className="font-semibold text-ink">Catálogo inicial com as principais seguradoras e operadoras do mercado</b> — adicione as demais pelo botão “Adicionar” e ajuste os ramos de cada uma. Nesta DEMO, <b className="font-semibold text-ink">planos, preços, redes e cotações são simulados</b> e não representam produtos ou tarifas dessas empresas.
         </p>
       </div>
 
-      <Card title="Como cada integração funciona" className="mb-4">
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
-          {methods.map((m) => (
-            <div key={m} className="rounded-lg bg-canvas p-3">
-              <div className="text-xs font-semibold text-ink">{INTEGRATION_INFO[m].label}</div>
-              <p className="mt-1 text-2xs leading-relaxed text-ink-muted">{INTEGRATION_INFO[m].explain}</p>
+      <Card title="Integração própria" subtitle="Decisão: cada seguradora ganha um adapter próprio (sem agregador). Sem scraping — apenas vias autorizadas pela seguradora." className="mb-4">
+        <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-6">
+          {INTEGRATION_STEPS.map((st, i) => (
+            <div key={st.key} className="rounded-lg bg-canvas p-3">
+              <div className="flex items-center gap-1.5 text-xs font-semibold text-ink"><span className="flex h-4 w-4 items-center justify-center rounded-full bg-brand-100 text-2xs text-brand-700">{i + 1}</span>{st.label}</div>
+              <p className="mt-1 text-2xs leading-relaxed text-ink-muted">{st.hint}</p>
             </div>
           ))}
         </div>
+        <p className="mt-3 text-2xs text-ink-muted">Enquanto a integração não está em produção, a seguradora entra no multicálculo como <b className="font-medium">cotação manual</b> (o corretor cota no portal e registra o resultado, com origem e responsável). Detalhes: docs/INTEGRATIONS.md.</p>
       </Card>
 
       <div className="grid gap-4 lg:grid-cols-2">
@@ -77,7 +82,9 @@ export default function SeguradorasPage() {
                 <div className="min-w-0 flex-1">
                   <div className="flex flex-wrap items-center gap-2">
                     <h2 className="text-base font-semibold text-ink">{ins.name}</h2>
-                    <DemoBadge />
+                    {ins.integration.status === "demo" && <DemoBadge />}
+                    {ins.custom && <Badge tone="brand">adicionada</Badge>}
+                    {canManage && <button onClick={() => setEditing(ins)} className="text-2xs font-medium text-brand-700 hover:underline">editar</button>}
                   </div>
                   <div className="mt-1.5 flex flex-wrap gap-1">{ins.lines.map((l) => <LineBadge key={l} line={l} />)}</div>
                 </div>
@@ -93,7 +100,7 @@ export default function SeguradorasPage() {
                   <Badge tone={st.tone}>{st.label}</Badge>
                   {ins.integration.note && <span className="text-xs text-ink-muted">{ins.integration.note}</span>}
                 </div>
-                <p className="text-xs leading-relaxed text-ink-muted">{INTEGRATION_INFO[ins.integration.method].explain}</p>
+                <IntegrationChecklist ins={ins} canEdit={canManage} onToggle={(k) => update((d, u) => toggleIntegrationStep(d, u, ins.id, k))} />
 
                 {sources.length > 0 && (
                   <div className="space-y-1.5">
@@ -146,6 +153,55 @@ export default function SeguradorasPage() {
           );
         })}
       </div>
+      {editing && <InsurerDialog insurer={editing === "new" ? undefined : editing} onClose={() => setEditing(null)} onSave={(data) => { update((d, u) => (editing === "new" ? addInsurer(d, u, data) : updateInsurer(d, u, editing.id, data))); toast(editing === "new" ? `${data.name} adicionada ao catálogo` : "Cadastro atualizado"); setEditing(null); }} />}
     </div>
+  );
+}
+
+function IntegrationChecklist({ ins, canEdit, onToggle }: { ins: Insurer; canEdit: boolean; onToggle: (key: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const done = INTEGRATION_STEPS.filter((st) => ins.integrationSteps?.[st.key]).length;
+  return (
+    <div className="rounded-lg border border-line-soft">
+      <button onClick={() => setOpen(!open)} className="flex w-full items-center gap-3 px-3 py-2 text-left">
+        <span className="text-xs font-medium text-ink">Integração própria</span>
+        <Progress value={done / INTEGRATION_STEPS.length} className="flex-1" tone={done === INTEGRATION_STEPS.length ? "ok" : "brand"} />
+        <span className="text-2xs tabular-nums text-ink-muted">{done}/{INTEGRATION_STEPS.length}</span>
+        <Icons.ChevronDown className={cn("h-3.5 w-3.5 text-ink-faint transition", open && "rotate-180")} />
+      </button>
+      {open && (
+        <div className="space-y-1 border-t border-line-soft px-3 py-2">
+          {INTEGRATION_STEPS.map((st) => (
+            <label key={st.key} className="flex items-start gap-2 text-xs">
+              <input type="checkbox" disabled={!canEdit} checked={!!ins.integrationSteps?.[st.key]} onChange={() => onToggle(st.key)} className="mt-0.5" />
+              <span><span className="text-ink">{st.label}</span> <span className="text-ink-muted">— {st.hint}</span></span>
+            </label>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function InsurerDialog({ insurer, onClose, onSave }: { insurer?: Insurer; onClose: () => void; onSave: (d: { name: string; short: string; color: string; lines: ProductLine[] }) => void }) {
+  const [name, setName] = useState(insurer?.name ?? "");
+  const [short, setShort] = useState(insurer?.short ?? "");
+  const [color, setColor] = useState(insurer?.color ?? "#475569");
+  const [lines, setLines] = useState<ProductLine[]>(insurer?.lines ?? []);
+  return (
+    <Dialog open onClose={onClose} title={insurer ? `Editar ${insurer.name}` : "Adicionar seguradora / operadora"} wide footer={<><Button variant="secondary" onClick={onClose}>Cancelar</Button><Button disabled={name.trim().length < 2 || !lines.length} onClick={() => onSave({ name: name.trim(), short: short.trim() || name.trim().split(" ")[0], color, lines })}>Salvar</Button></>}>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Field label="Nome" className="sm:col-span-2"><Input value={name} onChange={(e) => setName(e.target.value)} autoFocus placeholder="Ex.: Mitsui Sumitomo Seguros" /></Field>
+        <Field label="Nome curto"><Input value={short} onChange={(e) => setShort(e.target.value)} placeholder="Ex.: Mitsui" /></Field>
+        <Field label="Cor (identificação visual)"><Input type="color" value={color} onChange={(e) => setColor(e.target.value)} className="h-9 p-1" /></Field>
+      </div>
+      <div className="mt-4 text-xs font-medium text-ink-soft">Ramos com que a corretora trabalha nesta seguradora</div>
+      <div className="mt-2 flex flex-wrap gap-1.5">
+        {PRODUCTS.map((pm) => (
+          <button key={pm.line} type="button" onClick={() => setLines((ls) => (ls.includes(pm.line) ? ls.filter((x) => x !== pm.line) : [...ls, pm.line]))} className={cn("rounded-lg border px-2 py-1 text-xs", lines.includes(pm.line) ? "border-brand-400 bg-brand-50 text-brand-800" : "border-line text-ink-soft hover:border-brand-300")}>{pm.label}</button>
+        ))}
+      </div>
+      {!insurer && <p className="mt-4 text-2xs text-ink-muted">A seguradora entra como “cotação manual” até a integração própria ser concluída (checklist no card).</p>}
+    </Dialog>
   );
 }

@@ -6,11 +6,11 @@ import { Avatar, DemoBadge, Icons } from "@/components/ui";
 import { ROLE_LABEL, DEFAULT_ROLE_PERMISSIONS } from "@/domain/rbac";
 
 const ROLE_DESC: Record<string, string> = {
-  admin: "Acesso total, perfis e configurações",
+  admin: "Acesso total, comissões, perfis e configurações",
   gestor: "Toda a operação, relatórios e auditoria",
   corretor: "Carteira própria, cotações e propostas",
   operacional: "Emissões, documentos, importações",
-  financeiro: "Comissões, relatórios e conciliação",
+  financeiro: "Relatórios e conciliação",
 };
 
 function Login() {

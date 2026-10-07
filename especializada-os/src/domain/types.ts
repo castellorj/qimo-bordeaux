@@ -167,6 +167,10 @@ export interface Insurer {
   color: string;
   lines: ProductLine[];
   integration: { method: IntegrationMethod; status: "demo" | "nao_configurada" | "ativa" | "erro"; note?: string };
+  /** Etapas do onboarding da integração própria (ver INTEGRATION_STEPS) */
+  integrationSteps?: Record<string, boolean>;
+  /** Cadastrada pela corretora (fora do catálogo inicial) */
+  custom?: boolean;
   demo: true;
 }
 

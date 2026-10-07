@@ -246,7 +246,7 @@ export default function PublicProposal() {
         <footer className="border-t border-slate-200 pt-6 text-center text-xs leading-relaxed text-slate-400">
           Especializada Seguros · Corretora de seguros · Proposta {pr.code}
           <br />
-          Versão DEMO com dados fictícios — seguradoras, planos e valores são ilustrativos e não constituem oferta.
+          Versão DEMO — planos, coberturas e valores são simulados e não constituem oferta das seguradoras citadas.
         </footer>
       </main>
     </div>

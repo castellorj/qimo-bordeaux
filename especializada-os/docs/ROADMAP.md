@@ -24,7 +24,7 @@ Legenda de dependências: **D** dados · **A** API · **C** contrato/parceria. O
 - Especializada AI determinística (sem LLM) com fontes.
 - Configurações: perfis, auditoria (local), integrações (status DEMO).
 
-**Limitações assumidas:** dados fictícios em `localStorage`; seguradoras, operadoras e hospitais fictícios; sem autenticação real; nenhuma integração externa real; badge DEMO permanente.
+**Limitações assumidas:** dados fictícios em `localStorage`; catálogo de seguradoras real, mas planos, preços, redes e cotações simulados; clientes e hospitais fictícios; sem autenticação real; nenhuma integração externa real; badge DEMO permanente.
 
 **Aceite:** as 3 jornadas (SAÚDE, AUTO, EMPRESA) executáveis de ponta a ponta na DEMO.
 
@@ -49,10 +49,10 @@ Legenda de dependências: **D** dados · **A** API · **C** contrato/parceria. O
 ## Fase 3 — Quote Engine, Auto e multicálculo
 
 - **Escopo (briefing):** Quote Engine, Auto, multicálculo, propostas, comparador de cotações.
-- **Na prática:** contrato e adapter com agregador de multicálculo (decisão de negócio pendente) e/ou APIs de parceiro; resultados normalizados com proveniência; FIPE via provedor; propostas com PDF server-side (Chromium) e página web; envio por `wa.me` até a Fase 5.
-- **Dependências:** C + A (agregador ou parcerias com seguradoras); A (FIPE).
+- **Na prática:** **integração própria** (decisão do cliente): um adapter por seguradora, começando pelas de maior volume, sobre a via que cada uma liberar; seguradoras sem integração entram como cotação manual; resultados normalizados com proveniência; FIPE via provedor; propostas com PDF server-side (Chromium) e página web; envio por `wa.me` até a Fase 5.
+- **Dependências:** C + A (convênio e liberação de acesso técnico por seguradora); A (FIPE).
 - **Aceite:** jornada AUTO completa com cálculo real em ≥ 4 seguradoras; seguradoras sem integração entram como "cotação manual" no mesmo comparativo.
-- **Riscos:** API do agregador limitada ou cara (comparar 2–3 fornecedores); dependência de um único fornecedor (adapter isola).
+- **Riscos:** seguradoras que não liberam API (mitigar: arquivo/importação ou manual); esforço de manutenção por seguradora (priorizar por volume; monitoramento e fallback automático para manual).
 
 ## Fase 4 — Apólices, renovações, comissões e automações
 
@@ -84,9 +84,9 @@ Legenda de dependências: **D** dados · **A** API · **C** contrato/parceria. O
 
 1. **Validar a DEMO com a equipe da corretora** (sessões por persona, roteiros das 3 jornadas; coletar fricções e lacunas).
 2. **Levantar a lista real de seguradoras e operadoras** com quem trabalham, por ramo, e volume de cada uma.
-3. **Decidir o agregador de multicálculo**: pedir propostas técnicas (API, ramos, seguradoras, preço, termos de dados) a 2–3 fornecedores (ex.: Agger/Quiver-Dimensa, Segfy, Infocap).
+3. **Integração própria**: listar as seguradoras por volume na carteira e iniciar o checklist de onboarding (convênio → acesso técnico → contrato de dados) com as 3 primeiras.
 4. **Obter tabelas de rede e de preço** das operadoras prioritárias (formato, frequência de atualização, contato técnico).
-5. **Contratar WhatsApp**: decidir BSP ou conta direta na Meta, número dedicado, verificação do Meta Business, primeiros templates.
+5. **WhatsApp Cloud API (direto na Meta)**: número exclusivo, verificação do Meta Business, primeiros templates (renovação, proposta, documentos).
 6. **Infraestrutura real**: provedor de Postgres (com PostGIS) e storage na região Brasil, Auth.js + 2FA, secrets manager.
 7. **Cronometrar tarefas manuais** (1–2 semanas) para os baselines de horas economizadas.
 8. **Jurídico/DPO**: nomear encarregado, validar bases legais (em especial dados de saúde), retenção e textos de consentimento.

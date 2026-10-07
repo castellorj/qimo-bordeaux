@@ -34,12 +34,13 @@ export const ALL_PERMISSIONS: { key: Permission; label: string; group: string }[
 const ALL = ALL_PERMISSIONS.map((p) => p.key);
 const without = (...ex: Permission[]) => ALL.filter((p) => !ex.includes(p));
 
+/** Decisão de negócio: comissões visíveis somente ao Administrador (configurável em Configurações → Perfis). */
 export const DEFAULT_ROLE_PERMISSIONS: Record<RoleKey, Permission[]> = {
   admin: ALL,
-  gestor: without("settings.manage"),
-  corretor: ["dashboard.view", "clients.view", "clients.edit", "crm.view", "crm.edit", "quotes.view", "quotes.edit", "proposals.view", "proposals.edit", "policies.view", "documents.view", "documents.edit", "tasks.view", "network.view", "commissions.view", "ai.use"],
+  gestor: without("settings.manage", "commissions.view"),
+  corretor: ["dashboard.view", "clients.view", "clients.edit", "crm.view", "crm.edit", "quotes.view", "quotes.edit", "proposals.view", "proposals.edit", "policies.view", "documents.view", "documents.edit", "tasks.view", "network.view", "ai.use"],
   operacional: ["dashboard.view", "wallet.all", "clients.view", "clients.edit", "crm.view", "quotes.view", "quotes.edit", "proposals.view", "policies.view", "policies.edit", "documents.view", "documents.edit", "tasks.view", "network.view", "network.import", "ai.use", "import.run"],
-  financeiro: ["dashboard.view", "wallet.all", "clients.view", "policies.view", "documents.view", "tasks.view", "commissions.view", "reports.view", "ai.use"],
+  financeiro: ["dashboard.view", "wallet.all", "clients.view", "policies.view", "documents.view", "tasks.view", "reports.view", "ai.use"],
 };
 
 export function can(db: DB, user: User | null | undefined, perm: Permission) {
