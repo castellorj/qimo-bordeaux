@@ -22,7 +22,6 @@ export default function Empresa() {
   if (!visible(ref)) return <Empty icon={<Icons.Lock className="h-5 w-5" />} title="Sem acesso a esta empresa" />;
   const people = peopleOf(db, id);
   const pols = activePolicies(policiesOfParty(db, ref));
-  const have = new Set(pols.map((p) => p.line));
   const sugg = crossSellFor(db, ref, today);
   const ad = db.addresses.find((a) => a.id === c.addressId);
   const assets = assetsOf(db, ref);

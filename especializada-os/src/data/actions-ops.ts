@@ -2,18 +2,16 @@
  * Casos de uso das telas operacionais (Automações, Importação) — funções puras DB → DB.
  * Mesmo estilo de actions.ts: toda alteração relevante gera AuditLog.
  */
-import type { AuditLog, Automation, DB, PartyRef, Person, Policy, ProductLine, User } from "@/domain/types";
+import type { Automation, DB, PartyRef, Person, Policy, ProductLine, User } from "@/domain/types";
 import { nowISO } from "@/lib/dates";
 import { digits } from "@/lib/format";
 import { norm } from "@/lib/text";
 import { PRODUCTS } from "@/domain/products";
 import { runAutomations } from "@/domain/engines/automation";
 import { brDate, type ImportRowResult } from "@/domain/engines/importer";
-import { commissionsFor, createPerson, uid, updatePerson } from "./actions";
+import { commissionsFor, createPerson, updatePerson } from "./actions";
+import { audit, uid } from "./history";
 
-function audit(db: DB, user: User | null, e: Omit<AuditLog, "id" | "at" | "userId">): DB {
-  return { ...db, audit: [{ id: uid("au"), at: nowISO(), userId: user?.id ?? "sistema", ...e }, ...db.audit] };
-}
 
 // ───────── Automações personalizadas
 export function createCustomAutomation(db: DB, user: User | null, data: Omit<Automation, "id" | "system" | "enabled">): { db: DB; id: string } {

@@ -5,7 +5,7 @@
  * Toda alteração relevante gera AuditLog e, quando aplicável, dispara automações.
  */
 import type {
-  AuditLog, Commission, DB, DocumentRecord, ExtractedField, Interaction, Opportunity, PartyRef, PipelineStage, Policy, Proposal,
+  Commission, DB, DocumentRecord, ExtractedField, Opportunity, PartyRef, PipelineStage, Policy, Proposal,
   Quote, QuoteResult, Task, User, Person, Company,
 } from "@/domain/types";
 import { addDays, addMonths, nowISO, todayISO } from "@/lib/dates";
@@ -14,14 +14,10 @@ import { crossSellFor } from "@/domain/engines/crosssell";
 import { partyName } from "@/domain/engines/queries";
 import { lineLabel } from "@/domain/products";
 
-export const uid = (prefix: string) => `${prefix}-${Math.random().toString(36).slice(2, 8)}${Date.now().toString(36).slice(-3)}`;
+import { audit, interaction, uid } from "./history";
 
-function audit(db: DB, user: User | null, e: Omit<AuditLog, "id" | "at" | "userId">): DB {
-  return { ...db, audit: [{ id: uid("au"), at: nowISO(), userId: user?.id ?? "sistema", ...e }, ...db.audit] };
-}
-function interaction(db: DB, i: Omit<Interaction, "id" | "at" | "demo">): DB {
-  return { ...db, interactions: [{ id: uid("i"), at: nowISO(), demo: true, ...i }, ...db.interactions] };
-}
+export { uid };
+
 function automate(db: DB) {
   return runAutomations(db, todayISO()).db;
 }

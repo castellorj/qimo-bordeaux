@@ -5,7 +5,7 @@ import { useStore } from "@/data/store";
 import { Card, Icons, PageHeader, Stat, LineIcon, LinkButton } from "@/components/ui";
 import { BarList, Columns, Funnel } from "@/components/charts";
 import { dashboardMetrics, groupSum } from "@/domain/engines/metrics";
-import { operationsQueue, BUCKETS } from "@/domain/engines/priority";
+import { BUCKETS } from "@/domain/engines/priority";
 import { money0, moneyK, pct, n } from "@/lib/format";
 import { addMonths, daysBetween } from "@/lib/dates";
 import { PRODUCT, lineLabel } from "@/domain/products";
@@ -14,9 +14,9 @@ import { PIPELINE_STAGES } from "@/domain/types";
 import { STAGE_LABEL, DaysBadge } from "@/components/status";
 
 export default function Dashboard() {
-  const { db, today, user, visible, can } = useStore();
+  const { db, today, user, visible, can, ops } = useStore();
   const m = useMemo(() => dashboardMetrics(db, today, user), [db, today, user]);
-  const queue = useMemo(() => operationsQueue(db, today, user), [db, today, user]);
+  const queue = ops;
   const policies = db.policies.filter((p) => p.status === "vigente" && visible(p.holder));
   const opps = db.opportunities.filter((o) => visible(o.party));
   const byLine = groupSum(policies, (p) => p.line, (p) => p.annualPremium).slice(0, 7);

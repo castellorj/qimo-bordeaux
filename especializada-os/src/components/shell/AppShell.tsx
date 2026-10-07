@@ -8,7 +8,6 @@ import { Avatar, Badge, DemoBadge, Icons } from "@/components/ui";
 import { cn } from "@/lib/cn";
 import { ROLE_LABEL } from "@/domain/rbac";
 import { globalSearch } from "@/domain/engines/search";
-import { operationsQueue } from "@/domain/engines/priority";
 import { partyName } from "@/domain/engines/queries";
 
 function NavIcon({ name, className }: { name: string; className?: string }) {
@@ -46,9 +45,9 @@ export function AppShell({ children }: { children: ReactNode }) {
 }
 
 function Sidebar() {
-  const { can, db, today, user } = useStore();
+  const { can, ops } = useStore();
   const pathname = usePathname();
-  const urgent = useMemo(() => operationsQueue(db, today, user).filter((i) => i.primary === "urgente").length, [db, today, user]);
+  const urgent = useMemo(() => ops.filter((i) => i.primary === "urgente").length, [ops]);
   return (
     <aside className="fixed inset-y-0 left-0 z-30 hidden w-60 flex-col border-r border-line bg-white lg:flex">
       <div className="flex h-14 items-center gap-2.5 border-b border-line px-4">
@@ -88,14 +87,14 @@ function Sidebar() {
 }
 
 function Topbar() {
-  const { user, setUser, db, today, reset } = useStore();
+  const { user, setUser, db, reset, ops } = useStore();
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
   const [newOpen, setNewOpen] = useState(false);
   const [alertsOpen, setAlertsOpen] = useState(false);
   const [userOpen, setUserOpen] = useState(false);
   const [mobileNav, setMobileNav] = useState(false);
-  const alerts = useMemo(() => operationsQueue(db, today, user).filter((i) => i.primary === "urgente").slice(0, 8), [db, today, user]);
+  const alerts = useMemo(() => ops.filter((i) => i.primary === "urgente").slice(0, 8), [ops]);
 
   useEffect(() => {
     const h = (e: KeyboardEvent) => {

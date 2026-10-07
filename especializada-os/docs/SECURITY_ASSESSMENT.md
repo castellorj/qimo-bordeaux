@@ -41,7 +41,7 @@ Dados de saúde são **dado pessoal sensível** (LGPD art. 11) e merecem relató
 | SEC-05 | Baixa | Uploads sem limite de tamanho (documentos, planilhas, extratos, rede). | **Corrigido** — limites de 15 MB (documentos), 2 MB (texto lido), 5 MB (planilhas) |
 | SEC-06 | Crítica *para produção* / aceita na DEMO | Dados, "login" e permissões ficam **no navegador**; auditoria é editável; qualquer pessoa com acesso ao computador vê os dados. | **Por projeto da DEMO** — bloqueador do Portão 1 (servidor + banco + 2FA + permissões no servidor) |
 | SEC-07 | Média | Página pública da proposta (`/p/...`) usa identificador previsível nos dados de exemplo. | Na DEMO não expõe nada (lê só o navegador local). **Produção:** link com token assinado, expiração, revogação, sem CPF na página |
-| SEC-08 | Baixa (privacidade) | Fontes do Google e mapas OpenStreetMap recebem o IP do usuário e a região consultada. | **Produção:** fontes hospedadas no próprio servidor; provedor de mapas com contrato (DPA) |
+| SEC-08 | Baixa (privacidade) | Fontes do Google e mapas OpenStreetMap recebiam o IP do usuário e a região consultada. | **Fontes corrigidas** (servidas pelo próprio sistema). Mapas: provedor com contrato (DPA) na produção |
 | SEC-09 | Informativo | CSP ainda permite script inline (necessário ao Next.js sem nonce). | **Produção:** CSP com nonce por requisição |
 | SEC-10 | Informativo | Texto de documentos guardado junto do registro na DEMO. | **Produção:** arquivos em storage privado e cifrado, URLs assinadas de curta duração |
 

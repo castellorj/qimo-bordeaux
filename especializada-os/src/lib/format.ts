@@ -15,10 +15,6 @@ export function date(iso?: string) {
   if (!iso) return "—";
   return parseISO(iso).toLocaleDateString("pt-BR");
 }
-export function dateShort(iso?: string) {
-  if (!iso) return "—";
-  return parseISO(iso).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" }).replace(".", "");
-}
 export function dateTime(iso?: string) {
   if (!iso) return "—";
   return new Date(iso).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" });

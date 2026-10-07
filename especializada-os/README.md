@@ -17,6 +17,8 @@ cd especializada-os
 npm install
 npm run dev        # http://localhost:3100
 npm test           # testes do domínio (motores de prioridade, saúde, automações, IA, importação…)
+npm run check      # tipos + linter + testes
+npm run e2e        # testes no navegador (sistema rodando em :3100; requer `npx playwright install chromium`)
 npm run build && npm start
 ```
 
@@ -50,6 +52,7 @@ cada um vê o sistema com as permissões do seu papel. "Restaurar dados DEMO" fi
 | [INTEGRATIONS](docs/INTEGRATIONS.md) | adapters e pesquisa das integrações oficiais existentes |
 | [INSURER_INTEGRATION_GUIDE](docs/INSURER_INTEGRATION_GUIDE.md) | como integrar cada seguradora: ondas, kit, modelo de pedido, checklist técnico |
 | [SECURITY_LGPD](docs/SECURITY_LGPD.md) | LGPD e controles de segurança |
+| [CODE_REVIEW](docs/CODE_REVIEW.md) | revisão geral do código: otimizações aplicadas, medições e recomendações |
 | [SECURITY_ASSESSMENT](docs/SECURITY_ASSESSMENT.md) | análise de segurança: achados corrigidos, ameaças, controles e portões para produção |
 | [DESIGN_SYSTEM](docs/DESIGN_SYSTEM.md) | tokens, componentes, padrões |
 | [AUTOMATIONS](docs/AUTOMATIONS.md) | Automation Engine (trigger + condition + action) |

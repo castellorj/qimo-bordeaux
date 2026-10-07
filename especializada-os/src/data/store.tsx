@@ -10,6 +10,7 @@ import { createSeed, SEED_VERSION } from "./seed";
 import { todayISO } from "@/lib/dates";
 import { can as canFn, canSeeParty } from "@/domain/rbac";
 import { runAutomations } from "@/domain/engines/automation";
+import { operationsQueue, type OpsItem } from "@/domain/engines/priority";
 
 const KEY = "especializada-os-demo";
 const USER_KEY = "especializada-os-demo-user";
@@ -28,6 +29,8 @@ interface Store {
   reset(): void;
   toast(text: string, tone?: Toast["tone"]): void;
   toasts: Toast[];
+  /** Fila priorizada da Central (calculada uma vez por mudança de dados e compartilhada) */
+  ops: OpsItem[];
 }
 
 const Ctx = createContext<Store | null>(null);
@@ -57,13 +60,22 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setReady(true);
   }, [today]);
 
+  // Persistência com atraso: várias mudanças seguidas viram uma só gravação (JSON do banco inteiro)
   useEffect(() => {
     if (!loaded.current) return;
-    try {
-      localStorage.setItem(KEY, JSON.stringify(db));
-    } catch {
-      /* ignore */
-    }
+    const save = () => {
+      try {
+        localStorage.setItem(KEY, JSON.stringify(dbRef.current));
+      } catch {
+        /* armazenamento cheio ou bloqueado */
+      }
+    };
+    const t = setTimeout(save, 400);
+    window.addEventListener("pagehide", save);
+    return () => {
+      clearTimeout(t);
+      window.removeEventListener("pagehide", save);
+    };
   }, [db]);
 
   const user = db.users.find((u) => u.id === userId) ?? null;
@@ -74,7 +86,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 3800);
   }, []);
 
-  const value: Store = {
+  const ops = useMemo(() => operationsQueue(db, today, user), [db, today, user]);
+  const can = useCallback((p: Permission) => canFn(db, user, p), [db, user]);
+  const visible = useCallback((ref?: { type: "person" | "company"; id: string }) => canSeeParty(db, user, ref), [db, user]);
+
+  const value = useMemo<Store>(() => ({
     db,
     today,
     user,
@@ -96,13 +112,14 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       dbRef.current = next;
       setDb(next);
     },
-    can: (p) => canFn(db, user, p),
-    visible: (ref) => canSeeParty(db, user, ref),
+    can,
+    visible,
+    ops,
     reset() {
       setDb(createSeed(today));
       toast("Dados DEMO restaurados", "info");
     },
-  };
+  }), [db, today, user, ready, toasts, toast, can, visible, ops, userId]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
 

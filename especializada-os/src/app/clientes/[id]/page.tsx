@@ -7,7 +7,7 @@ import { createOpportunity, logSensitiveView, updatePerson } from "@/data/action
 import { Avatar, Badge, Button, Card, DemoBadge, Dialog, Empty, Field, Icons, Input, KeyVal, LineIcon, LinkButton, SourceChip, Tabs } from "@/components/ui";
 import { DaysBadge, PolicyStatusBadge, ProposalStatusBadge, RenewalStatusBadge, StageBadge } from "@/components/status";
 import { TaskRow } from "@/components/ops/TaskRow";
-import { activePolicies, assetLabel, assetsOf, companiesOf, householdOf, insurerName, partyHref, partyName, policiesOfParty, sameParty, userName } from "@/domain/engines/queries";
+import { activePolicies, assetLabel, assetsOf, companiesOf, householdOf, insurerName, partyName, policiesOfParty, sameParty, userName } from "@/domain/engines/queries";
 import { crossSellFor } from "@/domain/engines/crosssell";
 import { PERSON_CORE_LINES, PRODUCT, lineLabel } from "@/domain/products";
 import { ageOn, daysBetween } from "@/lib/dates";

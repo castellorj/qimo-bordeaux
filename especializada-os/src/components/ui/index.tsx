@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import { forwardRef, useEffect, type ButtonHTMLAttributes, type InputHTMLAttributes, type ReactNode, type SelectHTMLAttributes, type TextareaHTMLAttributes } from "react";
-import * as Icons from "lucide-react";
+import * as Icons from "./icons";
 import { cn } from "@/lib/cn";
 import type { ProductLine } from "@/domain/types";
 import { PRODUCT } from "@/domain/products";

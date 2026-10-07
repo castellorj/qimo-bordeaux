@@ -1,5 +1,5 @@
 /** Consultas determinísticas reutilizadas por telas, Central e Especializada AI. */
-import type { Asset, DB, PartyRef, Policy, ProductLine, Person, Company, Vehicle, Property } from "../types";
+import type { Asset, DB, PartyRef, Policy, Vehicle } from "../types";
 import { daysBetween } from "@/lib/dates";
 
 export function partyName(db: DB, ref?: PartyRef) {
@@ -11,9 +11,6 @@ export function partyHref(ref: PartyRef) {
 }
 export function partyPhone(db: DB, ref: PartyRef) {
   return ref.type === "person" ? db.persons.find((p) => p.id === ref.id)?.whatsapp ?? db.persons.find((p) => p.id === ref.id)?.phone : db.companies.find((c) => c.id === ref.id)?.phone;
-}
-export function partyEmail(db: DB, ref: PartyRef) {
-  return ref.type === "person" ? db.persons.find((p) => p.id === ref.id)?.email : db.companies.find((c) => c.id === ref.id)?.email;
 }
 export const sameParty = (a?: PartyRef, b?: PartyRef) => !!a && !!b && a.type === b.type && a.id === b.id;
 export const insurerName = (db: DB, id?: string) => db.insurers.find((i) => i.id === id)?.short ?? "—";
@@ -54,10 +51,6 @@ export function householdPolicies(db: DB, householdId: string) {
   return db.policies.filter((p) => (p.holder.type === "person" && ids.has(p.holder.id)) || p.beneficiaryIds?.some((b) => ids.has(b)));
 }
 
-export function isClient(x: Person | Company) {
-  return x.clientStatus != null;
-}
-
 export function policiesExpiring(db: DB, today: string, days: number) {
   return db.policies
     .filter((p) => p.status === "vigente")
@@ -66,17 +59,9 @@ export function policiesExpiring(db: DB, today: string, days: number) {
     .sort((a, b) => a.days - b.days);
 }
 
-export function linesOf(db: DB, ref: PartyRef): Set<ProductLine> {
-  return new Set(activePolicies(policiesOfParty(db, ref)).map((p) => p.line));
-}
-
 export function vehicleOf(db: DB, id?: string) {
   return db.assets.find((a) => a.id === id && a.type === "vehicle") as Vehicle | undefined;
 }
-export function propertyOf(db: DB, id?: string) {
-  return db.assets.find((a) => a.id === id && a.type === "property") as Property | undefined;
-}
-
 export function clientValue(db: DB, ref: PartyRef) {
   return activePolicies(policiesOfParty(db, ref, false)).reduce((s, p) => s + p.annualPremium, 0);
 }

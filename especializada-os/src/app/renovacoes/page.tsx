@@ -38,6 +38,8 @@ function RenovacoesInner() {
     if (r && ["renovada", "nao_renovada"].includes(r.status)) setScope("concluidas");
     const t = setTimeout(() => document.getElementById(focusId)?.scrollIntoView({ behavior: "smooth", block: "center" }), 150);
     return () => clearTimeout(t);
+    // roda só quando muda o item em foco (rolagem única); reagir a db.renewals rolaria a cada edição
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [focusId]);
 
   const all = useMemo<Row[]>(

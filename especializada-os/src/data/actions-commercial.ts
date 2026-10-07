@@ -2,15 +2,12 @@
  * Casos de uso comerciais complementares (renovação inteligente).
  * Mesmo estilo de actions.ts: funções puras DB → DB, com AuditLog e histórico.
  */
-import type { DB, Interaction, Renewal, User } from "@/domain/types";
-import { nowISO } from "@/lib/dates";
-import { uid, updateRenewal } from "./actions";
+import type { DB, Renewal, User } from "@/domain/types";
+import { updateRenewal } from "./actions";
+import { interaction } from "./history";
 import { partyName } from "@/domain/engines/queries";
 import { lineLabel } from "@/domain/products";
 
-function interaction(db: DB, i: Omit<Interaction, "id" | "at" | "demo">): DB {
-  return { ...db, interactions: [{ id: uid("i"), at: nowISO(), demo: true, ...i }, ...db.interactions] };
-}
 
 /**
  * Marca/desmarca um item do checklist de renovação. Ao confirmar dados ou

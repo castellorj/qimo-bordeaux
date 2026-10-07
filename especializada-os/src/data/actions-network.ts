@@ -2,7 +2,7 @@
 import type { DB, NetworkService, ProviderType, User } from "@/domain/types";
 import type { NetworkRow } from "@/integrations/health-networks";
 import { addDays, nowISO, todayISO } from "@/lib/dates";
-import { uid } from "./actions";
+import { uid } from "./history";
 
 export interface ReviewedRow { row: NetworkRow; planId?: string; decision: "vincular" | "novo" | "ignorar"; providerId?: string; lat: number; lng: number }
 

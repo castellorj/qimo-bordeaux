@@ -85,7 +85,7 @@ function Wizard() {
   const headers = table[0] ?? [];
   const body = table.slice(1);
   const fields = mapping.map((m) => m.field);
-  const analyzed = useMemo(() => (body.length && mapping.length ? analyzeRows(db, body, fields) : []), [db, body, fields, mapping.length]); // eslint-disable-line react-hooks/exhaustive-deps
+  const analyzed = useMemo(() => (body.length && mapping.length ? analyzeRows(db, body, fields) : []), [db, body, fields, mapping.length]);
   const rows = analyzed.map((r) => ({ ...r, action: overrides[r.index] ?? r.action }));
 
   const go = (s: number) => { setStep(s); setMaxReached((m) => Math.max(m, s)); };

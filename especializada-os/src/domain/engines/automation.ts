@@ -8,6 +8,7 @@ import type { Automation, AutomationExecution, DB, Opportunity, Policy, Renewal,
 import { addDays, daysBetween, nowISO } from "@/lib/dates";
 import { lineLabel, PRODUCT } from "../products";
 import { date as fmtDate } from "@/lib/format";
+import { partyName } from "./queries";
 
 export const NATIVE_AUTOMATIONS: Automation[] = [
   { id: "auto-policy-created", name: "Apólice criada → programar renovação e comissões", description: "Ao cadastrar/emitir uma apólice, agenda a renovação na janela do ramo e gera a previsão de comissões por competência.", trigger: "policy.created", conditions: [], actions: ["create_renewal", "schedule_commission"], enabled: true, minutesSavedPerRun: 12, system: true },
@@ -30,10 +31,6 @@ export function renewalChecklist(policy: Policy): Renewal["checklist"] {
   if (policy.line === "auto") base.splice(2, 0, { key: "condutores", label: "Condutores, uso e garagem confirmados", done: false });
   if (policy.line === "saude") base.splice(2, 0, { key: "beneficiarios", label: "Beneficiários e faixas etárias atualizados", done: false });
   return base;
-}
-
-export function partyName(db: DB, ref: { type: string; id: string }) {
-  return ref.type === "person" ? db.persons.find((p) => p.id === ref.id)?.name ?? "—" : db.companies.find((c) => c.id === ref.id)?.tradeName ?? "—";
 }
 
 export function runAutomations(input: DB, today: string): { db: DB; runs: AutomationExecution[] } {

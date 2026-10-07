@@ -47,4 +47,3 @@ export const demoGeocoder: Geocoder = {
   },
 };
 
-export const DEMO_DISTRICT_NAMES = Object.keys(DISTRICTS);
