@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { useStore } from "@/data/store";
+import { tooLarge, UPLOAD_LIMITS } from "@/lib/security";
 import { fillSample } from "@/data/seed";
 import { applyImport, resolveInsurer, resolveLine, type ImportReport } from "@/data/actions-ops";
 import { analyzeRows, guessMapping, parseCSV, SAMPLE_IMPORT_CSV, TARGET_LABEL, type ImportRowResult, type TargetField } from "@/domain/engines/importer";
@@ -106,6 +107,7 @@ function Wizard() {
       setFileError(`"${f.name}" não é CSV. Na DEMO a importação aceita CSV (separado por ; ou ,). Em produção XLSX e PDF são convertidos automaticamente.`);
       return;
     }
+    if (tooLarge(f, UPLOAD_LIMITS.spreadsheetBytes)) { setFileError(`"${f.name}" tem mais de 5 MB. Divida o arquivo ou importe em lotes.`); return; }
     const r = new FileReader();
     r.onload = () => load(f.name, String(r.result ?? ""));
     r.onerror = () => setFileError("Não foi possível ler o arquivo.");

@@ -4,6 +4,7 @@
  */
 import type { DB, IntegrationMethod, Proposal, ProductLine, Quote, QuoteResult, RenewalStatus, HealthPlan } from "@/domain/types";
 import { money0 } from "@/lib/format";
+import { neutralizeFormula } from "@/lib/security";
 
 export interface ProposalOptions {
   quote?: Quote;
@@ -102,9 +103,10 @@ export const INTEGRATION_INFO: Record<IntegrationMethod, { label: string; explai
 // ───────── CSV
 export type CsvCell = string | number | null | undefined;
 
+
 function csvEscape(v: CsvCell) {
   if (v == null) return "";
-  const s = typeof v === "number" ? (Number.isInteger(v) ? String(v) : v.toFixed(2).replace(".", ",")) : v;
+  const s = typeof v === "number" ? (Number.isInteger(v) ? String(v) : v.toFixed(2).replace(".", ",")) : neutralizeFormula(v);
   return /[";\n\r]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
 }
 

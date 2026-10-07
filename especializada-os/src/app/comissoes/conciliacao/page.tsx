@@ -2,6 +2,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { useStore } from "@/data/store";
+import { tooLarge, UPLOAD_LIMITS } from "@/lib/security";
 import { Badge, Button, Card, Empty, Field, Icons, Input, PageHeader, Select, Table, Td, Th } from "@/components/ui";
 import { applyReconciliation, guessLayout, parseCommissionStatement, reconcile, sampleStatement, type CommissionLayout, type ReconLine } from "@/integrations/insurers/commission-statements";
 import { parseCSV } from "@/domain/engines/importer";
@@ -41,7 +42,7 @@ export default function Conciliacao() {
       <Card className="mb-4">
         <div className="grid gap-3 md:grid-cols-4">
           <Field label="Seguradora"><Select value={insurerId} onChange={(e) => { setInsurerId(e.target.value); setText(""); setLayout(null); }}>{db.insurers.filter((i) => db.policies.some((p) => p.insurerId === i.id)).map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}</Select></Field>
-          <Field label="Extrato (CSV)"><Input type="file" accept=".csv,.txt" onChange={async (e) => { const f = e.target.files?.[0]; if (f) load(await f.text(), f.name); }} /></Field>
+          <Field label="Extrato (CSV)"><Input type="file" accept=".csv,.txt" onChange={async (e) => { const f = e.target.files?.[0]; if (f && tooLarge(f, UPLOAD_LIMITS.spreadsheetBytes)) { toast("Arquivo acima de 5 MB", "warn"); return; } if (f) load(await f.text(), f.name); }} /></Field>
           <div className="flex items-end"><Button variant="secondary" icon={<Icons.FlaskConical className="h-4 w-4" />} onClick={() => load(sampleStatement(db, insurerId, lastComp), `extrato-exemplo-${insurerId}.csv`)}>Gerar extrato de exemplo</Button></div>
           <p className="self-end text-2xs text-ink-muted">XLSX/TXT de largura fixa: converter para CSV (produção: conversão automática). Cada seguradora guarda o seu layout após a primeira importação.</p>
         </div>

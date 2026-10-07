@@ -173,3 +173,12 @@ test("integrações: log mascara dados pessoais e adapter valida resposta", () =
   assert.throws(() => fromInsurerResponse({ numeroCalculo: "1", premioTotal: 0, coberturas: [] }, "x"));
   assert.equal(fromInsurerResponse({ numeroCalculo: "9", premioTotal: 1000, coberturas: [{ nome: "Casco" }], percentualComissao: 15 }, "x").commissionPct, 0.15);
 });
+
+import { escapeHtml, neutralizeFormula } from "../src/lib/security";
+
+test("segurança: escape de HTML e neutralização de fórmulas em CSV", () => {
+  assert.equal(escapeHtml(`<img src=x onerror="alert(1)">`), "&lt;img src=x onerror=&quot;alert(1)&quot;&gt;");
+  assert.equal(neutralizeFormula("=HYPERLINK(\"http://x\")"), "'=HYPERLINK(\"http://x\")");
+  assert.equal(neutralizeFormula("+5521999"), "'+5521999");
+  assert.equal(neutralizeFormula("João Silva"), "João Silva");
+});

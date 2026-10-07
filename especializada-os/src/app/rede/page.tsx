@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Suspense, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useStore } from "@/data/store";
+import { tooLarge, UPLOAD_LIMITS } from "@/lib/security";
 import { Badge, Button, Card, Empty, Field, Icons, Input, PageHeader, Segmented, Select, SourceChip, Table, Tabs, Td, Th } from "@/components/ui";
 import type { MapPoint } from "@/components/map/MapView";
 import { TYPE_COLOR, TYPE_LABEL } from "@/components/map/MapView";
@@ -265,7 +266,7 @@ function Importer() {
       <Card title="Importar rede credenciada" subtitle="CSV/XLSX/PDF da operadora → plano → prestador → unidade → endereço → especialidade. DEMO: CSV (XLSX e PDF entram via conversão/OCR na produção).">
         <div className="grid gap-3 md:grid-cols-3">
           <Field label="Operadora"><Select value={insurerId} onChange={(e) => setInsurerId(e.target.value)}>{db.insurers.filter((i) => i.lines.includes("saude")).map((i) => <option key={i.id} value={i.id}>{i.name}</option>)}</Select></Field>
-          <Field label="Arquivo CSV"><Input type="file" accept=".csv,.txt" onChange={async (e) => { const f = e.target.files?.[0]; if (f) { const t = await f.text(); setText(t); analyze(t); } }} /></Field>
+          <Field label="Arquivo CSV"><Input type="file" accept=".csv,.txt" onChange={async (e) => { const f = e.target.files?.[0]; if (f && tooLarge(f, UPLOAD_LIMITS.spreadsheetBytes)) { toast("Arquivo acima de 5 MB", "warn"); return; } if (f) { const t = await f.text(); setText(t); analyze(t); } }} /></Field>
           <div className="flex items-end"><Button variant="secondary" onClick={() => { setText(SAMPLE_NETWORK_CSV); analyze(SAMPLE_NETWORK_CSV); }} icon={<Icons.FileSpreadsheet className="h-4 w-4" />}>Usar arquivo de exemplo</Button></div>
         </div>
         {text && <pre className="mt-3 max-h-32 overflow-auto rounded-lg bg-canvas p-3 text-2xs text-ink-soft">{text}</pre>}

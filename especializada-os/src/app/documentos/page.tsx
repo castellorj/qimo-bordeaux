@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense, useEffect, useMemo, useRef, useState, type DragEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useStore } from "@/data/store";
+import { tooLarge, UPLOAD_LIMITS } from "@/lib/security";
 import { addDocument } from "@/data/actions";
 import { SAMPLE_DOCS, fillSample } from "@/data/seed";
 import type { DB, DocumentRecord } from "@/domain/types";
@@ -209,6 +210,10 @@ function UploadZone({ autoFocus }: { autoFocus: boolean }) {
       const metaOnly: string[] = [];
       for (const file of files) {
         const sizeKb = Math.max(1, Math.round(file.size / 1024));
+        if (tooLarge(file, UPLOAD_LIMITS.documentBytes) || (isTextFile(file) && tooLarge(file, UPLOAD_LIMITS.textReadBytes))) {
+          toast(`${file.name}: arquivo acima do limite permitido`, "warn");
+          continue;
+        }
         if (isTextFile(file)) {
           const text = await readText(file);
           const r = await ingestText(cur, { fileName: file.name, text, sizeKb, mime: file.type || "text/plain" });

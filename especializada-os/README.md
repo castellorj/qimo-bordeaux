@@ -50,6 +50,7 @@ cada um vê o sistema com as permissões do seu papel. "Restaurar dados DEMO" fi
 | [INTEGRATIONS](docs/INTEGRATIONS.md) | adapters e pesquisa das integrações oficiais existentes |
 | [INSURER_INTEGRATION_GUIDE](docs/INSURER_INTEGRATION_GUIDE.md) | como integrar cada seguradora: ondas, kit, modelo de pedido, checklist técnico |
 | [SECURITY_LGPD](docs/SECURITY_LGPD.md) | LGPD e controles de segurança |
+| [SECURITY_ASSESSMENT](docs/SECURITY_ASSESSMENT.md) | análise de segurança: achados corrigidos, ameaças, controles e portões para produção |
 | [DESIGN_SYSTEM](docs/DESIGN_SYSTEM.md) | tokens, componentes, padrões |
 | [AUTOMATIONS](docs/AUTOMATIONS.md) | Automation Engine (trigger + condition + action) |
 | [AI_ARCHITECTURE](docs/AI_ARCHITECTURE.md) | Especializada AI e Document AI |

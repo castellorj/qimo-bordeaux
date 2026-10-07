@@ -6,6 +6,7 @@
  */
 import { useEffect, useRef } from "react";
 import "leaflet/dist/leaflet.css";
+import { escapeHtml } from "@/lib/security";
 import type { Map as LMap, LayerGroup } from "leaflet";
 
 export interface MapPoint { id: string; lat: number; lng: number; color: string; label: string; sub?: string; size?: number; ring?: string }
@@ -42,12 +43,13 @@ export function MapView({ points, home, radiusKm, height = 460, onSelect, select
     const bounds: [number, number][] = [];
     if (home) {
       if (radiusKm) leaflet.circle([home.lat, home.lng], { radius: radiusKm * 1000, color: "#1f4fe0", weight: 1, fillOpacity: 0.05 }).addTo(layer.current);
-      leaflet.circleMarker([home.lat, home.lng], { radius: 9, color: "#fff", weight: 3, fillColor: "#0f172a", fillOpacity: 1 }).bindTooltip(home.label, { direction: "top" }).addTo(layer.current);
+      leaflet.circleMarker([home.lat, home.lng], { radius: 9, color: "#fff", weight: 3, fillColor: "#0f172a", fillOpacity: 1 }).bindTooltip(escapeHtml(home.label), { direction: "top" }).addTo(layer.current);
       bounds.push([home.lat, home.lng]);
     }
     for (const p of points) {
       const m = leaflet.circleMarker([p.lat, p.lng], { radius: (p.size ?? 7) + (p.id === selectedId ? 3 : 0), color: p.ring ?? "#fff", weight: p.ring ? 3 : 2, fillColor: p.color, fillOpacity: 0.95 });
-      m.bindTooltip(`<b>${p.label}</b>${p.sub ? `<br/><span style="color:#64748b">${p.sub}</span>` : ""}`, { direction: "top" });
+      // nomes podem vir de arquivos importados: sempre escapar antes de montar HTML
+      m.bindTooltip(`<b>${escapeHtml(p.label)}</b>${p.sub ? `<br/><span style="color:#64748b">${escapeHtml(p.sub)}</span>` : ""}`, { direction: "top" });
       if (onSelect) m.on("click", () => onSelect(p.id));
       m.addTo(layer.current);
       bounds.push([p.lat, p.lng]);
