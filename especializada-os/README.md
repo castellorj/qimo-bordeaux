@@ -48,6 +48,7 @@ cada um vê o sistema com as permissões do seu papel. "Restaurar dados DEMO" fi
 | [ARCHITECTURE](docs/ARCHITECTURE.md) | arquitetura da DEMO e da produção (ADRs) |
 | [DATABASE_SCHEMA](docs/DATABASE_SCHEMA.md) + [schema.prisma](prisma/schema.prisma) | modelagem completa (Postgres) |
 | [INTEGRATIONS](docs/INTEGRATIONS.md) | adapters e pesquisa das integrações oficiais existentes |
+| [INSURER_INTEGRATION_GUIDE](docs/INSURER_INTEGRATION_GUIDE.md) | como integrar cada seguradora: ondas, kit, modelo de pedido, checklist técnico |
 | [SECURITY_LGPD](docs/SECURITY_LGPD.md) | LGPD e controles de segurança |
 | [DESIGN_SYSTEM](docs/DESIGN_SYSTEM.md) | tokens, componentes, padrões |
 | [AUTOMATIONS](docs/AUTOMATIONS.md) | Automation Engine (trigger + condition + action) |

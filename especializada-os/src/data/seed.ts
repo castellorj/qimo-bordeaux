@@ -18,7 +18,7 @@ import { recommend, planMonthlyPrice } from "@/domain/engines/health";
 import { DEMO_PROFILES } from "@/integrations/insurers/registry";
 import { demoAutoQuote, demoGenericQuote } from "@/integrations/insurers/adapters/demo-calculator";
 
-export const SEED_VERSION = 4;
+export const SEED_VERSION = 5;
 
 // PRNG determinístico (mulberry32)
 function rng(seed: number) {
@@ -207,26 +207,27 @@ export function createSeed(today = todayISO()): DB {
   const I = (id: string, name: string, short: string, color: string, lines: Insurer["lines"], status: Insurer["integration"]["status"] = "nao_configurada", note = PENDING): Insurer =>
     ({ id, name, short, color, lines, integration: { method: "manual", status, note }, demo: D });
   const insurers: Insurer[] = [
-    I("ins-porto", "Porto Seguro", "Porto", "#1d4ed8", ["auto", "residencial", "vida", "empresarial", "viagem", "fianca", "condominio", "equipamentos"], "demo", SIM),
-    I("ins-tokio", "Tokio Marine", "Tokio Marine", "#0e7490", ["auto", "residencial", "vida", "empresarial", "rc", "transportes", "garantia"], "demo", SIM),
-    I("ins-allianz", "Allianz Seguros", "Allianz", "#1e3a8a", ["auto", "residencial", "empresarial", "rc", "cyber", "transportes"], "demo", SIM),
-    I("ins-hdi", "HDI Seguros", "HDI", "#15803d", ["auto", "residencial", "empresarial", "rc"], "demo", SIM),
-    I("ins-bradesco", "Bradesco Seguros", "Bradesco", "#cc092f", ["auto", "residencial", "vida", "previdencia", "empresarial"], "demo", SIM),
-    I("ins-zurich", "Zurich Seguros", "Zurich", "#2563eb", ["auto", "residencial", "vida", "empresarial", "rc"], "demo", "DEMO: simula seguradora sem integração — cotação registrada manualmente."),
-    I("ins-mapfre", "Mapfre Seguros", "Mapfre", "#dc2626", ["auto", "residencial", "vida", "empresarial", "viagem", "nautico"]),
-    I("ins-azul", "Azul Seguros", "Azul", "#0284c7", ["auto"]),
-    I("ins-yelum", "Yelum Seguros", "Yelum", "#ca8a04", ["auto", "residencial", "empresarial", "vida"]),
-    I("ins-suhai", "Suhai Seguradora", "Suhai", "#4d7c0f", ["auto"]),
-    I("ins-sompo", "Sompo Seguros", "Sompo", "#b91c1c", ["auto", "empresarial", "transportes", "rc"]),
-    I("ins-chubb", "Chubb Seguros", "Chubb", "#334155", ["residencial", "empresarial", "rc", "cyber", "viagem", "vida"]),
-    I("ins-axa", "AXA Seguros", "AXA", "#1e40af", ["empresarial", "rc", "cyber", "transportes"]),
+    { ...I("ins-porto", "Porto Seguro", "Porto", "#1d4ed8", ["auto", "residencial", "vida", "empresarial", "viagem", "fianca", "condominio", "equipamentos"], "demo", SIM), integrationPath: { wave: 2, summary: "Sem portal público de APIs para corretor encontrado (integração de mercado via Segfy). Pedido formal ao comercial; enquanto isso, arquivos oficiais do portal.", confirmed: false } },
+    { ...I("ins-tokio", "Tokio Marine", "Tokio Marine", "#0e7490", ["auto", "residencial", "vida", "empresarial", "rc", "transportes", "garantia"], "demo", SIM), integrationPath: { wave: 2, summary: "Sem API pública; termo do portal proíbe robôs de cálculo. Pedido formal; alternativa autorizada: cotador white-label “Negócios Digitais”.", confirmed: false } },
+    { ...I("ins-allianz", "Allianz Seguros", "Allianz", "#1e3a8a", ["auto", "residencial", "empresarial", "rc", "cyber", "transportes"], "demo", SIM), integrationPath: { wave: 2, summary: "Sem portal de APIs no Brasil encontrado. Pedido formal ao comercial.", confirmed: false } },
+    { ...I("ins-hdi", "HDI Seguros", "HDI", "#15803d", ["auto", "residencial", "empresarial", "rc"], "demo", SIM), integrationPath: { wave: 1, summary: "API OAuth2 de cotação, proposta, apólice e sinistro citada em fonte não oficial — pedir acesso formal à HDI.", confirmed: false } },
+    { ...I("ins-bradesco", "Bradesco Seguros", "Bradesco", "#cc092f", ["auto", "residencial", "vida", "previdencia", "empresarial"], "demo", SIM), integrationPath: { wave: 1, summary: "Portal de APIs para parceiros (parcelas, residencial; certificado digital e ambientes de homologação). Confirmar se corretora é elegível.", confirmed: true } },
+    { ...I("ins-zurich", "Zurich Seguros", "Zurich", "#2563eb", ["auto", "residencial", "vida", "empresarial", "rc"], "demo", "DEMO: simula seguradora sem integração — cotação registrada manualmente."), integrationPath: { wave: 2, summary: "Grupo tem marketplace global de APIs; disponibilidade para corretor no Brasil a confirmar.", confirmed: false } },
+    { ...I("ins-mapfre", "Mapfre Seguros", "Mapfre", "#dc2626", ["auto", "residencial", "vida", "empresarial", "viagem", "nautico"]), integrationPath: { wave: 2, summary: "Sem portal de APIs encontrado. Pedido formal ao comercial.", confirmed: false } },
+    { ...I("ins-azul", "Azul Seguros", "Azul", "#0284c7", ["auto"]), integrationPath: { wave: 2, summary: "Grupo Porto — mesmo canal de pedido da Porto.", confirmed: false } },
+    { ...I("ins-yelum", "Yelum Seguros", "Yelum", "#ca8a04", ["auto", "residencial", "empresarial", "vida"]), integrationPath: { wave: 2, summary: "Sem portal de APIs encontrado (grupo HDI) — perguntar se a API da HDI cobre a Yelum.", confirmed: false } },
+    { ...I("ins-suhai", "Suhai Seguradora", "Suhai", "#4d7c0f", ["auto"]), integrationPath: { wave: 2, summary: "Integra com softwares de multicálculo por parceria; pedir acesso direto.", confirmed: false } },
+    { ...I("ins-sompo", "Sompo Seguros", "Sompo", "#b91c1c", ["auto", "empresarial", "transportes", "rc"]), integrationPath: { wave: 1, summary: "Portal de desenvolvedores (corporate/agro: cotação, sinistros, financeiro) com certificação da aplicação.", confirmed: true } },
+    { ...I("ins-chubb", "Chubb Seguros", "Chubb", "#334155", ["residencial", "empresarial", "rc", "cyber", "viagem", "vida"]), integrationPath: { wave: 2, summary: "Chubb Studio (APIs para parceiros digitais B2B2C); uso por corretora a confirmar.", confirmed: false } },
+    { ...I("ins-axa", "AXA Seguros", "AXA", "#1e40af", ["empresarial", "rc", "cyber", "transportes"]), integrationPath: { wave: 2, summary: "Plataformas digitais de cotação para corretores; API externa a confirmar.", confirmed: false } },
     I("ins-sulamerica", "SulAmérica Vida e Previdência", "SulAmérica", "#ea580c", ["vida", "previdencia"]),
-    I("ins-icatu", "Icatu Seguros", "Icatu", "#0f766e", ["vida", "previdencia"]),
-    I("ins-mag", "MAG Seguros", "MAG", "#7c2d12", ["vida", "previdencia"]),
+    { ...I("ins-icatu", "Icatu Seguros", "Icatu", "#0f766e", ["vida", "previdencia"]), integrationPath: { wave: 3, summary: "Plataforma de APIs para parceiros de vida e previdência — pedir enquadramento como parceiro.", confirmed: true } },
+    { ...I("ins-mag", "MAG Seguros", "MAG", "#7c2d12", ["vida", "previdencia"]), integrationPath: { wave: 3, summary: "Plataforma de APIs para parceiros (vida) — pedir enquadramento como parceiro.", confirmed: true } },
     I("ins-prudential", "Prudential do Brasil", "Prudential", "#1d4ed8", ["vida"]),
     I("ins-metlife", "MetLife", "MetLife", "#0369a1", ["vida", "odonto"]),
-    I("ins-junto", "Junto Seguros", "Junto", "#7c3aed", ["garantia"]),
-    I("ins-pottencial", "Pottencial Seguradora", "Pottencial", "#9333ea", ["garantia", "fianca"]),
+    { ...I("ins-allseg", "allseg Seguradora", "allseg", "#0d9488", ["residencial", "empresarial", "garantia", "rc", "vida"]), integrationPath: { wave: 1, summary: "APIs de cotação e emissão para corretores com sistema próprio (residencial, empresarial, garantia, RC, vida).", confirmed: true } },
+    { ...I("ins-junto", "Junto Seguros", "Junto", "#7c3aed", ["garantia"]), integrationPath: { wave: 1, summary: "API usada por corretores para cotar e emitir garantia; exige corretor cadastrado.", confirmed: true } },
+    { ...I("ins-pottencial", "Pottencial Seguradora", "Pottencial", "#9333ea", ["garantia", "fianca"]), integrationPath: { wave: 1, summary: "Portal do desenvolvedor: corretora parceira cota e emite por API.", confirmed: true } },
     I("ins-bradesco-saude", "Bradesco Saúde", "Bradesco Saúde", "#be123c", ["saude", "odonto"], "demo", "DEMO: planos, preços e rede simulados (importação de tabela/rede)."),
     I("ins-sulamerica-saude", "SulAmérica Saúde", "SulAmérica Saúde", "#f97316", ["saude", "odonto"], "demo", "DEMO: planos, preços e rede simulados."),
     I("ins-amil", "Amil", "Amil", "#0369a1", ["saude", "odonto"], "demo", "DEMO: planos, preços e rede simulados."),

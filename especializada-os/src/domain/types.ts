@@ -171,6 +171,8 @@ export interface Insurer {
   integrationSteps?: Record<string, boolean>;
   /** Cadastrada pela corretora (fora do catálogo inicial) */
   custom?: boolean;
+  /** Caminho de integração identificado na pesquisa (docs/INSURER_INTEGRATION_GUIDE.md) */
+  integrationPath?: { wave: 1 | 2 | 3; summary: string; confirmed: boolean };
   demo: true;
 }
 

@@ -100,6 +100,12 @@ export default function SeguradorasPage() {
                   <Badge tone={st.tone}>{st.label}</Badge>
                   {ins.integration.note && <span className="text-xs text-ink-muted">{ins.integration.note}</span>}
                 </div>
+                {ins.integrationPath && (
+                  <div className="rounded-lg bg-canvas px-3 py-2 text-xs">
+                    <div className="mb-0.5 flex items-center gap-1.5 font-medium text-ink"><Icons.Route className="h-3.5 w-3.5 text-brand-600" />Caminho de integração · onda {ins.integrationPath.wave}<Badge tone={ins.integrationPath.confirmed ? "ok" : "warn"}>{ins.integrationPath.confirmed ? "evidência pública" : "a confirmar"}</Badge></div>
+                    <p className="text-ink-soft">{ins.integrationPath.summary}</p>
+                  </div>
+                )}
                 <IntegrationChecklist ins={ins} canEdit={canManage} onToggle={(k) => update((d, u) => toggleIntegrationStep(d, u, ins.id, k))} />
 
                 {sources.length > 0 && (

@@ -159,6 +159,9 @@ Legenda de dependência: **D** = dados, **A** = API, **C** = contrato/parceria.
 
 ### 4.6 Portais de seguradoras
 
+> Plano detalhado por seguradora, kit e modelo de pedido: **[INSURER_INTEGRATION_GUIDE.md](INSURER_INTEGRATION_GUIDE.md)**.
+
+
 - Em geral, **não há API pública**: o corretor acessa portais autenticados. Algumas seguradoras oferecem **APIs de parceiro** (cotação, emissão, segunda via, extrato de comissões) mediante contrato/credenciamento — **disponibilidade varia por seguradora (a confirmar uma a uma)**.
 - **Caminho:** parceria/credenciamento formal; enquanto isso, **importação** de arquivos que a seguradora disponibiliza (extratos de comissão, relatórios de apólices) e **manual** com tarefa. Automação de portal (RPA com login do corretor) **não será feita**.
 
