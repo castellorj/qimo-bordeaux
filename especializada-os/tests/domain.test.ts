@@ -147,3 +147,29 @@ test("decisão 6: política de retenção com prévia", () => {
   assert.equal(prev.length, RETENTION_RULES.length);
   assert.ok(prev.every((p) => p.count >= 0));
 });
+
+import { guessLayout, parseCommissionStatement, reconcile, applyReconciliation, sampleStatement } from "../src/integrations/insurers/commission-statements";
+import { redact } from "../src/integrations/insurers/http";
+import { fromInsurerResponse } from "../src/integrations/insurers/adapters/_template";
+
+test("extrato de comissões: layout, parse e conciliação", () => {
+  const comp = db.commissions.find((c) => db.policies.find((p) => p.id === c.policyId)?.insurerId === "ins-porto")!.competence;
+  const csv = sampleStatement(db, "ins-porto", comp);
+  const layout = guessLayout("ins-porto", parseCSV(csv)[0]);
+  assert.equal(layout.columns.amount, "Valor comissão");
+  assert.equal(layout.columns.paidAt, "Data pagamento");
+  const { lines, errors } = parseCommissionStatement(csv, layout);
+  assert.equal(errors.length, 0);
+  const r = reconcile(db, lines);
+  assert.ok(r.lines.some((l) => l.status === "conferida"));
+  assert.ok(r.lines.some((l) => l.status === "apolice_nao_encontrada"));
+  const next = applyReconciliation(db, r.lines, "u-ana");
+  const ok = r.lines.find((l) => l.status === "conferida")!;
+  assert.equal(next.commissions.find((c) => c.id === ok.commission!.id)!.status, "recebida");
+});
+
+test("integrações: log mascara dados pessoais e adapter valida resposta", () => {
+  assert.ok(!redact("cpf 123.456.789-09 email a@b.com").includes("123.456"));
+  assert.throws(() => fromInsurerResponse({ numeroCalculo: "1", premioTotal: 0, coberturas: [] }, "x"));
+  assert.equal(fromInsurerResponse({ numeroCalculo: "9", premioTotal: 1000, coberturas: [{ nome: "Casco" }], percentualComissao: 15 }, "x").commissionPct, 0.15);
+});

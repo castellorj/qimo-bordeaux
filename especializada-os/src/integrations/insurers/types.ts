@@ -1,7 +1,8 @@
 /**
- * Contrato de integração com seguradoras. Cada seguradora tem um adapter.
- * Métodos permitidos: API oficial, API de parceiro (ex.: agregador de multicálculo
- * contratado), integração autorizada, importação de arquivo ou entrada manual.
+ * Contrato usado pela DEMO (cotação). O contrato completo de produção — com
+ * transmissão de proposta, apólices, documentos, extrato de comissão e sinistros —
+ * está em contract.ts (InsurerAdapterV2). Integração própria: um adapter por
+ * seguradora, via API liberada, arquivo, integração autorizada ou manual.
  * NÃO há scraping nem automação que contorne termos de uso ou segurança.
  */
 import type { AutoQuoteRequest, GenericQuoteRequest, IntegrationMethod, ProductLine, QuoteResult, Vehicle } from "@/domain/types";

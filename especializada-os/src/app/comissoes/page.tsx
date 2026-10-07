@@ -77,8 +77,8 @@ export default function ComissoesPage() {
       <PageHeader
         icon={<Icons.Wallet className="h-5 w-5" />}
         title="Comissões"
-        subtitle="Prevista × recebida por competência, com divergências e atrasos destacados. Na produção, os extratos das seguradoras são importados e conciliados automaticamente."
-        actions={<Button variant="secondary" onClick={exportCsv} icon={<Icons.Download className="h-4 w-4" />}>Exportar CSV</Button>}
+        subtitle="Prevista × recebida por competência, com divergências e atrasos destacados. Importe o extrato de cada seguradora em “Conciliar extrato”."
+        actions={<><Link href="/comissoes/conciliacao" className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-brand-600 px-3.5 text-sm font-medium text-white shadow-sm hover:bg-brand-700"><Icons.FileSpreadsheet className="h-4 w-4" />Conciliar extrato</Link><Button variant="secondary" onClick={exportCsv} icon={<Icons.Download className="h-4 w-4" />}>Exportar CSV</Button></>}
       />
 
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
