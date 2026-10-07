@@ -1,0 +1,1693 @@
+// ════════════════════════════════════════════════════════════════════════════
+//  Especializada Seguros OS — schema de persistência (Fase 1-real)
+// ════════════════════════════════════════════════════════════════════════════
+//
+//  STATUS: design-only. A DEMO (Fase 0) NÃO usa este schema — ela roda com um
+//  store client-side (localStorage) semeado com dados fictícios. Este arquivo é
+//  a fonte da verdade para a persistência real e espelha src/domain/types.ts.
+//  Ver docs/DATABASE_SCHEMA.md para as decisões de modelagem.
+//
+//  Convenções
+//  - Tabelas e colunas em snake_case no banco (@@map / @map); modelos em PascalCase.
+//  - IDs: cuid() (string, ordenável o suficiente, sem expor sequência).
+//  - Multi-tenant-ready: toda tabela de negócio tem `org_id`. O FK para
+//    `organizations` e as policies de Row Level Security são criados em
+//    migração SQL bruta (evita dezenas de back-relations em Organization).
+//  - Proveniência ("de onde veio este dado?"): colunas source/source_at/
+//    source_by/source_confidence em entidades críticas + tabela FieldProvenance
+//    para granularidade por campo.
+//  - Soft delete: `deleted_at` onde há valor histórico/LGPD; consultas padrão
+//    filtram deleted_at IS NULL (no repositório, não na UI).
+//  - Dados sensíveis (CPF, dados de saúde): colunas *_enc (Bytes, AES-256-GCM
+//    com envelope encryption via KMS) + *_hash (HMAC-SHA256 com pepper) como
+//    "blind index" para unicidade e busca exata.
+//  - Índices que o Prisma não expressa (GIST em geography, tsvector, unaccent
+//    imutável) ficam na migração SQL — listados em docs/DATABASE_SCHEMA.md.
+// ════════════════════════════════════════════════════════════════════════════
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [pg_trgm, unaccent, postgis, citext]
+}
+
+// ───────────────────────────── Enums ─────────────────────────────
+
+enum RoleKey {
+  admin
+  gestor
+  corretor
+  operacional
+  financeiro
+}
+
+enum PartyType {
+  person
+  company
+}
+
+enum ClientStatus {
+  lead
+  ativo
+  inativo
+}
+
+enum Gender {
+  F
+  M
+}
+
+enum HouseholdRelation {
+  titular
+  conjuge @map("cônjuge")
+  filho   @map("filho(a)")
+  pai_mae @map("pai/mãe")
+  outro
+}
+
+enum CompanyRole {
+  socio         @map("sócio")
+  administrador
+  funcionario   @map("funcionário")
+  contato
+}
+
+enum AssetType {
+  vehicle
+  property
+  boat
+  other
+}
+
+enum VehicleUsage {
+  particular
+  comercial
+  aplicativo
+}
+
+enum PropertyKind {
+  apartamento
+  casa
+  comercial
+}
+
+enum PropertyUse {
+  habitual
+  veraneio
+  aluguel
+  comercial
+}
+
+enum ProductLine {
+  saude
+  odonto
+  auto
+  vida
+  residencial
+  empresarial
+  viagem
+  condominio
+  fianca
+  rc
+  cyber
+  transportes
+  nautico
+  aeronautico
+  garantia
+  previdencia
+  equipamentos
+  outros
+}
+
+enum IntegrationMethod {
+  api_oficial
+  api_parceiro
+  integracao_autorizada
+  importacao
+  manual
+}
+
+enum IntegrationStatus {
+  demo
+  nao_configurada
+  ativa
+  erro
+}
+
+enum Accommodation {
+  enfermaria
+  apartamento
+}
+
+enum Coverage {
+  municipal
+  regional
+  estadual
+  nacional
+}
+
+enum ReimbursementLevel {
+  nenhum
+  basico
+  intermediario
+  alto
+  premium
+}
+
+enum PlanSegment {
+  individual
+  adesao
+  pme
+  empresarial
+}
+
+/// Faixas etárias ANS (RN 63/2003)
+enum AgeBand {
+  b0_18  @map("0-18")
+  b19_23 @map("19-23")
+  b24_28 @map("24-28")
+  b29_33 @map("29-33")
+  b34_38 @map("34-38")
+  b39_43 @map("39-43")
+  b44_48 @map("44-48")
+  b49_53 @map("49-53")
+  b54_58 @map("54-58")
+  b59    @map("59+")
+}
+
+enum ProviderType {
+  hospital
+  clinica
+  laboratorio
+  maternidade
+  pronto_socorro @map("pronto-socorro")
+}
+
+enum NetworkService {
+  internacao
+  pronto_socorro @map("pronto-socorro")
+  maternidade
+  exames
+  consultas
+}
+
+enum NetworkSourceKind {
+  xlsx
+  csv
+  pdf
+  api
+  manual
+}
+
+enum NetworkSourceStatus {
+  valida
+  expirando
+  expirada
+}
+
+enum PipelineStage {
+  lead
+  contato
+  levantamento
+  cotacao
+  proposta
+  negociacao
+  aprovado
+  emissao
+  emitido
+  perdido
+}
+
+enum OpportunityOrigin {
+  manual
+  renovacao
+  cross_sell  @map("cross-sell")
+  indicacao
+  site
+  importacao
+}
+
+enum QuoteStatus {
+  rascunho
+  calculado
+  proposta_gerada
+}
+
+enum QuoteResultStatus {
+  ok
+  recusado
+  erro
+  manual_pendente
+}
+
+enum ProposalStatus {
+  rascunho
+  enviada
+  visualizada
+  aceita
+  recusada
+  expirada
+}
+
+enum PolicyStatus {
+  vigente
+  vencida
+  cancelada
+  renovada
+  em_emissao
+}
+
+enum RenewalStatus {
+  identificada
+  coletando_dados
+  cotando
+  proposta_enviada
+  renovada
+  nao_renovada
+}
+
+/// Origem de um dado (proveniência). `demo` só existe para dados fictícios.
+enum DataSourceKind {
+  manual
+  importacao
+  document_ai @map("document-ai")
+  proposta
+  integracao
+  automacao
+  demo
+}
+
+enum DocumentKind {
+  apolice
+  proposta
+  boleto
+  carteirinha
+  documento_pessoal
+  condicoes_gerais
+  comprovante
+  crlv
+  tabela
+  outro
+}
+
+enum DocumentChannel {
+  upload
+  email
+  whatsapp
+  importacao
+  sistema
+}
+
+enum DocumentStatus {
+  arquivado
+  aguardando_revisao
+  processado
+}
+
+enum TaskCategory {
+  follow_up
+  documento
+  renovacao
+  cotacao
+  emissao
+  pendencia
+  cross_sell
+  revisao
+}
+
+enum TaskStatus {
+  aberta
+  concluida
+}
+
+enum WaitingOn {
+  cliente
+  seguradora
+}
+
+enum InteractionChannel {
+  whatsapp
+  email
+  telefone
+  reuniao
+  sistema
+}
+
+enum InteractionDirection {
+  entrada
+  saida
+  interno
+}
+
+enum CommissionStatus {
+  prevista
+  recebida
+  divergente
+  atrasada
+}
+
+enum AuditAction {
+  create
+  update
+  delete
+  view_sensitive
+  export
+  login
+  automation
+}
+
+enum AuditSource {
+  ui
+  automacao
+  document_ai  @map("document-ai")
+  importacao
+  ai_assistant @map("ai-assistant")
+}
+
+enum AutomationTrigger {
+  policy_created         @map("policy.created")
+  policy_days_to_end     @map("policy.days_to_end")
+  proposal_sent_no_reply @map("proposal.sent_no_reply")
+  document_received      @map("document.received")
+  client_created         @map("client.created")
+  policy_issued          @map("policy.issued")
+  task_overdue           @map("task.overdue")
+}
+
+enum AutomationRunStatus {
+  sucesso
+  ignorada   // condição não satisfeita ou chave de idempotência já vista
+  falha
+  aguardando_revisao
+}
+
+enum ImportStatus {
+  enviado
+  mapeando
+  validando
+  pronto
+  importando
+  concluido
+  falhou
+  revertido
+}
+
+enum ImportRowStatus {
+  novo
+  atualizar
+  duplicado
+  erro
+  ignorado
+  importado
+}
+
+enum ConsentPurpose {
+  marketing_whatsapp
+  marketing_email
+  comunicacao_operacional
+  compartilhamento_seguradora
+  dados_saude
+}
+
+enum LegalBasis {
+  consentimento
+  execucao_contrato
+  obrigacao_legal
+  exercicio_direitos
+  legitimo_interesse
+  tutela_saude
+}
+
+enum DsrType {
+  acesso
+  correcao
+  eliminacao
+  portabilidade
+  anonimizacao
+  revogacao_consentimento
+  informacao_compartilhamento
+}
+
+enum DsrStatus {
+  recebida
+  em_analise
+  atendida
+  negada_parcial
+  negada
+}
+
+// ═══════════════════════════════ ACESSO ═══════════════════════════════
+
+/// Tenant. Hoje há uma única organização (Especializada Seguros); o modelo
+/// permite filiais/franquias ou SaaS no futuro sem migração estrutural.
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  cnpj      String?  @unique @db.VarChar(14)
+  susepCode String?  @map("susep_code") /// código SUSEP da corretora
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  settings OrgSettings?
+
+  @@map("organizations")
+}
+
+/// Espelha `Settings` de types.ts.
+model OrgSettings {
+  orgId                 String  @id @map("org_id")
+  restrictWalletToOwner Boolean @default(true) @map("restrict_wallet_to_owner")
+  followUpDays          Int     @default(3) @map("follow_up_days")
+  renewalWindows        Int[]   @default([90, 60, 30, 15, 7]) @map("renewal_windows")
+  /// minutos manuais de referência por tipo de tarefa (baseline da métrica de horas economizadas)
+  timeBaselines         Json    @default("{}") @map("time_baselines")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  org Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@map("org_settings")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  orgId         String    @map("org_id")
+  name          String
+  email         String    @db.Citext
+  emailVerified DateTime? @map("email_verified")
+  image         String?
+  role          RoleKey
+  active        Boolean   @default(true)
+  /// segredo TOTP cifrado (obrigatório para admin e financeiro)
+  totpSecretEnc Bytes?    @map("totp_secret_enc")
+  totpEnabledAt DateTime? @map("totp_enabled_at")
+  lastLoginAt   DateTime? @map("last_login_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+  deletedAt     DateTime? @map("deleted_at")
+
+  accounts Account[]
+  sessions Session[]
+
+  ownedPersons       Person[]      @relation("PersonOwner")
+  ownedCompanies     Company[]     @relation("CompanyOwner")
+  ownedOpportunities Opportunity[] @relation("OpportunityOwner")
+  ownedProposals     Proposal[]    @relation("ProposalOwner")
+  ownedPolicies      Policy[]      @relation("PolicyOwner")
+  ownedTasks         Task[]        @relation("TaskOwner")
+  createdQuotes      Quote[]       @relation("QuoteCreator")
+  uploadedDocuments  Document[]    @relation("DocumentUploader")
+  reviewedExtractions DocumentExtraction[] @relation("ExtractionReviewer")
+
+  @@unique([orgId, email])
+  @@map("users")
+}
+
+/// Permissões por papel (editável em /configuracoes). Valores = `Permission` de types.ts.
+model RolePermission {
+  orgId      String  @map("org_id")
+  role       RoleKey
+  permission String
+
+  @@id([orgId, role, permission])
+  @@map("role_permissions")
+}
+
+// Tabelas padrão do Auth.js v5 (@auth/prisma-adapter) — sessões em banco.
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("auth_accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  /// sessão só ganha privilégios elevados após TOTP
+  mfaVerified  Boolean  @default(false) @map("mfa_verified")
+  ip           String?
+  userAgent    String?  @map("user_agent")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("auth_sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("auth_verification_tokens")
+}
+
+// ═══════════════════════════════ PARTES ═══════════════════════════════
+//
+// Party pattern: `parties` é o supertipo; Person e Company compartilham a PK
+// (person.id = party.id). Tudo que referencia "um cliente" (apólice, cotação,
+// oportunidade, documento, interação) aponta para Party → FK real, sem
+// associação polimórfica. Equivale ao `PartyRef { type, id }` de types.ts.
+
+model Party {
+  id        String    @id @default(cuid())
+  orgId     String    @map("org_id")
+  type      PartyType
+  createdAt DateTime  @default(now()) @map("created_at")
+
+  person  Person?
+  company Company?
+
+  addresses     Address[]
+  assets        Asset[]
+  opportunities Opportunity[]
+  quotes        Quote[]
+  proposals     Proposal[]
+  policies      Policy[]
+  documents     Document[]
+  tasks         Task[]
+  interactions  Interaction[]
+  consents      ConsentRecord[]
+  dsrRequests   DataSubjectRequest[]
+
+  @@index([orgId, type])
+  @@map("parties")
+}
+
+model Person {
+  id            String        @id /// = parties.id
+  orgId         String        @map("org_id")
+  name          String
+  /// CPF cifrado + blind index (HMAC) para unicidade/busca exata.
+  cpfEnc        Bytes?        @map("cpf_enc")
+  cpfHash       String?       @map("cpf_hash")
+  cpfLast4      String?       @map("cpf_last4") @db.VarChar(4) /// exibição mascarada ***.***.*89-01
+  birthDate     DateTime?     @map("birth_date") @db.Date
+  gender        Gender?
+  phone         String?
+  whatsapp      String?       /// E.164
+  email         String?       @db.Citext
+  primaryAddressId String?    @map("primary_address_id")
+  profession    String?
+  ownerId       String?       @map("owner_id") /// corretor responsável
+  /// null = apenas relacionado (dependente, sócio…), não é cliente
+  clientStatus  ClientStatus? @map("client_status")
+  clientSince   DateTime?     @map("client_since") @db.Date
+  acquisitionSource String?   @map("acquisition_source") /// `source` em types.ts (canal de aquisição)
+  notes         String?
+
+  // proveniência do cadastro
+  source           DataSourceKind @default(manual)
+  sourceAt         DateTime       @default(now()) @map("source_at")
+  sourceBy         String?        @map("source_by")
+  sourceConfidence Float?         @map("source_confidence")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  party          Party                 @relation(fields: [id], references: [id], onDelete: Cascade)
+  owner          User?                 @relation("PersonOwner", fields: [ownerId], references: [id])
+  primaryAddress Address?              @relation("PersonPrimaryAddress", fields: [primaryAddressId], references: [id])
+  households     HouseholdMember[]
+  companyRoles   CompanyRelationship[]
+  drivenVehicles Vehicle[]             @relation("VehicleMainDriver")
+  beneficiaryOf  PolicyBeneficiary[]
+
+  @@unique([orgId, cpfHash])
+  @@index([orgId, clientStatus])
+  @@index([orgId, ownerId])
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@index([whatsapp])
+  @@map("persons")
+}
+
+model Company {
+  id          String        @id /// = parties.id
+  orgId       String        @map("org_id")
+  legalName   String        @map("legal_name")
+  tradeName   String        @map("trade_name")
+  /// varchar(14) sem máscara, maiúsculo: o CNPJ alfanumérico (Receita, a partir de jul/2026) cabe no mesmo formato.
+  cnpj        String        @db.VarChar(14)
+  sector      String?
+  employees   Int?
+  primaryAddressId String?  @map("primary_address_id")
+  phone       String?
+  email       String?       @db.Citext
+  ownerId     String?       @map("owner_id")
+  clientStatus ClientStatus? @map("client_status")
+  clientSince DateTime?     @map("client_since") @db.Date
+
+  source           DataSourceKind @default(manual)
+  sourceAt         DateTime       @default(now()) @map("source_at")
+  sourceBy         String?        @map("source_by")
+  sourceConfidence Float?         @map("source_confidence")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  party          Party                 @relation(fields: [id], references: [id], onDelete: Cascade)
+  owner          User?                 @relation("CompanyOwner", fields: [ownerId], references: [id])
+  primaryAddress Address?              @relation("CompanyPrimaryAddress", fields: [primaryAddressId], references: [id])
+  relationships  CompanyRelationship[]
+
+  @@unique([orgId, cnpj])
+  @@index([orgId, clientStatus])
+  @@index([legalName(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@index([tradeName(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@map("companies")
+}
+
+model Address {
+  id         String  @id @default(cuid())
+  orgId      String  @map("org_id")
+  partyId    String? @map("party_id")
+  label      String  /// "Residencial", "Sede"…
+  street     String
+  number     String
+  complement String?
+  district   String
+  city       String
+  state      String  @db.Char(2)
+  cep        String  @db.Char(8)
+  lat        Float?
+  lng        Float?
+  /// PostGIS: preenchido por trigger a partir de lat/lng. Índice GIST na migração SQL.
+  geom       Unsupported("geography(Point, 4326)")?
+  geocodedBy String? @map("geocoded_by") /// "google" | "mapbox" | "nominatim-self" | "manual"
+  geocodedAt DateTime? @map("geocoded_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  party      Party?      @relation(fields: [partyId], references: [id], onDelete: Cascade)
+  persons    Person[]    @relation("PersonPrimaryAddress")
+  companies  Company[]   @relation("CompanyPrimaryAddress")
+  households Household[]
+  properties PropertyAsset[]
+
+  @@index([orgId, cep])
+  @@index([partyId])
+  @@map("addresses")
+}
+
+/// Família (N:N pessoa↔família com papel).
+model Household {
+  id        String   @id @default(cuid())
+  orgId     String   @map("org_id")
+  name      String
+  addressId String?  @map("address_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  address Address?          @relation(fields: [addressId], references: [id])
+  members HouseholdMember[]
+
+  @@index([orgId])
+  @@map("households")
+}
+
+model HouseholdMember {
+  householdId String            @map("household_id")
+  personId    String            @map("person_id")
+  relation    HouseholdRelation
+
+  household Household @relation(fields: [householdId], references: [id], onDelete: Cascade)
+  person    Person    @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@id([householdId, personId])
+  @@index([personId])
+  @@map("household_members")
+}
+
+/// Vínculo pessoa↔empresa (sócio, administrador, funcionário, contato).
+model CompanyRelationship {
+  id        String      @id @default(cuid())
+  orgId     String      @map("org_id")
+  companyId String      @map("company_id")
+  personId  String      @map("person_id")
+  role      CompanyRole
+  share     Decimal?    @db.Decimal(5, 2) /// % participação
+  startedAt DateTime?   @map("started_at") @db.Date
+  endedAt   DateTime?   @map("ended_at") @db.Date
+
+  company Company @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  person  Person  @relation(fields: [personId], references: [id], onDelete: Cascade)
+
+  @@unique([companyId, personId, role])
+  @@index([personId])
+  @@map("company_relationships")
+}
+
+// ═══════════════════════════════ ATIVOS ═══════════════════════════════
+//
+// Base comum + tabela por tipo para os tipos com campos pesquisáveis/indexáveis
+// (placa, FIPE, endereço). Tipos raros ("other", e futuros como equipamentos)
+// usam `details` JSONB validado por zod no módulo do ramo.
+
+model Asset {
+  id        String    @id @default(cuid())
+  orgId     String    @map("org_id")
+  ownerId   String    @map("owner_party_id")
+  type      AssetType
+  details   Json?     /// só para type=other (schema zod do módulo)
+  source    DataSourceKind @default(manual)
+  sourceAt  DateTime  @default(now()) @map("source_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  owner    Party          @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  vehicle  Vehicle?
+  property PropertyAsset?
+  boat     Boat?
+  policies Policy[]
+
+  @@index([orgId, ownerId])
+  @@map("assets")
+}
+
+model Vehicle {
+  assetId      String       @id @map("asset_id")
+  make         String
+  model        String
+  version      String
+  yearModel    Int          @map("year_model")
+  plate        String?      @db.VarChar(7) /// Mercosul ou antiga, sem hífen, maiúscula
+  chassisEnc   Bytes?       @map("chassis_enc")
+  fipeCode     String?      @map("fipe_code")
+  fipeValue    Decimal?     @map("fipe_value") @db.Decimal(12, 2)
+  fipeRefMonth String?      @map("fipe_ref_month") /// "2026-10"
+  usage        VehicleUsage
+  garageHome   Boolean      @default(false) @map("garage_home")
+  garageWork   Boolean      @default(false) @map("garage_work")
+  overnightCep String?      @map("overnight_cep") @db.Char(8)
+  mainDriverId String?      @map("main_driver_id")
+
+  asset      Asset   @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  mainDriver Person? @relation("VehicleMainDriver", fields: [mainDriverId], references: [id])
+
+  @@index([plate])
+  @@index([fipeCode])
+  @@map("vehicles")
+}
+
+model PropertyAsset {
+  assetId   String       @id @map("asset_id")
+  kind      PropertyKind
+  addressId String       @map("address_id")
+  areaM2    Decimal?     @map("area_m2") @db.Decimal(10, 2)
+  value     Decimal?     @db.Decimal(14, 2)
+  use       PropertyUse
+
+  asset   Asset   @relation(fields: [assetId], references: [id], onDelete: Cascade)
+  address Address @relation(fields: [addressId], references: [id])
+
+  @@map("property_assets")
+}
+
+model Boat {
+  assetId  String   @id @map("asset_id")
+  name     String
+  lengthFt Decimal  @map("length_ft") @db.Decimal(6, 2)
+  value    Decimal? @db.Decimal(14, 2)
+  marina   String?
+
+  asset Asset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  @@map("boats")
+}
+
+// ═══════════════════════════ PRODUTOS / SAÚDE ═══════════════════════════
+
+/// Seguradora ou operadora de saúde.
+model Insurer {
+  id        String        @id @default(cuid())
+  orgId     String        @map("org_id")
+  name      String
+  short     String
+  color     String?       /// cor de UI
+  susepCode String?       @map("susep_code")
+  ansCode   String?       @map("ans_code") /// registro ANS (operadoras de saúde)
+  lines     ProductLine[]
+  active    Boolean       @default(true)
+  createdAt DateTime      @default(now()) @map("created_at")
+  updatedAt DateTime      @updatedAt @map("updated_at")
+
+  integrations   Integration[]
+  healthPlans    HealthPlan[]
+  networkSources NetworkDataSource[]
+  quoteResults   QuoteResult[]
+  policies       Policy[]
+  opportunities  Opportunity[]
+
+  @@unique([orgId, short])
+  @@map("insurers")
+}
+
+model HealthPlan {
+  id                        String             @id @default(cuid())
+  orgId                     String             @map("org_id")
+  insurerId                 String             @map("insurer_id")
+  name                      String
+  ansProductCode            String?            @map("ans_product_code") /// nº de registro do produto na ANS
+  tier                      Int                /// 1 = básico … 4 = premium
+  segment                   PlanSegment
+  accommodation             Accommodation
+  coparticipation           Boolean
+  reimbursement             ReimbursementLevel
+  reimbursementConsultation Decimal?           @map("reimbursement_consultation") @db.Decimal(10, 2)
+  coverage                  Coverage
+  networkSourceId           String?            @map("network_source_id")
+  active                    Boolean            @default(true)
+  createdAt                 DateTime           @default(now()) @map("created_at")
+  updatedAt                 DateTime           @updatedAt @map("updated_at")
+
+  insurer       Insurer            @relation(fields: [insurerId], references: [id])
+  networkSource NetworkDataSource? @relation(fields: [networkSourceId], references: [id])
+  prices        HealthPlanPrice[]
+  providers     PlanProvider[]
+  quoteResults  QuoteResult[]
+  policies      Policy[]
+
+  @@index([orgId, insurerId])
+  @@map("health_plans")
+}
+
+/// `pricesByBand` normalizado, com vigência da tabela de preços.
+model HealthPlanPrice {
+  id         String   @id @default(cuid())
+  planId     String   @map("plan_id")
+  ageBand    AgeBand  @map("age_band")
+  monthly    Decimal  @db.Decimal(10, 2) /// R$/mês por vida
+  validFrom  DateTime @map("valid_from") @db.Date
+  validUntil DateTime? @map("valid_until") @db.Date
+  sourceId   String?  @map("source_id") /// tabela importada que originou o preço
+
+  plan HealthPlan @relation(fields: [planId], references: [id], onDelete: Cascade)
+
+  @@unique([planId, ageBand, validFrom])
+  @@map("health_plan_prices")
+}
+
+/// Prestador (hospital, clínica, laboratório…). Deduplicado entre fontes.
+model Provider {
+  id          String       @id @default(cuid())
+  orgId       String       @map("org_id")
+  name        String
+  cnes        String?      /// Cadastro Nacional de Estabelecimentos de Saúde — melhor chave de dedupe
+  cnpj        String?      @db.VarChar(14)
+  type        ProviderType
+  specialties String[]
+  address     String
+  district    String
+  city        String
+  state       String?      @db.Char(2)
+  cep         String?      @db.Char(8)
+  lat         Float?
+  lng         Float?
+  geom        Unsupported("geography(Point, 4326)")?
+  mergedIntoId String?     @map("merged_into_id") /// dedupe: prestador fundido em outro
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+
+  aliases ProviderAlias[]
+  plans   PlanProvider[]
+
+  @@index([orgId, cnes])
+  @@index([orgId, city, type])
+  @@index([name(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@map("providers")
+}
+
+/// Nomes alternativos vistos nas tabelas das operadoras ("Hosp. São X", "HSX Unid. Centro").
+model ProviderAlias {
+  id         String @id @default(cuid())
+  providerId String @map("provider_id")
+  alias      String
+  normalized String /// unaccent+lower+sem stopwords — usado no matching fuzzy
+  sourceId   String? @map("source_id")
+
+  provider Provider @relation(fields: [providerId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, normalized])
+  @@index([normalized(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@map("provider_aliases")
+}
+
+/// Plano ↔ prestador, com serviços cobertos e a fonte que afirma o vínculo.
+model PlanProvider {
+  planId     String           @map("plan_id")
+  providerId String           @map("provider_id")
+  services   NetworkService[]
+  sourceId   String           @map("source_id")
+  validUntil DateTime?        @map("valid_until") @db.Date
+
+  plan     HealthPlan        @relation(fields: [planId], references: [id], onDelete: Cascade)
+  provider Provider          @relation(fields: [providerId], references: [id], onDelete: Cascade)
+  source   NetworkDataSource @relation(fields: [sourceId], references: [id])
+
+  @@id([planId, providerId])
+  @@index([providerId])
+  @@map("plan_providers")
+}
+
+/// De onde veio a rede credenciada (planilha da operadora, PDF, API, manual).
+model NetworkDataSource {
+  id         String              @id @default(cuid())
+  orgId      String              @map("org_id")
+  insurerId  String              @map("insurer_id")
+  kind       NetworkSourceKind
+  label      String
+  documentId String?             @map("document_id") /// arquivo original no storage
+  importedAt DateTime            @map("imported_at")
+  validUntil DateTime            @map("valid_until") @db.Date
+  status     NetworkSourceStatus
+  confidence Float               /// 0..1
+  importJobId String?            @map("import_job_id")
+
+  insurer Insurer        @relation(fields: [insurerId], references: [id])
+  plans   HealthPlan[]
+  links   PlanProvider[]
+
+  @@index([orgId, insurerId])
+  @@map("network_data_sources")
+}
+
+// ═══════════════════════════════ CRM ═══════════════════════════════
+
+model Opportunity {
+  id               String            @id @default(cuid())
+  orgId            String            @map("org_id")
+  title            String
+  partyId          String            @map("party_id")
+  line             ProductLine
+  stage            PipelineStage
+  ownerId          String            @map("owner_id")
+  estimatedPremium Decimal           @map("estimated_premium") @db.Decimal(14, 2) /// anual
+  insurerId        String?           @map("insurer_id")
+  origin           OpportunityOrigin
+  renewalOfPolicyId String?          @map("renewal_of_policy_id")
+  lostReason       String?           @map("lost_reason")
+  expectedCloseAt  DateTime?         @map("expected_close_at") @db.Date
+  createdAt        DateTime          @default(now()) @map("created_at")
+  updatedAt        DateTime          @updatedAt @map("updated_at")
+  deletedAt        DateTime?         @map("deleted_at")
+
+  party          Party   @relation(fields: [partyId], references: [id])
+  owner          User    @relation("OpportunityOwner", fields: [ownerId], references: [id])
+  insurer        Insurer? @relation(fields: [insurerId], references: [id])
+  renewalOf      Policy? @relation("OpportunityRenewalOf", fields: [renewalOfPolicyId], references: [id])
+  stageHistory   OpportunityStageEvent[]
+  quotes         Quote[]
+  renewals       Renewal[]
+
+  @@index([orgId, stage])
+  @@index([orgId, ownerId, stage])
+  @@index([partyId])
+  @@map("opportunities")
+}
+
+model OpportunityStageEvent {
+  id            String        @id @default(cuid())
+  opportunityId String        @map("opportunity_id")
+  stage         PipelineStage
+  at            DateTime      @default(now())
+  by            String        /// user id ou "sistema"
+
+  opportunity Opportunity @relation(fields: [opportunityId], references: [id], onDelete: Cascade)
+
+  @@index([opportunityId, at])
+  @@map("opportunity_stage_events")
+}
+
+model Interaction {
+  id        String               @id @default(cuid())
+  orgId     String               @map("org_id")
+  partyId   String               @map("party_id")
+  at        DateTime
+  channel   InteractionChannel
+  direction InteractionDirection
+  summary   String
+  userId    String?              @map("user_id")
+  externalRef String?            @map("external_ref") /// id da mensagem WhatsApp/e-mail
+
+  party Party @relation(fields: [partyId], references: [id], onDelete: Cascade)
+
+  @@index([partyId, at])
+  @@map("interactions")
+}
+
+// ═══════════════════════════════ COTAÇÃO ═══════════════════════════════
+
+/// `request` é JSONB tipado por ramo (HealthQuoteRequest | AutoQuoteRequest |
+/// GenericQuoteRequest) e validado pelo schema zod do módulo do ramo.
+model Quote {
+  id            String      @id @default(cuid())
+  orgId         String      @map("org_id")
+  partyId       String      @map("party_id")
+  opportunityId String?     @map("opportunity_id")
+  line          ProductLine
+  status        QuoteStatus
+  request       Json
+  requestSchemaVersion Int  @default(1) @map("request_schema_version")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  createdById   String      @map("created_by")
+
+  party       Party        @relation(fields: [partyId], references: [id])
+  opportunity Opportunity? @relation(fields: [opportunityId], references: [id])
+  createdBy   User         @relation("QuoteCreator", fields: [createdById], references: [id])
+  results     QuoteResult[]
+  proposals   Proposal[]
+
+  @@index([orgId, line, createdAt])
+  @@index([partyId])
+  @@map("quotes")
+}
+
+model QuoteResult {
+  id             String            @id @default(cuid())
+  quoteId        String            @map("quote_id")
+  insurerId      String            @map("insurer_id")
+  productName    String            @map("product_name")
+  annualPremium  Decimal?          @map("annual_premium") @db.Decimal(14, 2)
+  monthlyPremium Decimal?          @map("monthly_premium") @db.Decimal(14, 2)
+  deductible     Decimal?          @db.Decimal(14, 2)
+  coverages      Json              /// [{ name, limit?, included }]
+  assistance     String[]
+  commissionPct  Decimal           @map("commission_pct") @db.Decimal(5, 2)
+  healthPlanId   String?           @map("health_plan_id")
+  status         QuoteResultStatus
+  message        String?
+  // proveniência do cálculo
+  sourceAdapter  String            @map("source_adapter")
+  sourceMethod   String            @map("source_method") /// IntegrationMethod | "demo"
+  receivedAt     DateTime          @map("received_at")
+  sourceReference String?          @map("source_reference") /// nº do cálculo na seguradora/agregador
+  validUntil     DateTime?         @map("valid_until")
+  rawPayloadKey  String?           @map("raw_payload_key") /// resposta bruta no storage (auditoria)
+
+  quote      Quote       @relation(fields: [quoteId], references: [id], onDelete: Cascade)
+  insurer    Insurer     @relation(fields: [insurerId], references: [id])
+  healthPlan HealthPlan? @relation(fields: [healthPlanId], references: [id])
+  proposalOptions ProposalOption[]
+
+  @@index([quoteId])
+  @@map("quote_results")
+}
+
+// ═══════════════════════════════ PROPOSTA ═══════════════════════════════
+
+model Proposal {
+  id                   String         @id @default(cuid())
+  orgId                String         @map("org_id")
+  code                 String         /// "ESP-2026-0142"
+  publicToken          String         @unique @map("public_token") /// URL /p/[token] — aleatório, não adivinhável
+  quoteId              String         @map("quote_id")
+  partyId              String         @map("party_id")
+  line                 ProductLine
+  recommendedResultId  String?        @map("recommended_result_id")
+  recommendationReason String?        @map("recommendation_reason")
+  need                 String
+  status               ProposalStatus
+  validUntil           DateTime       @map("valid_until") @db.Date
+  sentAt               DateTime?      @map("sent_at")
+  viewedAt             DateTime?      @map("viewed_at")
+  decidedAt            DateTime?      @map("decided_at")
+  acceptedResultId     String?        @map("accepted_result_id")
+  ownerId              String         @map("owner_id")
+  pdfKey               String?        @map("pdf_key") /// PDF renderizado no storage
+  createdAt            DateTime       @default(now()) @map("created_at")
+  updatedAt            DateTime       @updatedAt @map("updated_at")
+
+  quote    Quote            @relation(fields: [quoteId], references: [id])
+  party    Party            @relation(fields: [partyId], references: [id])
+  owner    User             @relation("ProposalOwner", fields: [ownerId], references: [id])
+  options  ProposalOption[]
+  events   ProposalEvent[]
+  policies Policy[]
+
+  @@unique([orgId, code])
+  @@index([orgId, status])
+  @@map("proposals")
+}
+
+/// `optionResultIds` de types.ts, com ordem de exibição.
+model ProposalOption {
+  proposalId String @map("proposal_id")
+  resultId   String @map("result_id")
+  position   Int
+
+  proposal Proposal    @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+  result   QuoteResult @relation(fields: [resultId], references: [id])
+
+  @@id([proposalId, resultId])
+  @@map("proposal_options")
+}
+
+/// Linha do tempo: enviada (canal), visualizada (IP/UA truncados), aceita…
+model ProposalEvent {
+  id         String   @id @default(cuid())
+  proposalId String   @map("proposal_id")
+  type       String   /// sent | viewed | accepted | declined | expired | pdf_generated
+  channel    String?  /// whatsapp | email | link
+  at         DateTime @default(now())
+  meta       Json?
+
+  proposal Proposal @relation(fields: [proposalId], references: [id], onDelete: Cascade)
+
+  @@index([proposalId, at])
+  @@map("proposal_events")
+}
+
+// ═══════════════════════ APÓLICE / RENOVAÇÃO ═══════════════════════
+
+model Policy {
+  id             String       @id @default(cuid())
+  orgId          String       @map("org_id")
+  number         String
+  holderId       String       @map("holder_party_id")
+  insurerId      String       @map("insurer_id")
+  line           ProductLine
+  productName    String       @map("product_name")
+  start          DateTime     @db.Date
+  end            DateTime     @db.Date
+  annualPremium  Decimal      @map("annual_premium") @db.Decimal(14, 2)
+  commissionPct  Decimal      @map("commission_pct") @db.Decimal(5, 2)
+  ownerId        String       @map("owner_id")
+  status         PolicyStatus
+  insuredAssetId String?      @map("insured_asset_id")
+  healthPlanId   String?      @map("health_plan_id")
+  capitalInsured Decimal?     @map("capital_insured") @db.Decimal(14, 2)
+  deductible     Decimal?     @db.Decimal(14, 2)
+  proposalId     String?      @map("proposal_id")
+  renewedFromId  String?      @unique @map("renewed_from_id")
+  /// dados específicos do ramo (coberturas detalhadas etc.), zod por módulo
+  lineData       Json?        @map("line_data")
+  /// dados de saúde do contrato (DPS, CIDs declarados) — cifrado, art. 11 LGPD
+  sensitiveEnc   Bytes?       @map("sensitive_enc")
+
+  // proveniência (`dataSource` em types.ts)
+  source           DataSourceKind
+  sourceAt         DateTime       @map("source_at")
+  sourceBy         String?        @map("source_by")
+  sourceDocumentId String?        @map("source_document_id")
+  sourceConfidence Float?         @map("source_confidence")
+
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+  deletedAt DateTime? @map("deleted_at")
+
+  holder       Party        @relation(fields: [holderId], references: [id])
+  insurer      Insurer      @relation(fields: [insurerId], references: [id])
+  owner        User         @relation("PolicyOwner", fields: [ownerId], references: [id])
+  insuredAsset Asset?       @relation(fields: [insuredAssetId], references: [id])
+  healthPlan   HealthPlan?  @relation(fields: [healthPlanId], references: [id])
+  proposal     Proposal?    @relation(fields: [proposalId], references: [id])
+  renewedFrom  Policy?      @relation("PolicyRenewalChain", fields: [renewedFromId], references: [id])
+  renewedBy    Policy?      @relation("PolicyRenewalChain")
+  beneficiaries PolicyBeneficiary[]
+  renewal      Renewal?     /// 1 renovação por ciclo de apólice
+  commissions  Commission[]
+  documents    Document[]
+  renewalOpportunities Opportunity[] @relation("OpportunityRenewalOf")
+
+  @@unique([orgId, insurerId, number])
+  @@index([orgId, end, status])          /// "vencendo nos próximos N dias"
+  @@index([orgId, ownerId, status])
+  @@index([holderId])
+  @@index([number(ops: raw("gin_trgm_ops"))], type: Gin)
+  @@map("policies")
+}
+
+model PolicyBeneficiary {
+  policyId String @map("policy_id")
+  personId String @map("person_id")
+  role     String? /// titular | dependente | beneficiário (vida)
+  sharePct Decimal? @map("share_pct") @db.Decimal(5, 2)
+
+  policy Policy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  person Person @relation(fields: [personId], references: [id])
+
+  @@id([policyId, personId])
+  @@index([personId])
+  @@map("policy_beneficiaries")
+}
+
+model Renewal {
+  id              String        @id @default(cuid())
+  orgId           String        @map("org_id")
+  policyId        String        @map("policy_id")
+  status          RenewalStatus
+  dueDate         DateTime      @map("due_date") @db.Date
+  opportunityId   String?       @map("opportunity_id")
+  checklist       Json          /// [{ key, label, done }]
+  changesReported String?       @map("changes_reported")
+  createdBy       String        @map("created_by") /// "automacao" ou user id
+  createdAt       DateTime      @default(now()) @map("created_at")
+  updatedAt       DateTime      @updatedAt @map("updated_at")
+
+  policy      Policy       @relation(fields: [policyId], references: [id])
+  opportunity Opportunity? @relation(fields: [opportunityId], references: [id])
+
+  @@unique([policyId])   /// idempotência da automação "apólice criada → criar renovação"
+  @@index([orgId, dueDate, status])
+  @@map("renewals")
+}
+
+// ═══════════════════════════════ OPERAÇÃO ═══════════════════════════════
+
+model Document {
+  id          String          @id @default(cuid())
+  orgId       String          @map("org_id")
+  name        String
+  kind        DocumentKind
+  partyId     String?         @map("party_id")
+  policyId    String?         @map("policy_id")
+  sizeKb      Int             @map("size_kb")
+  mime        String
+  storageKey  String          @map("storage_key") /// objeto S3 (acesso só por URL assinada)
+  sha256      String          /// dedupe de upload e integridade
+  uploadedAt  DateTime        @default(now()) @map("uploaded_at")
+  uploadedById String         @map("uploaded_by")
+  channel     DocumentChannel
+  status      DocumentStatus
+  containsSensitive Boolean   @default(false) @map("contains_sensitive")
+  retentionUntil DateTime?    @map("retention_until") @db.Date
+  deletedAt   DateTime?       @map("deleted_at")
+
+  party       Party?               @relation(fields: [partyId], references: [id])
+  policy      Policy?              @relation(fields: [policyId], references: [id])
+  uploadedBy  User                 @relation("DocumentUploader", fields: [uploadedById], references: [id])
+  extractions DocumentExtraction[]
+
+  @@unique([orgId, sha256])
+  @@index([orgId, status])
+  @@index([partyId])
+  @@index([policyId])
+  @@map("documents")
+}
+
+/// Resultado do Document AI. `fields` = ExtractedField[] (key,label,value,confidence).
+model DocumentExtraction {
+  id           String    @id @default(cuid())
+  documentId   String    @map("document_id")
+  parser       String    /// "regex-v1" | "llm:claude-…" | "ocr+llm"
+  classifiedAs DocumentKind @map("classified_as")
+  classConfidence Float  @map("class_confidence")
+  fields       Json
+  matchedPartyId String? @map("matched_party_id")
+  matchMethod  String?   @map("match_method") /// cpf | cnpj | policy_number | name_fuzzy
+  suggestion   Json?     /// diff proposto: [{ entity, id, field, before, after }]
+  at           DateTime  @default(now())
+  reviewedById String?   @map("reviewed_by")
+  reviewedAt   DateTime? @map("reviewed_at")
+  decision     String?   /// applied | partially_applied | rejected
+
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  reviewedBy User?    @relation("ExtractionReviewer", fields: [reviewedById], references: [id])
+
+  @@index([documentId])
+  @@map("document_extractions")
+}
+
+model Task {
+  id           String       @id @default(cuid())
+  orgId        String       @map("org_id")
+  title        String
+  description  String?
+  partyId      String?      @map("party_id")
+  relatedType  String?      @map("related_type") /// policy | proposal | quote | opportunity | renewal | document
+  relatedId    String?      @map("related_id")
+  category     TaskCategory
+  due          DateTime     @db.Date
+  ownerId      String       @map("owner_id")
+  status       TaskStatus
+  waitingOn    WaitingOn?   @map("waiting_on")
+  waitingSince DateTime?    @map("waiting_since") @db.Date
+  value        Decimal?     @db.Decimal(14, 2) /// prêmio em jogo — priorização
+  automationId String?      @map("automation_id") /// origin = automação
+  dedupeKey    String?      @map("dedupe_key") /// ex.: "renewal:{policyId}:d30"
+  createdAt    DateTime     @default(now()) @map("created_at")
+  completedAt  DateTime?    @map("completed_at")
+
+  party      Party?      @relation(fields: [partyId], references: [id])
+  owner      User        @relation("TaskOwner", fields: [ownerId], references: [id])
+  automation Automation? @relation(fields: [automationId], references: [id])
+
+  @@unique([orgId, dedupeKey])
+  @@index([orgId, ownerId, status, due])
+  @@index([relatedType, relatedId])
+  @@map("tasks")
+}
+
+// ═══════════════════════════════ FINANCEIRO ═══════════════════════════════
+
+model Commission {
+  id          String           @id @default(cuid())
+  orgId       String           @map("org_id")
+  policyId    String           @map("policy_id")
+  competence  String           @db.Char(7) /// "2026-10"
+  installment Int              @default(1)
+  expected    Decimal          @db.Decimal(14, 2)
+  received    Decimal?         @db.Decimal(14, 2)
+  receivedAt  DateTime?        @map("received_at") @db.Date
+  status      CommissionStatus
+  statementLineId String?      @map("statement_line_id")
+  /// repasse ao corretor/produtor (proposta — regra a definir com o cliente)
+  producerSplit Json?          @map("producer_split")
+
+  policy        Policy                   @relation(fields: [policyId], references: [id])
+  statementLine CommissionStatementLine? @relation(fields: [statementLineId], references: [id])
+
+  @@unique([policyId, competence, installment])
+  @@index([orgId, competence, status])
+  @@map("commissions")
+}
+
+/// Extrato de comissões enviado pela seguradora (importado) — base da conciliação.
+model CommissionStatement {
+  id         String   @id @default(cuid())
+  orgId      String   @map("org_id")
+  insurerId  String   @map("insurer_id")
+  competence String   @db.Char(7)
+  documentId String?  @map("document_id")
+  importedAt DateTime @default(now()) @map("imported_at")
+
+  lines CommissionStatementLine[]
+
+  @@index([orgId, insurerId, competence])
+  @@map("commission_statements")
+}
+
+model CommissionStatementLine {
+  id           String  @id @default(cuid())
+  statementId  String  @map("statement_id")
+  policyNumber String  @map("policy_number")
+  amount       Decimal @db.Decimal(14, 2)
+  raw          Json
+
+  statement   CommissionStatement @relation(fields: [statementId], references: [id], onDelete: Cascade)
+  commissions Commission[]
+
+  @@index([policyNumber])
+  @@map("commission_statement_lines")
+}
+
+// ═══════════════════════════════ AUTOMAÇÃO ═══════════════════════════════
+
+model Automation {
+  id                String            @id @default(cuid())
+  orgId             String            @map("org_id")
+  key               String            /// estável, ex.: "native.renewal_windows"
+  name              String
+  description       String
+  trigger           AutomationTrigger
+  conditions        Json              /// [{ field, op: eq|lte|gte|in, value }]
+  actions           Json              /// [{ type: AutomationAction, params }]
+  enabled           Boolean           @default(true)
+  minutesSavedPerRun Int              @map("minutes_saved_per_run")
+  system            Boolean           @default(false) /// nativas não podem ser apagadas
+  requiresReview    Boolean           @default(false) @map("requires_review")
+  createdAt         DateTime          @default(now()) @map("created_at")
+  updatedAt         DateTime          @updatedAt @map("updated_at")
+
+  executions AutomationExecution[]
+  tasks      Task[]
+
+  @@unique([orgId, key])
+  @@map("automations")
+}
+
+model AutomationExecution {
+  id             String              @id @default(cuid())
+  orgId          String              @map("org_id")
+  automationId   String              @map("automation_id")
+  /// ex.: "policy.days_to_end:{policyId}:30" — garante execução única por evento
+  idempotencyKey String              @map("idempotency_key")
+  at             DateTime            @default(now())
+  status         AutomationRunStatus
+  summary        String
+  refs           Json                /// [{ type, id }]
+  minutesSaved   Int                 @map("minutes_saved")
+  error          String?
+  jobId          String?             @map("job_id") /// pg-boss
+
+  automation Automation @relation(fields: [automationId], references: [id])
+
+  @@unique([automationId, idempotencyKey])
+  @@index([orgId, at])
+  @@map("automation_executions")
+}
+
+// ═══════════════════════════════ AUDITORIA ═══════════════════════════════
+
+/// Append-only: a role da aplicação só tem INSERT/SELECT (REVOKE UPDATE, DELETE na migração).
+model AuditLog {
+  id       String      @id @default(cuid())
+  orgId    String      @map("org_id")
+  at       DateTime    @default(now())
+  userId   String      @map("user_id") /// user id ou "sistema"
+  entity   String
+  entityId String      @map("entity_id")
+  action   AuditAction
+  summary  String
+  changes  Json?       /// [{ field, before, after }] — campos sensíveis mascarados
+  source   AuditSource
+  ip       String?
+  requestId String?    @map("request_id")
+
+  @@index([orgId, entity, entityId, at])
+  @@index([orgId, userId, at])
+  @@map("audit_log")
+}
+
+/// Proveniência por campo ("CPF veio do documento X com 0.97 de confiança, confirmado por Y").
+model FieldProvenance {
+  id         String         @id @default(cuid())
+  orgId      String         @map("org_id")
+  entity     String
+  entityId   String         @map("entity_id")
+  field      String
+  source     DataSourceKind
+  sourceRef  String?        @map("source_ref") /// documentId | importJobId | integrationId
+  confidence Float?
+  confirmedBy String?       @map("confirmed_by")
+  at         DateTime       @default(now())
+
+  @@index([orgId, entity, entityId, field, at])
+  @@map("field_provenance")
+}
+
+/// Histórico genérico de versões (snapshot JSON antes de cada update), preenchido por trigger.
+model EntityHistory {
+  id        BigInt   @id @default(autoincrement())
+  orgId     String   @map("org_id")
+  entity    String
+  entityId  String   @map("entity_id")
+  version   Int
+  snapshot  Json
+  changedAt DateTime @default(now()) @map("changed_at")
+  changedBy String?  @map("changed_by")
+
+  @@unique([entity, entityId, version])
+  @@map("entity_history")
+}
+
+/// Uso da Especializada AI: pergunta, ferramentas chamadas, fontes citadas (sem PII desnecessária).
+model AiInteraction {
+  id         String   @id @default(cuid())
+  orgId      String   @map("org_id")
+  userId     String   @map("user_id")
+  at         DateTime @default(now())
+  question   String
+  intent     String?
+  toolCalls  Json     @map("tool_calls") /// [{ tool, args, rowCount, sources }]
+  answer     String
+  provider   String   /// "deterministic" | "anthropic:<model>"
+  tokensIn   Int?     @map("tokens_in")
+  tokensOut  Int?     @map("tokens_out")
+  feedback   Int?     /// -1 | 0 | 1
+
+  @@index([orgId, userId, at])
+  @@map("ai_interactions")
+}
+
+// ═══════════════════════════════ LGPD ═══════════════════════════════
+
+model ConsentRecord {
+  id         String         @id @default(cuid())
+  orgId      String         @map("org_id")
+  partyId    String         @map("party_id")
+  purpose    ConsentPurpose
+  legalBasis LegalBasis     @map("legal_basis")
+  granted    Boolean
+  channel    String         /// web | whatsapp | papel | telefone
+  evidence   String?        /// texto exibido / documentId / id da mensagem
+  at         DateTime       @default(now())
+  revokedAt  DateTime?      @map("revoked_at")
+
+  party Party @relation(fields: [partyId], references: [id], onDelete: Cascade)
+
+  @@index([partyId, purpose, at])
+  @@map("consent_records")
+}
+
+/// Requisições de titulares (art. 18 LGPD) com prazo de resposta.
+model DataSubjectRequest {
+  id         String    @id @default(cuid())
+  orgId      String    @map("org_id")
+  partyId    String?   @map("party_id")
+  type       DsrType
+  status     DsrStatus
+  receivedAt DateTime  @default(now()) @map("received_at")
+  dueAt      DateTime  @map("due_at")
+  resolvedAt DateTime? @map("resolved_at")
+  resolution String?
+  exportKey  String?   @map("export_key") /// pacote de portabilidade no storage (URL assinada, expira)
+
+  party Party? @relation(fields: [partyId], references: [id])
+
+  @@index([orgId, status, dueAt])
+  @@map("data_subject_requests")
+}
+
+// ═══════════════════════════════ INTEGRAÇÕES ═══════════════════════════════
+
+/// Uma integração configurada (seguradora, agregador, WhatsApp BSP, maps, LLM…).
+model Integration {
+  id         String            @id @default(cuid())
+  orgId      String            @map("org_id")
+  kind       String            /// insurer | aggregator | whatsapp | email | maps | ai | storage | document-parsing | health-network
+  adapter    String            /// id do adapter em src/integrations
+  insurerId  String?           @map("insurer_id")
+  method     IntegrationMethod
+  status     IntegrationStatus
+  config     Json              @default("{}") /// parâmetros NÃO secretos
+  note       String?
+  lastSyncAt DateTime?         @map("last_sync_at")
+  lastError  String?           @map("last_error")
+  createdAt  DateTime          @default(now()) @map("created_at")
+  updatedAt  DateTime          @updatedAt @map("updated_at")
+
+  insurer     Insurer?                @relation(fields: [insurerId], references: [id])
+  credentials IntegrationCredential[]
+  runs        IntegrationRun[]
+
+  @@unique([orgId, adapter, insurerId])
+  @@map("integrations")
+}
+
+/// Segredos NUNCA ficam em claro: `secretRef` aponta para o secrets manager
+/// (AWS Secrets Manager / Doppler / Vault); alternativa: valor cifrado com KMS.
+model IntegrationCredential {
+  id            String    @id @default(cuid())
+  integrationId String    @map("integration_id")
+  label         String
+  secretRef     String?   @map("secret_ref")
+  valueEnc      Bytes?    @map("value_enc")
+  expiresAt     DateTime? @map("expires_at")
+  rotatedAt     DateTime? @map("rotated_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+
+  integration Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@map("integration_credentials")
+}
+
+model IntegrationRun {
+  id            String   @id @default(cuid())
+  integrationId String   @map("integration_id")
+  operation     String   /// quote | issue | getPolicy | importFile | sendMessage | geocode…
+  at            DateTime @default(now())
+  durationMs    Int?     @map("duration_ms")
+  ok            Boolean
+  httpStatus    Int?     @map("http_status")
+  error         String?
+  requestKey    String?  @map("request_key") /// payload bruto (redigido) no storage
+
+  integration Integration @relation(fields: [integrationId], references: [id], onDelete: Cascade)
+
+  @@index([integrationId, at])
+  @@map("integration_runs")
+}
+
+/// Data Import Center: um upload de planilha/CSV e seu ciclo de vida.
+model ImportJob {
+  id          String       @id @default(cuid())
+  orgId       String       @map("org_id")
+  target      String       /// persons | companies | policies | vehicles | network | commissions
+  fileName    String       @map("file_name")
+  storageKey  String       @map("storage_key")
+  columnMap   Json?        @map("column_map") /// coluna origem → campo destino
+  status      ImportStatus
+  stats       Json?        /// { total, novos, atualizados, duplicados, erros }
+  createdBy   String       @map("created_by")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  finishedAt  DateTime?    @map("finished_at")
+
+  rows ImportRow[]
+
+  @@index([orgId, createdAt])
+  @@map("import_jobs")
+}
+
+model ImportRow {
+  id          String          @id @default(cuid())
+  jobId       String          @map("job_id")
+  rowNumber   Int             @map("row_number")
+  raw         Json
+  normalized  Json?
+  status      ImportRowStatus
+  matchEntity String?         @map("match_entity")
+  matchId     String?         @map("match_id")
+  matchScore  Float?          @map("match_score")
+  errors      String[]
+  createdEntityId String?     @map("created_entity_id") /// permite reverter a importação
+
+  job ImportJob @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([jobId, rowNumber])
+  @@index([jobId, status])
+  @@map("import_rows")
+}
+
+/// Mensagens WhatsApp (Cloud API via BSP ou direto). Conteúdo mínimo necessário.
+model MessageLog {
+  id          String   @id @default(cuid())
+  orgId       String   @map("org_id")
+  partyId     String?  @map("party_id")
+  channel     String   /// whatsapp | email
+  direction   InteractionDirection
+  templateName String? @map("template_name")
+  category    String?  /// marketing | utility | authentication | service
+  externalId  String?  @map("external_id") /// wamid / message-id
+  status      String   /// queued | sent | delivered | read | failed
+  at          DateTime @default(now())
+  error       String?
+
+  @@unique([channel, externalId])
+  @@index([orgId, partyId, at])
+  @@map("message_logs")
+}
