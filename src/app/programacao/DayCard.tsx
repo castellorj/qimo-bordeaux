@@ -185,7 +185,7 @@ export function DayCard({
                             )}
                             <h3 className="font-serif text-xl font-light leading-snug">{a.title}</h3>
                           </div>
-                          {a.description && <p className="mt-2 font-sans text-[13px] leading-relaxed text-muted">{a.description}</p>}
+                          {a.description && <p className="mt-2 whitespace-pre-line font-sans text-[13px] leading-relaxed text-muted">{a.description}</p>}
                           {paid && (
                             <div className="mt-3">
                               <span className="inline-flex max-w-full items-center gap-1.5 rounded-full border px-3 py-1.5 font-sans text-[12px] font-semibold leading-none text-[#9f3650]" style={{ borderColor: "rgba(159,54,80,.32)", background: "rgba(159,54,80,.08)" }}>
