@@ -39,7 +39,7 @@ function normalizeReservableActivities(day: Day): Day {
 async function syncActivities(day: Day) {
   const sb = supabase();
   const normalizedDay = normalizeReservableActivities(day);
-  const { data: existing } = await sb.from("bordeaux_activities").select("id,content_key").eq("day_number", normalizedDay.n);
+  const { data: existing } = await sb.from("bordeaux_activities").select("id,content_key,status").eq("day_number", normalizedDay.n);
   // Reserváveis PRÓPRIOS do Chef (content_key = slug de um item kind='chef') podem
   // estar marcados com um `dia` (via data.reserva) e por isso carregam day_number = N,
   // mas vivem FORA do roteiro. Sem esta proteção, salvar o dia os ocultava — quebrando
@@ -52,18 +52,22 @@ async function syncActivities(day: Day) {
     if (!isOffShipReservable(a)) continue;
     keep.add(a.id);
     const st = a.time ? String(a.time).split(/[–—-]/)[0].trim() : null;
-    const patch = { title: a.title, day_number: normalizedDay.n, date: normalizedDay.date, start_time: st, qimo_select: !!a.qimoSelect, sort: normalizedDay.n * 100 + i, status: "available" };
+    const patch = { title: a.title, day_number: normalizedDay.n, date: normalizedDay.date, start_time: st, qimo_select: !!a.qimoSelect, sort: normalizedDay.n * 100 + i };
+    // Preserva o status operacional (closed = "Reservas encerradas", sold_out, limited):
+    // salvar o dia só reabre a atividade se ela estava oculta.
+    const statusFor = (row: any) => (!row?.status || row.status === "hidden" ? { status: "available" } : {});
     const local = (existing || []).find((e: any) => e.content_key === a.id);
     if (local) {
-      await sb.from("bordeaux_activities").update(patch).eq("id", local.id);
+      await sb.from("bordeaux_activities").update({ ...patch, ...statusFor(local) }).eq("id", local.id);
     } else {
-      const { data: global } = await sb.from("bordeaux_activities").select("id").eq("content_key", a.id).maybeSingle();
-      if (global) await sb.from("bordeaux_activities").update(patch).eq("id", (global as any).id);
-      else await sb.from("bordeaux_activities").insert({ content_key: a.id, capacity_total: a.capacity ?? null, ...patch });
+      const { data: global } = await sb.from("bordeaux_activities").select("id,status").eq("content_key", a.id).maybeSingle();
+      if (global) await sb.from("bordeaux_activities").update({ ...patch, ...statusFor(global) }).eq("id", (global as any).id);
+      else await sb.from("bordeaux_activities").insert({ content_key: a.id, capacity_total: a.capacity ?? null, ...patch, status: "available" });
     }
   }
   for (const e of (existing || []) as any[]) {
-    if (e.content_key && !keep.has(e.content_key) && !chefSlugs.has(e.content_key)) {
+    // Transfers (página /transfer) vivem fora do roteiro: não ocultar ao salvar o Dia 8.
+    if (e.content_key && !keep.has(e.content_key) && !chefSlugs.has(e.content_key) && !String(e.content_key).startsWith("transfer-")) {
       await sb.from("bordeaux_activities").update({ status: "hidden" }).eq("id", e.id);
     }
   }

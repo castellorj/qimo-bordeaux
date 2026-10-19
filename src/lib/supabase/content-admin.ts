@@ -318,14 +318,17 @@ export async function syncContentActivity(contentKey: string, opts: {
   title: string; capacity: number | null; dayNumber: number | null; startTime: string | null; visible: boolean;
 }): Promise<void> {
   const sb = supabase();
-  const { data: existing } = await sb.from("bordeaux_activities").select("id").eq("content_key", contentKey).maybeSingle();
+  const { data: existing } = await sb.from("bordeaux_activities").select("id,status").eq("content_key", contentKey).maybeSingle();
+  // Publicar mantém o status operacional (closed/sold_out/limited); só reabre o que estava oculto.
+  const cur = (existing as any)?.status;
+  const status = !opts.visible ? "hidden" : (!cur || cur === "hidden" ? "available" : cur);
   const patch = {
     content_key: contentKey,
     title: opts.title,
     capacity_total: opts.capacity,
     day_number: opts.dayNumber,
     start_time: opts.startTime,
-    status: opts.visible ? "available" : "hidden",
+    status,
   };
   if ((existing as any)?.id) await sb.from("bordeaux_activities").update(patch).eq("id", (existing as any).id);
   else await sb.from("bordeaux_activities").insert({ ...patch, sort: 900 });
