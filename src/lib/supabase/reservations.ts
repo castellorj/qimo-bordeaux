@@ -126,6 +126,9 @@ export async function guestReserve(activityId: string, name: string, phone: stri
   });
 }
 
+// Prazo de cancelamento/troca pelo guia (o servidor recusa depois disso).
+export const CANCEL_DEADLINE = "Cancelamentos e trocas só podiam ser feitos até 25/10 às 21h. Para qualquer ajuste, fale com a equipe QIMO.";
+
 export async function guestCancel(activityId: string, phone: string) {
   return supabase().rpc("bordeaux_guest_cancel", { p_activity: activityId, p_phone: normalizePhone(phone) });
 }

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Icon } from "@/components/Icon";
 import { useReservations } from "@/components/providers";
+import { CANCEL_DEADLINE } from "@/lib/supabase/reservations";
 
 // Transfer do navio ao aeroporto (BOD) no desembarque (1º nov).
 // 3 horários, 2 ônibus por horário (40 cada) = 80 lugares por horário.
@@ -42,7 +43,7 @@ export default function TransferPage() {
     if (busy) return;
     // Horário já escolhido não pode ser trocado nem desmarcado pelo guia (só pela equipe QIMO).
     if (slotOf(name)) {
-      setErr("Este horário já está confirmado. Para trocar, fale com a equipe QIMO.");
+      setErr(`Este horário já está confirmado. ${CANCEL_DEADLINE}`);
       return;
     }
     const rv = reservableByKey.get(slotKey);
@@ -116,7 +117,7 @@ export default function TransferPage() {
                   })}
                 </div>
                 <p className="mt-2 font-sans text-[11px] text-muted">
-                  {chosen ? "Horário confirmado. Para trocar, fale com a equipe QIMO." : "Toque para escolher o horário (ou deixe em branco se não vai de transfer)."}
+                  {chosen ? `Horário confirmado. ${CANCEL_DEADLINE}` : "Toque para escolher o horário (ou deixe em branco se não vai de transfer)."}
                 </p>
               </div>
             );

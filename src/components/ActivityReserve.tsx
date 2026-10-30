@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Icon } from "./Icon";
 import { useReservations } from "./providers";
-import { type Reservable, type MyReservation } from "@/lib/supabase/reservations";
+import { type Reservable, type MyReservation, CANCEL_DEADLINE } from "@/lib/supabase/reservations";
 import { getDay } from "@/content";
 
 // Data por extenso do dia da viagem (ex.: "Quinta-feira, 29 de outubro"), ou null.
@@ -161,7 +161,7 @@ function ReserveSheet({
       return;
     }
     if (conflict && !my) {
-      setErr(`Você já tem "${conflict.title}" neste horário. Para trocar, fale com a equipe QIMO.`);
+      setErr(`Você já tem "${conflict.title}" neste horário. ${CANCEL_DEADLINE}`);
       return;
     }
 
@@ -174,9 +174,9 @@ function ReserveSheet({
         setErr("Entre no guia com seu telefone pessoal para confirmar.");
       } else if (res.error && /conflito de hor/i.test(res.error)) {
         // Rede de segurança do servidor: alguém do grupo já tem reserva neste horário.
-        setErr("Conflito de horário: alguém do seu grupo já tem outra reserva neste mesmo horário. Para trocar, fale com a equipe QIMO.");
+        setErr(`Conflito de horário: alguém do seu grupo já tem outra reserva neste mesmo horário. ${CANCEL_DEADLINE}`);
       } else if (res.error && /ja confirmada/i.test(res.error)) {
-        setErr("Esta reserva já está confirmada. Para alterar, fale com a equipe QIMO.");
+        setErr(`Esta reserva já está confirmada. ${CANCEL_DEADLINE}`);
       } else {
         setErr("Não foi possível reservar agora. Tente de novo.");
       }
@@ -215,14 +215,14 @@ function ReserveSheet({
         {conflict && !my && (
           <div className="mt-5 rounded-[12px] border p-4 font-sans text-[12px] leading-relaxed" style={{ borderColor: "var(--gold)", background: "color-mix(in srgb, var(--gold) 10%, transparent)", color: "var(--text)" }}>
             <p className="flex items-center gap-1.5 font-semibold"><Icon name="Info" size={14} className="text-gold-deep" /> Conflito de horário</p>
-            <p className="mt-1 text-muted">Você já tem <strong>{conflict.title}</strong> no mesmo dia e horário. Só é possível estar em uma. Para trocar, fale com a equipe QIMO.</p>
+            <p className="mt-1 text-muted">Você já tem <strong>{conflict.title}</strong> no mesmo dia e horário. Só é possível estar em uma. {CANCEL_DEADLINE}</p>
           </div>
         )}
 
         {my && (
           <div className="mt-5 rounded-[12px] border p-4 font-sans text-[12px] leading-relaxed" style={{ borderColor: "var(--olive)", background: "color-mix(in srgb, var(--olive) 10%, transparent)", color: "var(--text)" }}>
             <p className="flex items-center gap-1.5 font-semibold"><Icon name="Check" size={14} /> Reserva confirmada</p>
-            <p className="mt-1 text-muted">Reservas confirmadas não podem ser canceladas pelo guia. Você ainda pode incluir outra pessoa do seu grupo. Para alterar ou cancelar, fale com a equipe QIMO.</p>
+            <p className="mt-1 text-muted">{CANCEL_DEADLINE} Você ainda pode incluir outra pessoa do seu grupo nesta reserva.</p>
           </div>
         )}
 
