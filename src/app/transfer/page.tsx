@@ -19,7 +19,7 @@ function shortName(name: string) {
 }
 
 export default function TransferPage() {
-  const { reservableByKey, mine, guest, guestParty, reserve, cancel } = useReservations();
+  const { reservableByKey, mine, guest, guestParty, reserve } = useReservations();
   const [busy, setBusy] = useState<string | null>(null);
   const [err, setErr] = useState("");
 
@@ -40,28 +40,19 @@ export default function TransferPage() {
 
   const choose = async (name: string, slotKey: string) => {
     if (busy) return;
-    const oldKey = slotOf(name);
-    const newKey = oldKey === slotKey ? null : slotKey; // clicar no horário atual = sair
-
-    // Calcula os novos party de cada slot afetado (a partir do estado atual).
-    const changes: Array<[string, string[]]> = [];
-    if (oldKey) changes.push([oldKey, partyOf(oldKey).filter((p) => p !== name)]);
-    if (newKey) changes.push([newKey, [...partyOf(newKey).filter((p) => p !== name), name]]);
+    // Horário já escolhido não pode ser trocado nem desmarcado pelo guia (só pela equipe QIMO).
+    if (slotOf(name)) {
+      setErr("Este horário já está confirmado. Para trocar, fale com a equipe QIMO.");
+      return;
+    }
+    const rv = reservableByKey.get(slotKey);
+    if (!rv) return;
 
     setBusy(name);
     setErr("");
-    for (const [key, desired] of changes) {
-      const rv = reservableByKey.get(key);
-      if (!rv) continue;
-      if (desired.length === 0) {
-        if (mine.has(rv.activityId)) await cancel(rv.activityId);
-      } else {
-        const res = await reserve(rv.activityId, desired);
-        if (!res.ok) {
-          setErr(res.error === "phone" ? "Entre no guia com seu telefone pessoal para escolher o horário." : "Não foi possível agora. Tente de novo.");
-          break;
-        }
-      }
+    const res = await reserve(rv.activityId, [...partyOf(slotKey).filter((p) => p !== name), name]);
+    if (!res.ok) {
+      setErr(res.error === "phone" ? "Entre no guia com seu telefone pessoal para escolher o horário." : "Não foi possível agora. Tente de novo.");
     }
     setBusy(null);
   };
@@ -111,7 +102,7 @@ export default function TransferPage() {
                       <button
                         key={s.key}
                         type="button"
-                        disabled={!s.rv || full || busy === name}
+                        disabled={!s.rv || full || busy === name || (!!chosen && !isChosen)}
                         onClick={() => choose(name, s.key)}
                         className="flex items-center justify-center gap-1.5 rounded-[10px] border-2 px-2 py-2.5 font-sans text-[13px] font-semibold transition-colors disabled:opacity-50"
                         style={isChosen
@@ -125,7 +116,7 @@ export default function TransferPage() {
                   })}
                 </div>
                 <p className="mt-2 font-sans text-[11px] text-muted">
-                  {chosen ? "Toque no horário marcado para desmarcar." : "Toque para escolher o horário (ou deixe em branco se não vai de transfer)."}
+                  {chosen ? "Horário confirmado. Para trocar, fale com a equipe QIMO." : "Toque para escolher o horário (ou deixe em branco se não vai de transfer)."}
                 </p>
               </div>
             );

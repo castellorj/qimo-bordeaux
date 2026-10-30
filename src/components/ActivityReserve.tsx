@@ -102,7 +102,7 @@ function ReserveSheet({
   conflict?: MyReservation;
   onClose: () => void;
 }) {
-  const { guest, guestParty, refresh, reserve, cancel } = useReservations();
+  const { guest, guestParty, refresh, reserve } = useReservations();
   const guestPhone = (guest?.phone || "").replace(/\D/g, "");
   const guestName = (guest?.name || "").trim();
   const partyPeople = guestParty.length
@@ -121,7 +121,9 @@ function ReserveSheet({
   });
   const [busy, setBusy] = useState(false);
   const [err, setErr] = useState("");
-  const [replace, setReplace] = useState(false); // substituir a reserva conflitante
+  // Reserva confirmada não pode ser cancelada nem reduzida pelo site (só pela equipe QIMO):
+  // quem já está na reserva fica travado; dá para incluir outras pessoas do grupo.
+  const locked = my?.party || [];
 
   useEffect(() => {
     document.body.style.overflow = "hidden";
@@ -133,6 +135,7 @@ function ReserveSheet({
   }, [refresh]);
 
   const toggleName = (name: string) => {
+    if (locked.includes(name)) return;
     setNames((current) => {
       if (current.includes(name)) return current.filter((item) => item !== name);
       return [...current, name];
@@ -157,25 +160,23 @@ function ReserveSheet({
       setErr("Este passeio está esgotado — as reservas estão encerradas.");
       return;
     }
-    if (conflict && !my && !replace) {
-      setErr(`Marque "Substituir" para trocar a reserva de "${conflict.title}" por esta.`);
+    if (conflict && !my) {
+      setErr(`Você já tem "${conflict.title}" neste horário. Para trocar, fale com a equipe QIMO.`);
       return;
     }
 
     setBusy(true);
     setErr("");
-    // Substituição: cancela a reserva conflitante antes de confirmar a nova.
-    if (conflict && !my && replace) {
-      await cancel(conflict.activityId);
-    }
-    const res = await reserve(rv.activityId, party);
+    const res = await reserve(rv.activityId, Array.from(new Set([...locked, ...party])));
     setBusy(false);
     if (!res.ok) {
       if (res.error === "phone") {
         setErr("Entre no guia com seu telefone pessoal para confirmar.");
       } else if (res.error && /conflito de hor/i.test(res.error)) {
         // Rede de segurança do servidor: alguém do grupo já tem reserva neste horário.
-        setErr("Conflito de horário: alguém do seu grupo já tem outra reserva neste mesmo horário. Cancele a outra opção para escolher esta.");
+        setErr("Conflito de horário: alguém do seu grupo já tem outra reserva neste mesmo horário. Para trocar, fale com a equipe QIMO.");
+      } else if (res.error && /ja confirmada/i.test(res.error)) {
+        setErr("Esta reserva já está confirmada. Para alterar, fale com a equipe QIMO.");
       } else {
         setErr("Não foi possível reservar agora. Tente de novo.");
       }
@@ -184,14 +185,8 @@ function ReserveSheet({
     onClose();
   };
 
-  const doCancel = async () => {
-    setBusy(true);
-    await cancel(rv.activityId);
-    setBusy(false);
-    onClose();
-  };
-
   const total = names.filter((n) => n.trim()).length;
+  const added = names.filter((n) => n.trim() && !locked.includes(n)).length;
 
   return (
     <div className="fixed inset-0 z-[90] flex items-end justify-center sm:items-center" onClick={onClose}
@@ -220,11 +215,14 @@ function ReserveSheet({
         {conflict && !my && (
           <div className="mt-5 rounded-[12px] border p-4 font-sans text-[12px] leading-relaxed" style={{ borderColor: "var(--gold)", background: "color-mix(in srgb, var(--gold) 10%, transparent)", color: "var(--text)" }}>
             <p className="flex items-center gap-1.5 font-semibold"><Icon name="Info" size={14} className="text-gold-deep" /> Conflito de horário</p>
-            <p className="mt-1 text-muted">Você já tem <strong>{conflict.title}</strong> no mesmo dia e horário. Só é possível estar em uma.</p>
-            <label className="mt-3 flex cursor-pointer items-start gap-2 rounded-[10px] border px-3 py-2.5" style={{ borderColor: replace ? "var(--gold)" : "var(--line)", background: replace ? "color-mix(in srgb, var(--gold) 8%, transparent)" : "transparent" }}>
-              <input type="checkbox" checked={replace} onChange={(e) => setReplace(e.target.checked)} className="mt-0.5" />
-              <span>Substituir <strong>{conflict.title}</strong> por esta reserva — a anterior será cancelada.</span>
-            </label>
+            <p className="mt-1 text-muted">Você já tem <strong>{conflict.title}</strong> no mesmo dia e horário. Só é possível estar em uma. Para trocar, fale com a equipe QIMO.</p>
+          </div>
+        )}
+
+        {my && (
+          <div className="mt-5 rounded-[12px] border p-4 font-sans text-[12px] leading-relaxed" style={{ borderColor: "var(--olive)", background: "color-mix(in srgb, var(--olive) 10%, transparent)", color: "var(--text)" }}>
+            <p className="flex items-center gap-1.5 font-semibold"><Icon name="Check" size={14} /> Reserva confirmada</p>
+            <p className="mt-1 text-muted">Reservas confirmadas não podem ser canceladas pelo guia. Você ainda pode incluir outra pessoa do seu grupo. Para alterar ou cancelar, fale com a equipe QIMO.</p>
           </div>
         )}
 
@@ -235,9 +233,10 @@ function ReserveSheet({
             {allowedNames.map((name, i) => {
               const person = partyPeople.find((p) => p.fullName === name);
               const isSelf = i === 0 && (!!guestPhone || !!guestName);
+              const isLocked = locked.includes(name);
               return (
-                <label key={`${name}-${i}`} className="flex cursor-pointer items-center gap-2 rounded-[12px] border px-3 py-2.5" style={{ borderColor: names.includes(name) ? "var(--gold)" : "var(--line)", background: names.includes(name) ? "color-mix(in srgb, var(--gold) 8%, transparent)" : "transparent" }}>
-                  <input type="checkbox" checked={names.includes(name)} onChange={() => toggleName(name)} />
+                <label key={`${name}-${i}`} className={`flex items-center gap-2 rounded-[12px] border px-3 py-2.5 ${isLocked ? "cursor-default" : "cursor-pointer"}`} style={{ borderColor: names.includes(name) ? "var(--gold)" : "var(--line)", background: names.includes(name) ? "color-mix(in srgb, var(--gold) 8%, transparent)" : "transparent" }}>
+                  <input type="checkbox" checked={names.includes(name) || isLocked} disabled={isLocked} onChange={() => toggleName(name)} />
                   <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-black/[0.04] text-gold-deep">
                     <Icon name={isSelf ? "User" : "UserPlus"} size={16} />
                   </span>
@@ -253,14 +252,10 @@ function ReserveSheet({
 
         {err && <p className="mt-3 font-sans text-[12px] text-[#8f2f2f]">{err}</p>}
 
-        <button disabled={busy || (!!conflict && !my && !replace)} onClick={submit} className="btn-primary mt-5 w-full !py-3.5 disabled:opacity-50">
-          {busy ? "Salvando..." : my ? `Atualizar reserva · ${total} ${total > 1 ? "pessoas" : "pessoa"}` : conflict && !my && replace ? `Substituir e confirmar · ${total} ${total > 1 ? "pessoas" : "pessoa"}` : `Confirmar · ${total} ${total > 1 ? "pessoas" : "pessoa"}`}
-          {!busy && <Icon name="ArrowRight" size={15} />}
-        </button>
-
-        {my && (
-          <button disabled={busy} onClick={doCancel} className="mt-3 w-full py-2 font-sans text-[12px] text-muted hover:text-[#8f2f2f]">
-            Cancelar minha reserva
+        {(!my || added > 0) && (
+          <button disabled={busy || (!!conflict && !my)} onClick={submit} className="btn-primary mt-5 w-full !py-3.5 disabled:opacity-50">
+            {busy ? "Salvando..." : my ? `Incluir na reserva · ${added} ${added > 1 ? "pessoas" : "pessoa"}` : `Confirmar · ${total} ${total > 1 ? "pessoas" : "pessoa"}`}
+            {!busy && <Icon name="ArrowRight" size={15} />}
           </button>
         )}
 
