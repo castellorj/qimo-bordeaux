@@ -1,0 +1,1 @@
+adeclip,highpass=f=75,afftdn=nr=9:nf=-38,equalizer=f=220:t=q:w=1.0:g=-1.5,equalizer=f=3200:t=q:w=1.2:g=1.5,deesser=i=0.25,acompressor=threshold=-20dB:ratio=2.2:attack=12:release=180:makeup=1,loudnorm=I=-14:TP=-1.5:LRA=7:measured_I=-17.85:measured_TP=-4.15:measured_LRA=1.90:measured_thresh=-28.04:offset=0.21:linear=true,aresample=48000
